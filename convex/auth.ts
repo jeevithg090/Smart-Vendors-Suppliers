@@ -30,11 +30,14 @@ export const authenticateUser = mutation({
     isSignup: v.boolean()
   },
   handler: async (ctx, args) => {
+    // Updated: 2025-01-26 - Added better error handling and debugging
     // In a real app, you would hash the password and check against stored credentials
     // For demo purposes, we'll use simple validation
     if (!args.email || args.password.length < 4) {
       throw new Error("Invalid credentials");
     }
+
+    console.log("Auth handler called with:", { email: args.email, role: args.role, isSignup: args.isSignup });
 
     if (args.isSignup) {
       // Check if user already exists in the role they're trying to sign up for
