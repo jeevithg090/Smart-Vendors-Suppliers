@@ -137,6 +137,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<boolean> => {
     setIsLoading(true);
 
+    // Check if we're in development mode without proper Convex setup
+    const convexUrl = import.meta.env.VITE_CONVEX_URL;
+    const isDevMode = !convexUrl || convexUrl === 'https://placeholder.convex.cloud' || convexUrl.includes('happy-mammal-123');
+
+    if (isDevMode) {
+      console.warn('Development mode: Using local authentication fallback');
+      // For development, create a mock user immediately
+      const userData: User = {
+        id: email,
+        email,
+        firstName,
+        lastName,
+        role,
+        profileId: `${role}_${Date.now()}`
+      };
+      setUser(userData);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+      setIsLoading(false);
+      return true;
+    }
+
     try {
       const result = await withTimeout(
         authenticateUser({
@@ -147,7 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           lastName,
           isSignup: true
         }),
-        8000 // 8 second timeout
+        3000 // Reduced to 3 second timeout for faster feedback
       );
 
       if (result.success && result.user) {
