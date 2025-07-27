@@ -52,13 +52,6 @@ export default function SupplierDashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [editProfileForm, setEditProfileForm] = useState({
-    businessName: '',
-    deliveryRadius: 0,
-    minimumOrder: 0,
-    categories: [] as string[]
-  });
 
   // Get supplier profile by user ID
   const supplierProfile = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' })
@@ -83,7 +76,6 @@ export default function SupplierDashboard() {
   const addInventoryItem = useMutation(api.inventory.addInventoryItem)
   const updateInventoryItem = useMutation(api.inventory.updateInventoryItem)
   const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
-  const updateSupplierProfile = useMutation(api.suppliers.update);
   const [updatingOrderId, setUpdatingOrderId] = useState<Id<'orders'> | null>(null);
 
   // Check if supplier profile exists, if not show setup
@@ -92,13 +84,6 @@ export default function SupplierDashboard() {
       setIsProfileSetup(true)
     } else if (supplierProfile) {
       setIsProfileSetup(false)
-      // Initialize edit form with current profile data
-      setEditProfileForm({
-        businessName: supplierProfile.businessName || '',
-        deliveryRadius: supplierProfile.deliveryRadius || 10,
-        minimumOrder: supplierProfile.minimumOrder || 500,
-        categories: supplierProfile.categories || []
-      })
     }
   }, [supplierProfile])
 
@@ -222,33 +207,6 @@ export default function SupplierDashboard() {
     } catch (error) {
       console.error('Error updating product availability:', error)
     }
-  }
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!supplierProfile?._id) return
-
-    try {
-      await updateSupplierProfile({
-        id: supplierProfile._id,
-        businessName: editProfileForm.businessName,
-        deliveryRadius: editProfileForm.deliveryRadius,
-        minimumOrder: editProfileForm.minimumOrder,
-        categories: editProfileForm.categories
-      })
-      setEditingProfile(false)
-    } catch (error) {
-      console.error('Error updating supplier profile:', error)
-    }
-  }
-
-  const handleCategoryToggle = (category: string) => {
-    setEditProfileForm(prev => ({
-      ...prev,
-      categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
-    }))
   }
 
   if (isProfileSetup) {
