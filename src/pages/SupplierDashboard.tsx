@@ -862,6 +862,34 @@ export default function SupplierDashboard() {
           </div>
         )}
 
+        {/* Smart Pricing Tab */}
+        {activeTab === 'pricing' && supplierProfile && (
+          <div className="space-y-6">
+            <SmartPricingEngine supplierId={supplierProfile._id} />
+          </div>
+        )}
+
+        {/* Automation Tab */}
+        {activeTab === 'automation' && supplierProfile && (
+          <div className="space-y-6">
+            <InventoryAutomation supplierId={supplierProfile._id} />
+          </div>
+        )}
+
+        {/* Quality Control Tab */}
+        {activeTab === 'quality' && supplierProfile && (
+          <div className="space-y-6">
+            <QualityAssurance supplierId={supplierProfile._id} />
+          </div>
+        )}
+
+        {/* Loyalty Program Tab */}
+        {activeTab === 'loyalty' && supplierProfile && (
+          <div className="space-y-6">
+            <SupplierLoyalty supplierId={supplierProfile._id} />
+          </div>
+        )}
+
         {/* Profile Tab */}
         {activeTab === 'profile' && supplierProfile && (
           <div className="space-y-6">
@@ -965,7 +993,7 @@ export default function SupplierDashboard() {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
                     <div className="flex items-center">
-                      <span className="text-yellow-500 mr-2 text-xl">��</span>
+                      <span className="text-yellow-500 mr-2 text-xl">★</span>
                       <span className="text-lg font-semibold text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
                     </div>
                   </div>
@@ -986,7 +1014,7 @@ export default function SupplierDashboard() {
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {supplierProfile.isVerified ? '��� Verified Store' : '⏳ Pending Verification'}
+                      {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
                     </span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
