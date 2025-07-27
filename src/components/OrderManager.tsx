@@ -4,7 +4,7 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { OrderPlacement } from './OrderPlacement';
-import OrderTracking from './OrderTracking';
+import SimpleOrderTracking from './SimpleOrderTracking';
 import { OrderHistory } from './OrderHistory';
 import { OrderConfirmation } from './OrderConfirmation';
 
