@@ -18,6 +18,7 @@ export default function VendorDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics' | 'recipes' | 'negotiations' | 'market'>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<string | null>(null);
 
   // Get vendor data or create if doesn't exist
   const vendor = useQuery(api.vendors.getByUserId, 
@@ -646,7 +647,7 @@ export default function VendorDashboard() {
                 className="p-4 bg-white border-2 border-yellow-200 rounded-lg hover:border-yellow-400 transition-colors text-center"
                 aria-label="Recipe Costing Calculator"
               >
-                <div className="text-2xl mb-2">🧮</div>
+                <div className="text-2xl mb-2">����</div>
                 <div className="font-medium text-gray-800">Recipe Costing</div>
                 <div className="text-sm text-gray-600">Calculate dish costs</div>
               </button>
