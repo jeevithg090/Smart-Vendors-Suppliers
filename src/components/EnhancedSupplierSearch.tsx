@@ -497,6 +497,9 @@ export default function EnhancedSupplierSearch({
           </button>
         </div>
       )}
+
+      {/* Semantic Search Demo Notification */}
+      <SemanticSearchDemo />
     </div>
   );
 }
