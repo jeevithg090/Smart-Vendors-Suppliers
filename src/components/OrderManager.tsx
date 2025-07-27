@@ -166,6 +166,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 Place New Order
               </button>
             </div>
+            <TrackingStatusBanner />
             <OrderHistory
               vendorId={vendor._id}
               onViewOrder={handleViewOrder}
