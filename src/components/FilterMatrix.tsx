@@ -1,9 +1,21 @@
 import { useState, useEffect } from 'react';
-import { AlgoliaSearchFilters } from '../types/search';
+
+interface SearchFilters {
+  categories?: string[];
+  tags?: string[];
+  isVerified?: boolean;
+  isFastDelivery?: boolean;
+  minRating?: number;
+  maxDistance?: number;
+  userLocation?: {
+    lat: number;
+    lng: number;
+  };
+}
 
 interface FilterMatrixProps {
-  filters: AlgoliaSearchFilters;
-  onFiltersChange: (filters: AlgoliaSearchFilters) => void;
+  filters: SearchFilters;
+  onFiltersChange: (filters: SearchFilters) => void;
   userLocation?: { lat: number; lng: number; city: string };
   className?: string;
 }
