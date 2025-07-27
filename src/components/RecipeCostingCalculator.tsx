@@ -115,8 +115,8 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
   });
 
   // Get available suppliers and their inventory for ingredient suggestions
-  const suppliers = useQuery(api.suppliers.getAll);
-  const allInventory = useQuery(api.inventory.getAll);
+  const suppliers = useQuery(api.suppliers.listAllSuppliers);
+  const allInventory = useQuery(api.inventory.searchInventory, {});
 
   const calculateRecipeCost = () => {
     const ingredientCost = currentRecipe.ingredients.reduce((total, ingredient) => {
