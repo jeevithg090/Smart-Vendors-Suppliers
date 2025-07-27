@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -22,8 +22,31 @@ interface FinancialAnalyticsProps {
   vendorId: Id<"vendors">;
 }
 
+// Move utility functions outside component to prevent re-creation on each render
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+};
+
+const formatMonth = (monthStr: string) => {
+  const [year, month] = monthStr.split('-');
+  return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-IN', {
+    month: 'short',
+    year: '2-digit',
+  });
+};
+
 const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => {
   const [timeRange, setTimeRange] = useState<number>(6); // months
+
+  // Memoize date calculations to prevent re-renders
+  const dateRange = useMemo(() => {
+    const endDate = Date.now();
+    const startDate = endDate - (timeRange * 30 * 24 * 60 * 60 * 1000);
+    return { startDate, endDate };
+  }, [timeRange]);
 
   const monthlySpending = useQuery(api.financialAnalytics.getMonthlySpending, {
     vendorId,
@@ -32,15 +55,15 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
 
   const spendingByCategory = useQuery(api.financialAnalytics.getSpendingByCategory, {
     vendorId,
-    startDate: Date.now() - (timeRange * 30 * 24 * 60 * 60 * 1000),
-    endDate: Date.now(),
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
   });
 
   const topSuppliers = useQuery(api.financialAnalytics.getTopSuppliers, {
     vendorId,
     limit: 5,
-    startDate: Date.now() - (timeRange * 30 * 24 * 60 * 60 * 1000),
-    endDate: Date.now(),
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
   });
 
   const costOptimizationRecommendations = useQuery(
@@ -50,22 +73,19 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
-  };
-
-  const formatMonth = (monthStr: string) => {
-    const [year, month] = monthStr.split('-');
-    return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-IN', {
-      month: 'short',
-      year: '2-digit',
-    });
-  };
-
   const totalSpending = spendingByCategory?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0;
+
+  // Memoize transformed data to prevent infinite re-renders
+  const chartData = useMemo(() => ({
+    monthlySpending: monthlySpending?.map((item: any) => ({
+      ...item,
+      monthFormatted: formatMonth(item.month)
+    })) || [],
+    topSuppliers: topSuppliers?.map((item: any) => ({
+      name: item.supplier?.businessName || 'Unknown',
+      amount: item.totalSpent
+    })) || []
+  }), [monthlySpending, topSuppliers]);
 
   return (
     <div className="space-y-6">
@@ -111,10 +131,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Spending Trend</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={monthlySpending?.map((item: any) => ({
-            ...item,
-            monthFormatted: formatMonth(item.month)
-          }))}>
+          <LineChart data={chartData.monthlySpending}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="monthFormatted" />
             <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
@@ -159,10 +176,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Suppliers</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topSuppliers?.map((item: any) => ({
-              name: item.supplier?.businessName || 'Unknown',
-              amount: item.totalSpent
-            }))}>
+            <BarChart data={chartData.topSuppliers}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name" 

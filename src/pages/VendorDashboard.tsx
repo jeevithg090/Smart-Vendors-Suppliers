@@ -55,7 +55,7 @@ export default function VendorDashboard() {
         }
       }).catch(console.error);
     }
-  }, [user, vendor, createVendor]);
+  }, [user, vendor]);
 
   // Onboarding effect for first-time users
   useEffect(() => {
