@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import FilterMatrix from './FilterMatrix';
+import SemanticSearchBox from './SemanticSearchBox';
+import { geminiSearchService } from '../services/geminiSearchService';
 
 interface SearchFilters {
   categories?: string[];
