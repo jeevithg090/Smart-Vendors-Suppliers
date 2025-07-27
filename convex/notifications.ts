@@ -63,15 +63,12 @@ export const createNotification = mutation({
 export const getUserNotifications = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const notifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user", (q) => q.eq("userId", identity.userEmail))
       .order("desc")
       .collect();
 
