@@ -13,6 +13,8 @@ import InventoryAutomation from '../components/InventoryAutomation';
 import QualityAssurance from '../components/QualityAssurance';
 import SupplierLoyalty from '../components/SupplierLoyalty';
 import SimpleOrderTracking from '../components/SimpleOrderTracking';
+import TrackingStatusBanner from '../components/TrackingStatusBanner';
+import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
 
 interface InventoryItem {
   _id: string;
