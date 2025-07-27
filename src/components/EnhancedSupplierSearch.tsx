@@ -75,7 +75,7 @@ export default function EnhancedSupplierSearch({
     setSearchState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const result = await algoliaSearchService.search(
+      const result = await mockSearchService.search(
         debouncedQuery,
         searchState.filters,
         {
