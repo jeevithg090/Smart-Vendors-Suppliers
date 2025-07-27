@@ -57,10 +57,10 @@ class GeminiSearchService {
             }]
           }],
           generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
+            temperature: GEMINI_CONFIG.TEMPERATURE,
+            topK: GEMINI_CONFIG.TOP_K,
+            topP: GEMINI_CONFIG.TOP_P,
+            maxOutputTokens: GEMINI_CONFIG.MAX_TOKENS,
           }
         })
       });
