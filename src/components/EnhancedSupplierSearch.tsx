@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import FilterMatrix from './FilterMatrix';
 import SemanticSearchBox from './SemanticSearchBox';
 import SemanticSearchDemo from './SemanticSearchDemo';
@@ -439,7 +441,7 @@ export default function EnhancedSupplierSearch({
                     key={index}
                     className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 font-medium"
                   >
-                    📂 {category}
+                    �� {category}
                   </span>
                 ))}
                 {searchState.semanticAnalysis.tags?.map((tag: string, index: number) => (
