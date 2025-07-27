@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface LoginProps {
   onSwitchToSignup: () => void;
+  preSelectedRole: 'vendor' | 'supplier';
+  onBackToRoleSelection: () => void;
 }
 
 export default function Login({ onSwitchToSignup }: LoginProps) {
