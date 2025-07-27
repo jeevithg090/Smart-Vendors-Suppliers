@@ -7,20 +7,13 @@ interface SignupProps {
   onBackToRoleSelection: () => void;
 }
 
-export default function Signup({ onSwitchToLogin }: SignupProps) {
+export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleSelection }: SignupProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState<'vendor' | 'supplier'>('vendor');
   const [error, setError] = useState('');
   const { signup, isLoading } = useAuth();
-
-  const handleRoleChange = (newRole: 'vendor' | 'supplier') => {
-    console.log('Signup role changing from', role, 'to', newRole);
-    setRole(newRole);
-    setError(''); // Clear any previous errors
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
