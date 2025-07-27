@@ -40,69 +40,87 @@ export const authenticateUser = mutation({
     let user;
     
     if (args.isSignup) {
-      // Check if user already exists
-      const existingUser = await ctx.db
-        .query("vendors")
-        .withIndex("by_user", (q) => q.eq("userId", args.email))
-        .first();
-      
-      if (!existingUser) {
+      // Check if user already exists in the role they're trying to sign up for
+      if (args.role === "vendor") {
+        const existingVendor = await ctx.db
+          .query("vendors")
+          .withIndex("by_user", (q) => q.eq("userId", args.email))
+          .first();
+
+        if (existingVendor) {
+          throw new Error("A vendor account with this email already exists");
+        }
+      } else {
         const existingSupplier = await ctx.db
           .query("suppliers")
           .withIndex("by_user", (q) => q.eq("userId", args.email))
           .first();
-        
+
         if (existingSupplier) {
-          throw new Error("User already exists");
+          throw new Error("A supplier account with this email already exists");
         }
-      } else {
-        throw new Error("User already exists");
       }
 
-      // Create new user profile
-      const userData = {
-        userId: args.email,
-        businessName: `${args.firstName || 'New'} ${args.role}`,
-        ownerName: `${args.firstName || ''} ${args.lastName || ''}`.trim(),
-        email: args.email,
-        phone: "",
-        location: {
-          address: "",
-          city: "",
-          state: "",
-          pincode: "",
-          coordinates: { lat: 0, lng: 0 }
-        },
-        businessType: "",
-        isVerified: false,
-        trustScore: 0,
-        preferences: {
-          maxDeliveryDistance: 10,
-          preferredCategories: [],
-          budgetRange: { min: 0, max: 10000 },
-          qualityPreference: "medium",
-          deliveryTimePreference: "flexible"
-        },
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-
+      // Create new user profile based on role
       if (args.role === "vendor") {
-        const vendorId = await ctx.db.insert("vendors", userData);
-        user = { ...userData, _id: vendorId, role: "vendor" };
+        const vendorData = {
+          userId: args.email,
+          businessName: `${args.firstName || 'New'} Vendor`,
+          ownerName: `${args.firstName || ''} ${args.lastName || ''}`.trim(),
+          email: args.email,
+          phone: "",
+          location: {
+            address: "",
+            city: "",
+            state: "",
+            pincode: "",
+            coordinates: { lat: 0, lng: 0 }
+          },
+          businessType: "",
+          isVerified: false,
+          trustScore: 0,
+          preferences: {
+            maxDeliveryDistance: 10,
+            preferredCategories: [],
+            budgetRange: { min: 0, max: 10000 },
+            qualityPreference: "medium",
+            deliveryTimePreference: "flexible"
+          },
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        };
+
+        const vendorId = await ctx.db.insert("vendors", vendorData);
+        user = { ...vendorData, _id: vendorId, role: "vendor" };
       } else {
         const supplierData = {
-          ...userData,
+          userId: args.email,
+          businessName: `${args.firstName || 'New'} Supplier`,
+          ownerName: `${args.firstName || ''} ${args.lastName || ''}`.trim(),
+          email: args.email,
+          phone: "",
+          location: {
+            address: "",
+            city: "",
+            state: "",
+            pincode: "",
+            coordinates: { lat: 0, lng: 0 }
+          },
           categories: [],
           fssaiCertified: false,
+          isVerified: false,
+          trustScore: 0,
           businessHours: {
             open: "09:00",
             close: "18:00",
             days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
           },
           deliveryRadius: 5,
-          minimumOrder: 100
+          minimumOrder: 100,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
         };
+
         const supplierId = await ctx.db.insert("suppliers", supplierData);
         user = { ...supplierData, _id: supplierId, role: "supplier" };
       }
