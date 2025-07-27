@@ -541,6 +541,59 @@ export default function VendorDashboard() {
             </div>
           </div>
 
+          {/* Main Search Section */}
+          <div className="mb-8 bg-gradient-to-r from-orange-50 to-purple-50 border border-orange-200 rounded-xl p-6">
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                🔍 Find Your Perfect Suppliers
+              </h2>
+              <p className="text-gray-600">
+                Use AI-powered semantic search to find exactly what you need
+              </p>
+            </div>
+
+            <div className="max-w-3xl mx-auto">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Try: 'organic vegetables near me' or 'bulk rice suppliers with fast delivery'"
+                  className="block w-full pl-12 pr-16 py-4 text-lg border-2 border-orange-200 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-400 bg-white shadow-sm hover:border-orange-300 transition-all"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const target = e.target as HTMLInputElement;
+                      handleHeaderSearch(target.value);
+                    }
+                  }}
+                  onFocus={() => setActiveTab('enhancedSearch')}
+                />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center space-x-2">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm">
+                    <span>✨</span>
+                    <span className="font-medium">AI Search</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <span className="text-sm text-gray-500">Popular searches:</span>
+                {['fresh vegetables', 'organic spices', 'bulk grains', 'dairy suppliers', 'FSSAI certified'].map((term, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleHeaderSearch(term)}
+                    className="text-sm bg-white hover:bg-orange-50 text-orange-600 px-3 py-1 rounded-full border border-orange-200 hover:border-orange-300 transition-colors"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Vendor Profile Summary */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <div className="col-span-1">
