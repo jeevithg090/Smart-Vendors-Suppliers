@@ -42,6 +42,11 @@ class GeminiSearchService {
   }
 
   async enhanceSearchQuery(request: GeminiSearchRequest): Promise<GeminiSearchResponse> {
+    if (!this.isAvailable()) {
+      console.warn('Gemini API not available, using fallback');
+      return this.createFallbackResponse(request.query);
+    }
+
     try {
       const prompt = this.buildSearchPrompt(request);
       
