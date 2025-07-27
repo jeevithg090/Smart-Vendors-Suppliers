@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { formatCurrencySafe, safeDivide, validateNumber } from '../utils/numberValidation';
 import {
   BarChart,
   Bar,
@@ -24,10 +25,7 @@ interface FinancialAnalyticsProps {
 
 // Move utility functions outside component to prevent re-creation on each render
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-  }).format(amount);
+  return formatCurrencySafe(amount);
 };
 
 const formatMonth = (monthStr: string) => {
@@ -73,7 +71,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-  const totalSpending = spendingByCategory?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0;
+  const totalSpending = spendingByCategory?.reduce((sum: number, item: any) => sum + validateNumber(item.amount, 0), 0) || 0;
 
   // Memoize transformed data to prevent infinite re-renders
   const chartData = useMemo(() => ({
@@ -83,7 +81,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
     })) || [],
     topSuppliers: topSuppliers?.map((item: any) => ({
       name: item.supplier?.businessName || 'Unknown',
-      amount: item.totalSpent
+      amount: validateNumber(item.totalSpent, 0)
     })) || []
   }), [monthlySpending, topSuppliers]);
 
@@ -115,7 +113,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
           <div className="bg-green-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-green-600">Average Monthly</p>
             <p className="text-2xl font-bold text-green-800">
-              {formatCurrency(totalSpending / timeRange)}
+              {formatCurrency(safeDivide(totalSpending, timeRange, 0))}
             </p>
           </div>
           <div className="bg-purple-50 p-4 rounded-lg">
@@ -158,7 +156,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ category, percent }: any) => `${category} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
+                label={({ category, percent }: any) => `${category} ${validateNumber(percent ? percent * 100 : 0, 0).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="amount"
@@ -231,7 +229,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Potential Savings</p>
                     <p className="text-lg font-bold text-green-600">
-                      {formatCurrency(recommendation.potentialSavings)}
+                      {formatCurrency(validateNumber(recommendation.potentialSavings, 0))}
                     </p>
                   </div>
                 </div>
