@@ -1263,6 +1263,11 @@ export default function SupplierDashboard() {
           </div>
         </div>
       )}
+
+      {/* Tracking Feature Demo Modal */}
+      {showTrackingDemo && (
+        <TrackingFeatureDemo onClose={() => setShowTrackingDemo(false)} />
+      )}
     </div>
   )
 }
