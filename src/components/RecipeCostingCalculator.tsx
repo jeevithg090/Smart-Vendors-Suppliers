@@ -115,11 +115,16 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
   });
 
   // Get available suppliers and their inventory for ingredient suggestions
-  const suppliers = useQuery(api.suppliers.listAllSuppliers);
-  const allInventory = useQuery(api.inventory.searchInventory, {});
+  // TODO: Re-enable when Convex is properly configured
+  // const suppliers = useQuery(api.suppliers.listAllSuppliers);
+  // const allInventory = useQuery(api.inventory.searchInventory, {});
+
+  // Temporary fallback until Convex is configured
+  const suppliers = [];
+  const allInventory = [];
 
   // Handle loading states and errors gracefully
-  const isLoading = suppliers === undefined || allInventory === undefined;
+  const isLoading = false; // suppliers === undefined || allInventory === undefined;
 
   const calculateRecipeCost = () => {
     const ingredientCost = currentRecipe.ingredients.reduce((total, ingredient) => {
