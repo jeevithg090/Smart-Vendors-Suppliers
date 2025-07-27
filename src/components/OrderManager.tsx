@@ -133,7 +133,8 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
             </div>
             <OrderTracking
               orderId={selectedOrderId}
-              vendorId={vendor._id}
+              userRole="vendor"
+              onClose={handleBackToHistory}
             />
           </div>
         );
