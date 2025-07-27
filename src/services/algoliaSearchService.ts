@@ -1,4 +1,4 @@
-import algoliasearch from 'algoliasearch/lite';
+import algoliasearch from 'algoliasearch';
 
 export interface AlgoliaSearchFilters {
   categories?: string[];
