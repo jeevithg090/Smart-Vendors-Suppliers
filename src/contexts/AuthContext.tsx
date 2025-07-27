@@ -150,8 +150,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Signup error:', error);
 
-      // Fallback for development mode when Convex is not connected
-      if (error.message && error.message.includes('network') || error.message.includes('connection')) {
+      // Fallback for development mode when Convex is not connected or times out
+      if (error.message && (error.message.includes('network') || error.message.includes('connection') || error.message.includes('timeout') || error.message.includes('timed out'))) {
         console.warn('Convex connection failed, using local fallback for development');
         const userData: User = {
           id: email,
