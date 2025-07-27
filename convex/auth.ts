@@ -93,6 +93,7 @@ export const authenticateUser = mutation({
         const vendorId = await ctx.db.insert("vendors", vendorData);
         user = { ...vendorData, _id: vendorId, role: "vendor" };
       } else {
+        // Create supplier data object with only valid supplier fields
         const supplierData = {
           userId: args.email,
           businessName: `${args.firstName || 'New'} Supplier`,
