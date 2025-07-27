@@ -372,6 +372,72 @@ export default function VendorDashboard() {
     );
   }
 
+  // Recipe Costing Tab
+  if (activeTab === 'recipes') {
+    return (
+      <PageLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </div>
+          {vendor && <RecipeCostingCalculator vendorId={vendor._id} />}
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Negotiations Tab
+  if (activeTab === 'negotiations') {
+    return (
+      <PageLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </div>
+          {vendor && <SupplierNegotiationHub vendorId={vendor._id} />}
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Market Intelligence Tab
+  if (activeTab === 'market') {
+    return (
+      <PageLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </div>
+          {vendor && <MarketIntelligence vendorId={vendor._id} location={vendor.location} />}
+        </div>
+      </PageLayout>
+    );
+  }
+
   // Main Dashboard
   return (
     <PageLayout>
