@@ -8,6 +8,10 @@ import FSSAIVerification from '../components/FSSAIVerification'
 import VoiceQuery from '../components/VoiceQuery'
 import { NotificationBell, NotificationCenter } from '../components/NotificationCenter';
 import SupplierAnalytics from '../components/SupplierAnalytics';
+import SmartPricingEngine from '../components/SmartPricingEngine';
+import InventoryAutomation from '../components/InventoryAutomation';
+import QualityAssurance from '../components/QualityAssurance';
+import SupplierLoyalty from '../components/SupplierLoyalty';
 
 interface InventoryItem {
   _id: string;
