@@ -13,6 +13,8 @@ import RecipeCostingCalculator from '../components/RecipeCostingCalculator';
 import SupplierNegotiationHub from '../components/SupplierNegotiationHub';
 import MarketIntelligence from '../components/MarketIntelligence';
 import SimpleOrderTracking from '../components/SimpleOrderTracking';
+import TrackingStatusBanner from '../components/TrackingStatusBanner';
+import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
