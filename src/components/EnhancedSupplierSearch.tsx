@@ -284,12 +284,27 @@ export default function EnhancedSupplierSearch({
     <div className={`max-w-7xl mx-auto ${className}`}>
       {/* Search Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Find Perfect Suppliers
-        </h1>
-        <p className="text-gray-600">
-          AI-powered semantic search to understand your needs and find exactly what you're looking for
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Find Perfect Suppliers
+            </h1>
+            <p className="text-gray-600">
+              AI-powered semantic search connected to your Convex database
+            </p>
+          </div>
+          <div className="flex items-center space-x-2 text-sm">
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-green-600 font-medium">Convex Connected</span>
+            </div>
+            <div className="text-gray-300">|</div>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <span className="text-purple-600 font-medium">AI Enhanced</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Semantic Search Input */}
