@@ -908,31 +908,38 @@ export default function VoiceQuery({
             </button>
           </div>
           
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {voiceHistory?.map((query, index) => (
-              <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="text-sm text-gray-900">
-                      {query.queryText}
+          {voiceHistory ? (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {voiceHistory.map((query, index) => (
+                <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-900">
+                        {query.queryText}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(query.createdAt).toLocaleString()} •
+                        {LANGUAGE_NAMES[query.language as keyof typeof LANGUAGE_NAMES]?.flag} {query.language} •
+                        {Math.round(query.confidence * 100)}% confidence
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date(query.createdAt).toLocaleString()} • 
-                      {LANGUAGE_NAMES[query.language as keyof typeof LANGUAGE_NAMES]?.flag} {query.language} • 
-                      {Math.round(query.confidence * 100)}% confidence
+                    <div className={`px-2 py-1 text-xs rounded ${
+                      query.queryType === 'search' ? 'bg-green-100 text-green-700' :
+                      query.queryType === 'filter' ? 'bg-blue-100 text-blue-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {query.queryType}
                     </div>
-                  </div>
-                  <div className={`px-2 py-1 text-xs rounded ${
-                    query.queryType === 'search' ? 'bg-green-100 text-green-700' :
-                    query.queryType === 'filter' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
-                    {query.queryType}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-sm">Voice history temporarily unavailable</div>
+              <div className="text-xs mt-1">Backend authentication is being updated</div>
+            </div>
+          )}
           
           {voiceStats && (
             <div className="mt-4 grid grid-cols-3 gap-4 text-center">
