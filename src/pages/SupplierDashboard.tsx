@@ -2,6 +2,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useState, useEffect } from 'react'
+import InventoryForecast from '../components/InventoryForecast'
 
 interface InventoryItem {
   _id: string;
@@ -36,7 +37,7 @@ interface SupplierProfile {
 
 export default function SupplierDashboard() {
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'orders' | 'profile'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'orders' | 'forecast' | 'profile'>('overview')
   const [isProfileSetup, setIsProfileSetup] = useState(false)
 
   // Get supplier profile by user ID
@@ -52,6 +53,11 @@ export default function SupplierDashboard() {
   //   supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
   // )
   const orders = [] // Temporary placeholder
+
+  // Get supplier forecasts
+  const forecasts = useQuery(api.suppliers.getSupplierForecasts, 
+    supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
+  )
 
   // Create supplier profile mutation
   const createSupplier = useMutation(api.suppliers.create)
@@ -342,6 +348,7 @@ export default function SupplierDashboard() {
                 { id: 'overview', label: 'Overview', icon: '📊' },
                 { id: 'inventory', label: 'Inventory', icon: '📦' },
                 { id: 'orders', label: 'Orders', icon: '🛒' },
+                { id: 'forecast', label: 'AI Forecast', icon: '🤖' },
                 { id: 'profile', label: 'Profile', icon: '👤' }
               ].map(tab => (
                 <button
@@ -403,6 +410,47 @@ export default function SupplierDashboard() {
                 </div>
               </div>
             </div>
+
+            {/* AI Forecast Summary */}
+            {forecasts && forecasts.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-800">AI Forecast Summary</h3>
+                  <span className="text-sm text-gray-500">Next 7 days</span>
+                </div>
+                <div className="space-y-3">
+                  {forecasts.slice(0, 3).map((forecast, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                      <div>
+                        <div className="font-medium text-gray-900">{forecast.item}</div>
+                        <div className="text-sm text-gray-600">
+                          Predicted: {forecast.predictedQty.toFixed(1)} units
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-sm px-2 py-1 rounded-full font-medium ${
+                          forecast.confidence >= 0.8 ? 'bg-green-100 text-green-800' :
+                          forecast.confidence >= 0.6 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {Math.round(forecast.confidence * 100)}% confidence
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {forecasts.length > 3 && (
+                    <div className="text-center pt-2">
+                      <button
+                        onClick={() => setActiveTab('forecast')}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        View all {forecasts.length} forecasts →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Recent Orders */}
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -596,6 +644,11 @@ export default function SupplierDashboard() {
               </div>
             )}
           </div>
+        )}
+
+        {/* AI Forecast Tab */}
+        {activeTab === 'forecast' && supplierProfile && (
+          <InventoryForecast supplierId={supplierProfile._id} />
         )}
 
         {/* Profile Tab */}

@@ -68,6 +68,14 @@ export default defineSchema({
     }),
     deliveryRadius: v.number(),
     minimumOrder: v.number(),
+    forecasts: v.optional(v.array(v.object({
+      item: v.string(),
+      predictedQty: v.number(),
+      confidence: v.number(),
+      forecastDate: v.number(),
+      reason: v.optional(v.string())
+    }))),
+    lastForecastUpdate: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number()
   }).index("by_user", ["userId"])

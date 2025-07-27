@@ -8,6 +8,7 @@ A comprehensive web application designed to solve the raw material sourcing chal
 - **Vendor Authentication**: Secure sign-up/login with role-based access
 - **Supplier Discovery**: Search for verified suppliers by location and ingredients
 - **AI-Powered Recommendations**: Smart supplier matching based on preferences and trust scores
+- **AI-Powered Inventory Forecasting**: Real-time predictions on inventory needs based on vendor demand trends, historical orders, and external factors
 - **Group Orders**: Collaborative bulk buying for cost reduction
 - **Order Management**: Track orders from placement to delivery
 - **Trust Scoring**: AI-calculated reliability scores for vendors and suppliers
@@ -51,6 +52,36 @@ A comprehensive web application designed to solve the raw material sourcing chal
    ```bash
    npm run dev
    ```
+
+## AI-Powered Inventory Forecasting Feature 🚀
+
+### What It Does
+Suppliers get real-time predictions on inventory needs based on vendor demand trends, historical orders, and Indian market factors (e.g., seasonal spikes in street food ingredients during Diwali, Holi, and other festivals). This helps avoid stockouts or overstocking, improving reliability and reducing waste.
+
+### For Suppliers
+1. **Automatic Forecasting**: Daily AI-generated predictions at 2 AM
+2. **Manual Generation**: Click "Generate Forecast" for immediate predictions
+3. **Confidence Scores**: Each prediction includes reliability indicators
+4. **AI Reasoning**: Understand why predictions were made
+5. **Dashboard Integration**: View forecasts in the supplier dashboard
+
+### Key Benefits
+- **Prevent Stockouts**: AI predicts demand spikes before they happen
+- **Reduce Waste**: Avoid overstocking with accurate predictions
+- **Save Time**: No more manual inventory planning
+- **FSSAI Integration**: Prioritizes certified stock forecasts
+- **Indian Festival Awareness**: Considers Diwali, Holi, Raksha Bandhan, Navratri, Eid, and other festivals
+- **Seasonal Adjustments**: Monsoon, summer, and winter demand patterns
+- **Regional Preferences**: State-specific food preferences and local events
+
+### Technical Implementation
+- **Multiple AI Models**: Uses OpenRouter with fallback models (GPT-4o-mini, Claude-3-haiku, Llama-3.1, Gemini)
+- **Indian Market Context**: AI prompts include festival seasons, weather patterns, and regional preferences
+- **Historical Analysis**: Analyzes 30 days of order history with seasonal adjustments
+- **Real-time Updates**: Forecasts updated daily via cron jobs
+- **Fallback Logic**: Statistical forecasting with Indian market multipliers when AI models are unavailable
+- **Confidence Scoring**: Each prediction includes reliability metrics
+- **FSSAI Integration**: Considers certification impact on demand predictions
 
 ## Demand Requests Feature Details
 

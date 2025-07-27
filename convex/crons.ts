@@ -17,4 +17,11 @@ crons.interval(
   internal.groupOrders.checkAndLockOrders
 );
 
+// Run daily at 2 AM to generate inventory forecasts for all suppliers
+crons.cron(
+  "generate-inventory-forecasts",
+  "0 2 * * *", // Daily at 2 AM
+  internal.suppliers.generateInventoryForecast
+);
+
 export default crons;
