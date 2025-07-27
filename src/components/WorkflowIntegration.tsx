@@ -341,6 +341,7 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
           </div>
         </div>
       </div>
+
       {/* Floating Notification Center */}
       <div className="fixed bottom-4 right-4 z-50">
         <NotificationCenter isOpen={false} onClose={() => {}} />
