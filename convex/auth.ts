@@ -125,28 +125,43 @@ export const authenticateUser = mutation({
         user = { ...supplierData, _id: supplierId, role: "supplier" };
       }
     } else {
-      // Login - find existing user based on selected role
-      if (args.role === "vendor") {
-        const vendor = await ctx.db
-          .query("vendors")
-          .withIndex("by_user", (q) => q.eq("userId", args.email))
-          .first();
+      // Login - find existing user and check if they have the requested role
+      const vendor = await ctx.db
+        .query("vendors")
+        .withIndex("by_user", (q) => q.eq("userId", args.email))
+        .first();
 
-        if (!vendor) {
-          throw new Error("Vendor account not found. Please check your credentials or sign up as a vendor.");
+      const supplier = await ctx.db
+        .query("suppliers")
+        .withIndex("by_user", (q) => q.eq("userId", args.email))
+        .first();
+
+      // Check if user exists in any table
+      if (!vendor && !supplier) {
+        throw new Error("No account found with this email. Please sign up first.");
+      }
+
+      // Check if user has account for the selected role
+      if (args.role === "vendor" && !vendor) {
+        if (supplier) {
+          throw new Error("You have a supplier account with this email. Please select 'Supplier' to log in, or sign up for a new vendor account.");
+        } else {
+          throw new Error("No vendor account found with this email. Please sign up as a vendor.");
         }
+      }
 
+      if (args.role === "supplier" && !supplier) {
+        if (vendor) {
+          throw new Error("You have a vendor account with this email. Please select 'Vendor' to log in, or sign up for a new supplier account.");
+        } else {
+          throw new Error("No supplier account found with this email. Please sign up as a supplier.");
+        }
+      }
+
+      // Login with the correct role
+      if (args.role === "vendor") {
         user = { ...vendor, role: "vendor" };
       } else {
-        const supplier = await ctx.db
-          .query("suppliers")
-          .withIndex("by_user", (q) => q.eq("userId", args.email))
-          .first();
-
-        if (!supplier) {
-          throw new Error("Supplier account not found. Please check your credentials or sign up as a supplier.");
-        }
-
         user = { ...supplier, role: "supplier" };
       }
     }
