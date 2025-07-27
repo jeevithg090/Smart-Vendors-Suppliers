@@ -15,10 +15,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 }) => {
   const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  
+
+  // Skip query for development mode users (those with profileId starting with role_timestamp)
+  const isDevelopmentUser = user?.profileId?.includes('_') && /^\w+_\d+$/.test(user.profileId);
+
   const notifications = useQuery(
     api.notifications.getUserNotifications,
-    user?.email ? { userEmail: user.email } : "skip"
+    user?.email && !isDevelopmentUser ? { userEmail: user.email } : "skip"
   );
   
   const markAsRead = useMutation(api.notifications.markNotificationAsRead);
