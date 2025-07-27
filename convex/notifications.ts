@@ -3,6 +3,11 @@ import { v } from "convex/values";
 
 // Helper function to validate user authentication
 async function validateUser(ctx: any, userEmail: string) {
+  // Check for empty email
+  if (!userEmail || userEmail.trim() === '') {
+    throw new Error("Not authenticated");
+  }
+
   const vendor = await ctx.db
     .query("vendors")
     .withIndex("by_user", (q: any) => q.eq("userId", userEmail))
