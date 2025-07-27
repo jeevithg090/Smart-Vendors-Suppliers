@@ -176,6 +176,9 @@ export const authenticateUser = mutation({
 
       // Login with the correct role
       if (args.role === "vendor") {
+        if (!vendor) {
+          throw new Error("Vendor account not found");
+        }
         return {
           success: true,
           user: {
@@ -188,6 +191,9 @@ export const authenticateUser = mutation({
           }
         };
       } else {
+        if (!supplier) {
+          throw new Error("Supplier account not found");
+        }
         return {
           success: true,
           user: {
