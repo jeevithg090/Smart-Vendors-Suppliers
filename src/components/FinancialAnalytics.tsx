@@ -22,6 +22,22 @@ interface FinancialAnalyticsProps {
   vendorId: Id<"vendors">;
 }
 
+// Move utility functions outside component to prevent re-creation on each render
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+};
+
+const formatMonth = (monthStr: string) => {
+  const [year, month] = monthStr.split('-');
+  return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-IN', {
+    month: 'short',
+    year: '2-digit',
+  });
+};
+
 const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => {
   const [timeRange, setTimeRange] = useState<number>(6); // months
 
@@ -49,21 +65,6 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
   );
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount);
-  };
-
-  const formatMonth = (monthStr: string) => {
-    const [year, month] = monthStr.split('-');
-    return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-IN', {
-      month: 'short',
-      year: '2-digit',
-    });
-  };
 
   const totalSpending = spendingByCategory?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0;
 
