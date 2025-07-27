@@ -142,15 +142,24 @@ export const authenticateUser = mutation({
       }
     } else {
       // Login - find existing user and check if they have the requested role
-      const vendor = await ctx.db
-        .query("vendors")
-        .withIndex("by_user", (q) => q.eq("userId", args.email))
-        .first();
+      try {
+        console.log("Attempting login for email:", args.email, "role:", args.role);
 
-      const supplier = await ctx.db
-        .query("suppliers")
-        .withIndex("by_user", (q) => q.eq("userId", args.email))
-        .first();
+        const vendor = await ctx.db
+          .query("vendors")
+          .withIndex("by_user", (q) => q.eq("userId", args.email))
+          .first();
+
+        const supplier = await ctx.db
+          .query("suppliers")
+          .withIndex("by_user", (q) => q.eq("userId", args.email))
+          .first();
+
+        console.log("Query results - vendor:", !!vendor, "supplier:", !!supplier);
+      } catch (dbError) {
+        console.error("Database query error:", dbError);
+        throw new Error(`Database error during login: ${dbError.message}`);
+      }
 
       // Check if user exists in any table
       if (!vendor && !supplier) {
