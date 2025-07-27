@@ -553,7 +553,7 @@ export default function SupplierDashboard() {
                     <div className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</div>
                     <div className="text-sm text-gray-600">Total Earnings</div>
                   </div>
-                  <div className="text-3xl text-purple-500">�����</div>
+                  <div className="text-3xl text-purple-500">����</div>
                 </div>
               </div>
             </div>
@@ -792,8 +792,8 @@ export default function SupplierDashboard() {
                             className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs disabled:opacity-50"
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
-                              setUpdatingOrderId(order._id);
-                              await updateOrderStatus({ orderId: order._id, status: 'processing' });
+                              setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'processing' });
                               setUpdatingOrderId(null);
                             }}
                           >
