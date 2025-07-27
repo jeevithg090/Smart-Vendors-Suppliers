@@ -391,7 +391,7 @@ export default function VoiceQuery({
             originalText: "मुझे सब्जियों के लिए सप्लायर चाहिए",
             language: "hi",
             confidence: 0.87,
-            alternatives: ["मुझे सब्जी सप्लायर चाहिए", "सब्जियों के लिए दुकान चाहिए"],
+            alternatives: ["मुझे सब्जी सप्लायर चाहिए", "सब्���ियों के लिए दुकान चाहिए"],
             searchResults: mockSearchResults
           },
           {
@@ -894,7 +894,7 @@ export default function VoiceQuery({
       )}
 
       {/* Voice History */}
-      {showHistory && voiceHistory && (
+      {showHistory && (
         <div className="mt-6 border-t pt-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-gray-900">Voice History</h3>
