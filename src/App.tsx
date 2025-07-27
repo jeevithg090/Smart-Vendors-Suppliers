@@ -15,15 +15,9 @@ const LoadingSpinner = () => (
   </div>
 )
 
-// Auth component that handles login/signup switching
+// Auth component that handles role selection and authentication flow
 const AuthComponent = () => {
-  const [isLogin, setIsLogin] = useState(true);
-
-  return isLogin ? (
-    <Login onSwitchToSignup={() => setIsLogin(false)} />
-  ) : (
-    <Signup onSwitchToLogin={() => setIsLogin(true)} />
-  );
+  return <AuthFlow />;
 };
 
 // Protected route component
