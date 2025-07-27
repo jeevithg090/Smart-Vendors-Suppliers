@@ -146,15 +146,24 @@ export const deleteNotification = mutation({
 export const getUnreadCount = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
+    // Validate user exists with our manual auth system
+    const vendor = await ctx.db
+      .query("vendors")
+      .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+      .first();
+
+    const supplier = await ctx.db
+      .query("suppliers")
+      .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+      .first();
+
+    if (!vendor && !supplier) {
       throw new Error("Not authenticated");
     }
 
     const unreadNotifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
       .filter((q) => q.eq(q.field("isRead"), false))
       .collect();
 
