@@ -369,7 +369,7 @@ export default function VendorDashboard() {
                   
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">Delivery:</span> {vendor.location.city}
+                      <span className="font-medium">Delivery:</span> {displayVendor.location.city}
                     </div>
                     <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-sm">
                       Join Order
