@@ -5,6 +5,7 @@ import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { OrderPlacement } from './OrderPlacement';
 import SimpleOrderTracking from './SimpleOrderTracking';
+import TrackingStatusBanner from './TrackingStatusBanner';
 import { OrderHistory } from './OrderHistory';
 import { OrderConfirmation } from './OrderConfirmation';
 
