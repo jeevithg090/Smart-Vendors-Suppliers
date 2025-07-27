@@ -49,10 +49,10 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
             <span className="text-2xl">🏪</span>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to Smart Street
+            Sign in as {preSelectedRole === 'vendor' ? 'Vendor' : 'Supplier'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Connect vendors and suppliers for smarter sourcing
+            {preSelectedRole === 'vendor' ? 'Buy from suppliers for your business' : 'Sell products to vendors'}
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
