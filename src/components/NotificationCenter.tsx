@@ -16,9 +16,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   
-  const notifications = useQuery(api.notifications.getUserNotifications, {
-    userEmail: user?.email || ''
-  });
+  const notifications = useQuery(
+    api.notifications.getUserNotifications,
+    user?.email ? { userEmail: user.email } : "skip"
+  );
   
   const markAsRead = useMutation(api.notifications.markNotificationAsRead);
   const markAllAsRead = useMutation(api.notifications.markAllNotificationsAsRead);
