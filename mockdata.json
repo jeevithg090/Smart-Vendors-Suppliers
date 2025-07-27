@@ -1,0 +1,17 @@
+{
+  "vendors": [
+    {"userId": "v1", "name": "Vendor One", "email": "v1@email.com", "location": "Mumbai", "preferences": ["flour", "spices"], "trustScore": 4.2},
+    {"userId": "v2", "name": "Vendor Two", "email": "v2@email.com", "location": "Mumbai", "preferences": ["rice", "oil"], "trustScore": 3.8}
+  ],
+  "suppliers": [
+    {"userId": "s1", "name": "Supplier A", "email": "s1@email.com", "location": "Mumbai", "inventory": [{"itemName": "flour", "quantity": 100, "pricePerUnit": 40, "unit": "kg", "lastUpdated": 1722000000000}], "trustScore": 4.5},
+    {"userId": "s2", "name": "Supplier B", "email": "s2@email.com", "location": "Mumbai", "inventory": [{"itemName": "spices", "quantity": 50, "pricePerUnit": 120, "unit": "kg", "lastUpdated": 1722000000000}], "trustScore": 4.0},
+    {"userId": "s3", "name": "Supplier C", "email": "s3@email.com", "location": "Mumbai", "inventory": [{"itemName": "rice", "quantity": 200, "pricePerUnit": 60, "unit": "kg", "lastUpdated": 1722000000000}], "trustScore": 3.9}
+  ],
+  "ratings": [
+    {"fromId": "v1", "toId": "s1", "orderId": "o1", "score": 5, "createdAt": 1722000000000},
+    {"fromId": "v1", "toId": "s2", "orderId": "o2", "score": 4, "createdAt": 1722000000000},
+    {"fromId": "v2", "toId": "s2", "orderId": "o3", "score": 5, "createdAt": 1722000000000},
+    {"fromId": "v2", "toId": "s3", "orderId": "o4", "score": 4, "createdAt": 1722000000000}
+  ]
+} 
