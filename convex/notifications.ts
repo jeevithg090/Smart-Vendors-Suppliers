@@ -39,14 +39,11 @@ export const createNotification = mutation({
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const notificationId = await ctx.db.insert("notifications", {
-      userId: identity.subject,
+      userId: identity.userEmail,
       userType: args.userType,
       type: args.type,
       title: args.title,
