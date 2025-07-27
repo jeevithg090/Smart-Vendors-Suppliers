@@ -432,7 +432,7 @@ export default function EnhancedSupplierSearch({
 
 // Supplier Card Component
 interface SupplierCardProps {
-  supplier: AlgoliaSearchResult;
+  supplier: SearchResult;
   onSelect: () => void;
   showDistance: boolean;
 }
