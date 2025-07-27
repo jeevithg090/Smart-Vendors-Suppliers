@@ -239,6 +239,8 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
           )}
         </div>
 
+        {/* Main Content Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
           {/* Main Content Area: Marketplace Catalog */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -339,6 +341,7 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
           </div>
         </div>
       </div>
+
       {/* Floating Notification Center */}
       <div className="fixed bottom-4 right-4 z-50">
         <NotificationCenter isOpen={false} onClose={() => {}} />
