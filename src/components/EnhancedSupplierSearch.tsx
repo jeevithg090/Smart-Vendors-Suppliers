@@ -115,97 +115,33 @@ export default function EnhancedSupplierSearch({
     return () => clearTimeout(timer);
   }, [searchState.query]);
 
-  // Mock search function
-  const mockSearch = async (
-    query: string,
-    filters: SearchFilters
-  ): Promise<SearchResult[]> => {
-    const mockResults: SearchResult[] = [
-      {
-        objectID: 'vendor-1',
-        name: 'Fresh Valley Farms',
-        description: 'Premium organic vegetables and fruits supplier',
-        category: 'Vegetables & Fruits',
-        tags: ['organic', 'fresh', 'premium'],
-        rating: 4.8,
-        reviewCount: 127,
-        location: {
-          lat: 19.0760,
-          lng: 72.8777,
-          address: '123 Agriculture Market, Dadar',
-          city: 'Mumbai',
-          state: 'Maharashtra'
-        },
-        isVerified: true,
-        isFastDelivery: true,
-        minOrder: 500,
-        deliveryRadius: 15,
-        businessHours: {
-          open: '06:00',
-          close: '20:00',
-          days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-        }
+  // Convert Convex supplier data to SearchResult format
+  const convertConvexToSearchResult = (supplier: any): SearchResult => {
+    return {
+      objectID: supplier._id,
+      name: supplier.businessName || supplier.name,
+      description: supplier.description || `${supplier.businessType} supplier in ${supplier.location.city}`,
+      category: supplier.categories?.[0] || supplier.businessType || 'General',
+      tags: supplier.categories || [],
+      rating: supplier.trustScore || 4.0,
+      reviewCount: supplier.reviewCount || 0,
+      location: {
+        lat: supplier.location.coordinates?.lat || supplier.location.lat || 0,
+        lng: supplier.location.coordinates?.lng || supplier.location.lng || 0,
+        address: supplier.location.address || '',
+        city: supplier.location.city || '',
+        state: supplier.location.state || ''
       },
-      {
-        objectID: 'vendor-2',
-        name: 'Spice Master Trading',
-        description: 'Traditional spices and masalas',
-        category: 'Spices & Condiments',
-        tags: ['spices', 'traditional', 'authentic'],
-        rating: 4.6,
-        reviewCount: 89,
-        location: {
-          lat: 19.0176,
-          lng: 72.8561,
-          address: '456 Spice Bazaar, Crawford Market',
-          city: 'Mumbai',
-          state: 'Maharashtra'
-        },
-        isVerified: true,
-        isFastDelivery: false,
-        minOrder: 1000,
-        deliveryRadius: 25,
-        businessHours: {
-          open: '09:00',
-          close: '19:00',
-          days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-        }
+      isVerified: supplier.isVerified || false,
+      isFastDelivery: supplier.deliveryRadius <= 15 || false,
+      minOrder: supplier.minimumOrder || 0,
+      deliveryRadius: supplier.deliveryRadius || 25,
+      businessHours: supplier.businessHours || {
+        open: '09:00',
+        close: '18:00',
+        days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
       }
-    ];
-
-    let results = [...mockResults];
-
-    // Apply text search
-    if (query) {
-      const searchTerm = query.toLowerCase();
-      results = results.filter(vendor =>
-        vendor.name.toLowerCase().includes(searchTerm) ||
-        vendor.description.toLowerCase().includes(searchTerm) ||
-        vendor.category.toLowerCase().includes(searchTerm) ||
-        vendor.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-      );
-    }
-
-    // Apply filters
-    if (filters.categories && filters.categories.length > 0) {
-      results = results.filter(vendor =>
-        filters.categories!.includes(vendor.category)
-      );
-    }
-
-    if (filters.isVerified !== undefined) {
-      results = results.filter(vendor => vendor.isVerified === filters.isVerified);
-    }
-
-    if (filters.isFastDelivery !== undefined) {
-      results = results.filter(vendor => vendor.isFastDelivery === filters.isFastDelivery);
-    }
-
-    if (filters.minRating !== undefined) {
-      results = results.filter(vendor => vendor.rating >= filters.minRating!);
-    }
-
-    return results;
+    };
   };
 
   // Perform search when query or filters change
@@ -441,7 +377,7 @@ export default function EnhancedSupplierSearch({
                     key={index}
                     className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 font-medium"
                   >
-                    �� {category}
+                    📂 {category}
                   </span>
                 ))}
                 {searchState.semanticAnalysis.tags?.map((tag: string, index: number) => (
