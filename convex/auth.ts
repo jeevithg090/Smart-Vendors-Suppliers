@@ -176,23 +176,31 @@ export const authenticateUser = mutation({
 
       // Login with the correct role
       if (args.role === "vendor") {
-        user = { ...vendor, role: "vendor" };
+        return {
+          success: true,
+          user: {
+            id: vendor.userId,
+            email: vendor.email,
+            firstName: vendor.ownerName?.split(' ')[0] || '',
+            lastName: vendor.ownerName?.split(' ').slice(1).join(' ') || '',
+            role: "vendor",
+            profileId: vendor._id
+          }
+        };
       } else {
-        user = { ...supplier, role: "supplier" };
+        return {
+          success: true,
+          user: {
+            id: supplier.userId,
+            email: supplier.email,
+            firstName: supplier.ownerName?.split(' ')[0] || '',
+            lastName: supplier.ownerName?.split(' ').slice(1).join(' ') || '',
+            role: "supplier",
+            profileId: supplier._id
+          }
+        };
       }
     }
-
-    return {
-      success: true,
-      user: {
-        id: user.userId,
-        email: user.email,
-        firstName: user.ownerName?.split(' ')[0] || '',
-        lastName: user.ownerName?.split(' ').slice(1).join(' ') || '',
-        role: user.role,
-        profileId: user._id
-      }
-    };
   },
 });
 
