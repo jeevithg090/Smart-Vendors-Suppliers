@@ -751,7 +751,7 @@ export default function SupplierDashboard() {
                 </div>
               ) : orders.length > 0 ? (
                 <div className="space-y-4">
-                  {orders.map((order: any) => (
+                  {orders.map((order: Order) => (
                     <div key={order._id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
@@ -766,7 +766,7 @@ export default function SupplierDashboard() {
                           )}
                         </div>
                         <div className="text-right">
-                          <div className="font-medium">₹{order.totalCost}</div>
+                          <div className="font-medium">₹{order.totalAmount}</div>
                           <div className="flex items-center space-x-2 mt-1">
                             <span className={`px-2 py-1 text-xs rounded-full ${
                               order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
@@ -778,14 +778,9 @@ export default function SupplierDashboard() {
                             }`}>
                               {order.status}
                             </span>
-                            {order.hasTracking && (
+                            {order.status === 'shipped' && (
                               <span className="bg-green-100 text-green-800 px-2 py-1 text-xs rounded-full">
-                                📦 Tracked
-                              </span>
-                            )}
-                            {order.isThirdPartyDelivery && (
-                              <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs rounded-full">
-                                3rd Party
+                                📦 Shipped
                               </span>
                             )}
                           </div>
@@ -793,11 +788,6 @@ export default function SupplierDashboard() {
                       </div>
                       <div className="text-sm text-gray-600 mb-3">
                         {order.items.length} items ordered
-                        {order.hasTracking && (
-                          <span className="ml-2 text-green-600">
-                            • {order.trackingCount} tracking number{order.trackingCount > 1 ? 's' : ''}
-                          </span>
-                        )}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {order.status === 'pending' && (
@@ -826,20 +816,30 @@ export default function SupplierDashboard() {
                             {updatingOrderId === order._id ? 'Processing...' : 'Process'}
                           </button>
                         )}
-                        {(order.status === 'processing' || order.status === 'confirmed') && !order.hasTracking && (
+                        {order.status === 'processing' && (
                           <button
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
-                            onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
+                            disabled={updatingOrderId === order._id}
+                            onClick={async () => {
+                              setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'shipped' });
+                              setUpdatingOrderId(null);
+                            }}
                           >
-                            Add Tracking
+                            {updatingOrderId === order._id ? 'Shipping...' : 'Mark as Shipped'}
                           </button>
                         )}
-                        {order.hasTracking && order.status !== 'delivered' && (
+                        {order.status === 'shipped' && (
                           <button
-                            className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-xs"
-                            onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
+                            disabled={updatingOrderId === order._id}
+                            onClick={async () => {
+                              setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'delivered' });
+                              setUpdatingOrderId(null);
+                            }}
                           >
-                            Update Tracking
+                            {updatingOrderId === order._id ? 'Delivering...' : 'Mark as Delivered'}
                           </button>
                         )}
                         <button
@@ -848,12 +848,14 @@ export default function SupplierDashboard() {
                         >
                           Details
                         </button>
-                        <button
-                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs"
-                          onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
-                        >
-                          Track Order
-                        </button>
+                        {(order.status === 'confirmed' || order.status === 'processing' || order.status === 'shipped') && (
+                          <button
+                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs"
+                            onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                          >
+                            Manage Tracking
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1049,7 +1051,7 @@ export default function SupplierDashboard() {
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
+                      {supplierProfile.isVerified ? '��� Verified Store' : '⏳ Pending Verification'}
                     </span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
