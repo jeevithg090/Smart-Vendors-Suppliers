@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { validateNumber, safePercentage, safeMultiply, safeRound } from '../utils/numberValidation';
 
 interface GroupOrderCreationProps {
   vendorId: Id<"vendors">;
@@ -138,9 +139,9 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
 
   const calculatePotentialSavings = () => {
     if (!selectedItem || !customPrice) return 0;
-    const regularPrice = selectedItem.pricePerUnit;
-    const groupPrice = customPrice;
-    return ((regularPrice - groupPrice) / regularPrice) * 100;
+    const regularPrice = validateNumber(selectedItem.pricePerUnit, 0);
+    const groupPrice = validateNumber(customPrice, 0);
+    return safePercentage((regularPrice - groupPrice), regularPrice, 0);
   };
 
   return (
@@ -315,7 +316,7 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
               </div>
               <div className="flex justify-between font-medium">
                 <span>Total Value:</span>
-                <span>₹{(targetQuantity * customPrice).toFixed(2)}</span>
+                <span>₹{safeRound(safeMultiply(validateNumber(targetQuantity, 0), validateNumber(customPrice, 0), 0), 2, 0).toFixed(2)}</span>
               </div>
             </div>
           </div>
