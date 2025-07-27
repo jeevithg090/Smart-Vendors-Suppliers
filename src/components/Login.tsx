@@ -17,7 +17,7 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
     e.preventDefault();
     setError('');
 
-    console.log('Login attempt:', { email, role, passwordLength: password.length });
+    console.log('Login attempt:', { email, role: preSelectedRole, passwordLength: password.length });
 
     if (!email || !password) {
       setError('Please fill in all fields');
@@ -30,7 +30,7 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
     }
 
     try {
-      const success = await login(email, password, role);
+      const success = await login(email, password, preSelectedRole);
       console.log('Login result:', success);
       if (!success) {
         setError('Login failed. Please check your credentials.');
@@ -118,7 +118,7 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
                     : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <div className="text-2xl mb-1">���</div>
+                <div className="text-2xl mb-1">🚚</div>
                 <div className="text-sm font-medium">Supplier</div>
                 <div className="text-xs text-gray-500">Sell to vendors</div>
               </button>
