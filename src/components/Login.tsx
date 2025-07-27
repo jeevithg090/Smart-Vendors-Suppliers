@@ -22,6 +22,8 @@ export default function Login({ onSwitchToSignup }: LoginProps) {
     e.preventDefault();
     setError('');
 
+    console.log('Login attempt:', { email, role, passwordLength: password.length });
+
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
@@ -32,9 +34,15 @@ export default function Login({ onSwitchToSignup }: LoginProps) {
       return;
     }
 
-    const success = await login(email, password, role);
-    if (!success) {
-      setError('Login failed. Please check your credentials.');
+    try {
+      const success = await login(email, password, role);
+      console.log('Login result:', success);
+      if (!success) {
+        setError('Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Login error in component:', error);
+      setError('Login failed. Please try again.');
     }
   };
 
