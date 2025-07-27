@@ -8,6 +8,10 @@ import FSSAIVerification from '../components/FSSAIVerification'
 import VoiceQuery from '../components/VoiceQuery'
 import { NotificationBell, NotificationCenter } from '../components/NotificationCenter';
 import SupplierAnalytics from '../components/SupplierAnalytics';
+import SmartPricingEngine from '../components/SmartPricingEngine';
+import InventoryAutomation from '../components/InventoryAutomation';
+import QualityAssurance from '../components/QualityAssurance';
+import SupplierLoyalty from '../components/SupplierLoyalty';
 
 interface InventoryItem {
   _id: string;
@@ -45,13 +49,20 @@ interface SupplierProfile {
 
 export default function SupplierDashboard() {
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'analytics' | 'profile'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'analytics' | 'profile' | 'pricing' | 'automation' | 'quality' | 'loyalty'>('dashboard')
   const [isProfileSetup, setIsProfileSetup] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({
+    businessName: '',
+    deliveryRadius: 0,
+    minimumOrder: 0,
+    categories: [] as string[]
+  });
 
   // Get supplier profile by user ID
   const supplierProfile = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' })
@@ -76,6 +87,7 @@ export default function SupplierDashboard() {
   const addInventoryItem = useMutation(api.inventory.addInventoryItem)
   const updateInventoryItem = useMutation(api.inventory.updateInventoryItem)
   const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
+  const updateSupplierProfile = useMutation(api.suppliers.update);
   const [updatingOrderId, setUpdatingOrderId] = useState<Id<'orders'> | null>(null);
 
   // Check if supplier profile exists, if not show setup
@@ -84,6 +96,13 @@ export default function SupplierDashboard() {
       setIsProfileSetup(true)
     } else if (supplierProfile) {
       setIsProfileSetup(false)
+      // Initialize edit form with current profile data
+      setEditProfileForm({
+        businessName: supplierProfile.businessName || '',
+        deliveryRadius: supplierProfile.deliveryRadius || 10,
+        minimumOrder: supplierProfile.minimumOrder || 500,
+        categories: supplierProfile.categories || []
+      })
     }
   }, [supplierProfile])
 
@@ -207,6 +226,33 @@ export default function SupplierDashboard() {
     } catch (error) {
       console.error('Error updating product availability:', error)
     }
+  }
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!supplierProfile?._id) return
+
+    try {
+      await updateSupplierProfile({
+        id: supplierProfile._id,
+        businessName: editProfileForm.businessName,
+        deliveryRadius: editProfileForm.deliveryRadius,
+        minimumOrder: editProfileForm.minimumOrder,
+        categories: editProfileForm.categories
+      })
+      setEditingProfile(false)
+    } catch (error) {
+      console.error('Error updating supplier profile:', error)
+    }
+  }
+
+  const handleCategoryToggle = (category: string) => {
+    setEditProfileForm(prev => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter(c => c !== category)
+        : [...prev.categories, category]
+    }))
   }
 
   if (isProfileSetup) {
@@ -410,11 +456,15 @@ export default function SupplierDashboard() {
         {/* Navigation Tabs - Supplier focused */}
         <div className="bg-white rounded-lg shadow-lg mb-6">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8" aria-label="Supplier dashboard navigation">
+            <nav className="-mb-px flex space-x-4 overflow-x-auto" aria-label="Supplier dashboard navigation">
               {[
                 { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
                 { id: 'products', label: 'My Products', icon: '📦' },
                 { id: 'orders', label: 'Order Management', icon: '📋' },
+                { id: 'pricing', label: 'Smart Pricing', icon: '🤖' },
+                { id: 'automation', label: 'Automation', icon: '⚙️' },
+                { id: 'quality', label: 'Quality Control', icon: '🛡️' },
+                { id: 'loyalty', label: 'Loyalty Program', icon: '🏆' },
                 { id: 'analytics', label: 'Business Analytics', icon: '📈' },
                 { id: 'profile', label: 'Store Profile', icon: '🏪' }
               ].map(tab => (
@@ -503,7 +553,7 @@ export default function SupplierDashboard() {
                     <div className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</div>
                     <div className="text-sm text-gray-600">Total Earnings</div>
                   </div>
-                  <div className="text-3xl text-purple-500">💰</div>
+                  <div className="text-3xl text-purple-500">����</div>
                 </div>
               </div>
             </div>
@@ -729,8 +779,8 @@ export default function SupplierDashboard() {
                             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs disabled:opacity-50"
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
-                              setUpdatingOrderId(order._id);
-                              await updateOrderStatus({ orderId: order._id, status: 'confirmed' });
+                              setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'confirmed' });
                               setUpdatingOrderId(null);
                             }}
                           >
@@ -742,8 +792,8 @@ export default function SupplierDashboard() {
                             className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs disabled:opacity-50"
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
-                              setUpdatingOrderId(order._id);
-                              await updateOrderStatus({ orderId: order._id, status: 'processing' });
+                              setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'processing' });
                               setUpdatingOrderId(null);
                             }}
                           >
@@ -755,8 +805,8 @@ export default function SupplierDashboard() {
                             className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
-                              setUpdatingOrderId(order._id);
-                              await updateOrderStatus({ orderId: order._id, status: 'delivered' });
+                              setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'delivered' });
                               setUpdatingOrderId(null);
                             }}
                           >
@@ -765,7 +815,7 @@ export default function SupplierDashboard() {
                         )}
                         <button
                           className="px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 text-xs"
-                          onClick={() => setSelectedOrderId(order._id)}
+                          onClick={() => setSelectedOrderId(order._id as Id<'orders'>)}
                         >
                           Details
                         </button>
@@ -812,6 +862,34 @@ export default function SupplierDashboard() {
           </div>
         )}
 
+        {/* Smart Pricing Tab */}
+        {activeTab === 'pricing' && supplierProfile && (
+          <div className="space-y-6">
+            <SmartPricingEngine supplierId={supplierProfile._id} />
+          </div>
+        )}
+
+        {/* Automation Tab */}
+        {activeTab === 'automation' && supplierProfile && (
+          <div className="space-y-6">
+            <InventoryAutomation supplierId={supplierProfile._id} />
+          </div>
+        )}
+
+        {/* Quality Control Tab */}
+        {activeTab === 'quality' && supplierProfile && (
+          <div className="space-y-6">
+            <QualityAssurance supplierId={supplierProfile._id} />
+          </div>
+        )}
+
+        {/* Loyalty Program Tab */}
+        {activeTab === 'loyalty' && supplierProfile && (
+          <div className="space-y-6">
+            <SupplierLoyalty supplierId={supplierProfile._id} />
+          </div>
+        )}
+
         {/* Profile Tab */}
         {activeTab === 'profile' && supplierProfile && (
           <div className="space-y-6">
@@ -821,48 +899,134 @@ export default function SupplierDashboard() {
             </div>
             
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">Business Information</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
-                  <div className="text-lg font-semibold text-gray-900">{supplierProfile.businessName}</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
-                  <div className="flex items-center">
-                    <span className="text-yellow-500 mr-2 text-xl">★</span>
-                    <span className="text-lg font-semibold text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Categories</label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {supplierProfile.categories.map((category: string) => (
-                      <span key={category} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    supplierProfile.isVerified 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
-                  </span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius</label>
-                  <div className="text-lg font-semibold text-gray-900">{supplierProfile.deliveryRadius} km</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
-                  <div className="text-lg font-semibold text-gray-900">₹{supplierProfile.minimumOrder}</div>
-                </div>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold text-gray-800">Business Information</h3>
+                <button
+                  onClick={() => setEditingProfile(!editingProfile)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    editingProfile
+                      ? 'bg-gray-500 hover:bg-gray-600 text-white'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  }`}
+                >
+                  {editingProfile ? 'Cancel' : 'Edit Profile'}
+                </button>
               </div>
+
+              {editingProfile ? (
+                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editProfileForm.businessName}
+                        onChange={(e) => setEditProfileForm({...editProfileForm, businessName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius (km) *</label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        max="100"
+                        value={editProfileForm.deliveryRadius}
+                        onChange={(e) => setEditProfileForm({...editProfileForm, deliveryRadius: Number(e.target.value)})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order Amount (₹) *</label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        value={editProfileForm.minimumOrder}
+                        onChange={(e) => setEditProfileForm({...editProfileForm, minimumOrder: Number(e.target.value)})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Business Categories</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {['Vegetables', 'Fruits', 'Grains', 'Dairy', 'Spices', 'Meat', 'Seafood', 'Oil', 'Pulses', 'Snacks'].map((category) => (
+                        <label key={category} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editProfileForm.categories.includes(category)}
+                            onChange={() => handleCategoryToggle(category)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-gray-700">{category}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setEditingProfile(false)}
+                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
+                    <div className="text-lg font-semibold text-gray-900">{supplierProfile.businessName}</div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
+                    <div className="flex items-center">
+                      <span className="text-yellow-500 mr-2 text-xl">★</span>
+                      <span className="text-lg font-semibold text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Categories</label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {supplierProfile.categories.map((category: string) => (
+                        <span key={category} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      supplierProfile.isVerified
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius</label>
+                    <div className="text-lg font-semibold text-gray-900">{supplierProfile.deliveryRadius} km</div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
+                    <div className="text-lg font-semibold text-gray-900">₹{supplierProfile.minimumOrder}</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* FSSAI Verification Component */}
@@ -1076,13 +1240,13 @@ function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClos
           <div className="font-medium mb-1">Order #{order._id?.slice ? order._id.slice(-8) : ''}</div>
           <div className="text-sm text-gray-600 mb-1">Status: <span className="font-semibold">{order.status}</span></div>
           <div className="text-sm text-gray-600 mb-1">Placed: {order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</div>
-          <div className="text-sm text-gray-600 mb-1">Total: ₹{order.totalAmount ?? order.totalCost ?? ''}</div>
+          <div className="text-sm text-gray-600 mb-1">Total: ₹{(order as any).totalAmount ?? (order as any).totalCost ?? ''}</div>
         </div>
         <div className="mb-4">
           <div className="font-semibold mb-1">Items:</div>
           <ul className="list-disc pl-5 text-sm">
             {order.items?.map((item: any, idx: number) => (
-              <li key={idx}>{item.itemName} × {item.quantity} @ ₹{item.priceAtOrder ?? item.pricePerUnit ?? ''}</li>
+              <li key={idx}>{(item as any).itemName} × {(item as any).quantity} @ ₹{(item as any).priceAtOrder ?? (item as any).pricePerUnit ?? ''}</li>
             ))}
           </ul>
         </div>
