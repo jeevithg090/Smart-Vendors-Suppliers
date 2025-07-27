@@ -107,6 +107,21 @@ export default function EnhancedSupplierSearch({
   const [debouncedQuery, setDebouncedQuery] = useState(searchState.query);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Get suppliers from Convex
+  const convexSuppliers = useQuery(api.suppliers.searchSuppliers, {
+    searchTerm: debouncedQuery || undefined,
+    city: vendorLocation?.city || undefined,
+    categories: searchState.filters.categories?.length ? searchState.filters.categories : undefined,
+    minTrustScore: searchState.filters.minRating || undefined,
+    maxDistance: searchState.filters.maxDistance || undefined,
+    vendorLocation: vendorLocation ? {
+      lat: vendorLocation.lat,
+      lng: vendorLocation.lng
+    } : undefined,
+    sortBy: searchState.sortBy,
+    limit: 50
+  });
+
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
