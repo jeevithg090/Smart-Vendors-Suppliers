@@ -1,5 +1,7 @@
 # 🏪 Smart Street - Street Food Sourcing Platform
 
+🌐 **Live Demo: [https://smart-street.netlify.app/](https://smart-street.netlify.app/)**
+
 A comprehensive web application designed to solve the raw material sourcing challenges faced by street food vendors in India. Built with modern technologies and AI-powered features to revolutionize the street food supply chain.
 
 ## 🌟 Overview
@@ -164,7 +166,7 @@ smart-street/
 │   │   ├── FSSAIVerification.tsx # Certificate verification
 │   │   └── ...              # 50+ other components
 │   ├── pages/               # Main application pages
-│   ���   ├── HomePage.tsx     # Landing page
+│   │   ├── HomePage.tsx     # Landing page
 │   │   ├── VendorDashboard.tsx # Vendor dashboard
 │   │   └── SupplierDashboard.tsx # Supplier dashboard
 │   ├── contexts/            # React contexts

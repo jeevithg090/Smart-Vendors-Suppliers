@@ -74,31 +74,25 @@ export default function HomePage() {
               >
                 Start Sourcing Today
               </Link>
-              <button className="text-gray-600 hover:text-gray-900 font-medium text-lg flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m6-10V7a3 3 0 11-6 0V4a3 3 0 11-6 0v3a3 3 0 11-6 0v3" />
-                </svg>
-                Watch Demo
-              </button>
             </div>
 
-            {/* Stats */}
+            {/* Solutions */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto animate-fadeIn">
               <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600 mb-2">500+</div>
-                <div className="text-gray-600">Active Vendors</div>
+                <div className="text-2xl font-bold text-orange-600 mb-2">🤖 AI Matching</div>
+                <div className="text-gray-600">Smart supplier recommendations</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">200+</div>
-                <div className="text-gray-600">Trusted Suppliers</div>
+                <div className="text-2xl font-bold text-green-600 mb-2">👥 Group Orders</div>
+                <div className="text-gray-600">Bulk buying savings</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">₹50L+</div>
-                <div className="text-gray-600">Savings Generated</div>
+                <div className="text-2xl font-bold text-blue-600 mb-2">🎤 Voice Queries</div>
+                <div className="text-gray-600">Multilingual support</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">15+</div>
-                <div className="text-gray-600">Cities Covered</div>
+                <div className="text-2xl font-bold text-purple-600 mb-2">📊 Analytics</div>
+                <div className="text-gray-600">Data-driven insights</div>
               </div>
             </div>
           </div>
