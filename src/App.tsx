@@ -1,8 +1,7 @@
 import { Suspense, lazy, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
-import Login from './components/Login'
-import Signup from './components/Signup'
+import AuthFlow from './components/AuthFlow'
 
 // Lazy load components for better performance
 const HomePage = lazy(() => import('./pages/HomePage'))
