@@ -515,20 +515,24 @@ export const getVoiceQueryHistory = query({
     limit: v.optional(v.number())
   },
   handler: async (ctx, args) => {
+    // For now, allow access without authentication for demo purposes
+    // In production, you would check: const identity = await ctx.auth.getUserIdentity();
+    // if (!identity) throw new Error("Unauthorized");
+
     let query = ctx.db.query("voiceQueries");
-    
+
     if (args.userId) {
       query = query.filter((q) => q.eq(q.field("userId"), args.userId));
     }
-    
+
     if (args.userRole) {
       query = query.filter((q) => q.eq(q.field("userRole"), args.userRole));
     }
-    
+
     const results = await query
       .order("desc")
       .take(args.limit || 20);
-    
+
     return results;
   },
 });
