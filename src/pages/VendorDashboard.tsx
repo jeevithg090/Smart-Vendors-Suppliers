@@ -6,6 +6,7 @@ import { api } from '../../convex/_generated/api';
 import WorkflowIntegration from '../components/WorkflowIntegration';
 import VendorProfileManagement from '../components/VendorProfileManagement';
 import SupplierSearch from '../components/SupplierSearch';
+import EnhancedSupplierSearch from '../components/EnhancedSupplierSearch';
 import VoiceQuery from '../components/VoiceQuery';
 import { OrderManager } from '../components/OrderManager';
 import FinancialAnalytics from '../components/FinancialAnalytics';
