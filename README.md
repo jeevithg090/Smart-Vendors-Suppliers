@@ -362,34 +362,55 @@ await api.fssaiVerification.verifyFSSAICertificate({
    - Verify OpenRouter configuration
    - Test with different languages
 
-### Getting Help
-- Check the [troubleshooting guide](src/docs/ERROR_HANDLING_GUIDE.md)
-- Review [error handling documentation](AUTHENTICATION_UPDATE.md)
-- Contact support via the app
+## 🤖 Collaborative Filtering Model for Supplier Recommendations
 
-## 📋 Roadmap
+The platform implements an advanced collaborative filtering (CF) model to provide personalized supplier recommendations to street food vendors. This AI-powered system analyzes vendor rating patterns to predict preferences for unrated suppliers, creating a more intelligent and personalized sourcing experience.
 
-### Upcoming Features
-- [ ] Mobile app (React Native)
-- [ ] WhatsApp integration
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language UI
-- [ ] Blockchain integration for trust
-- [ ] IoT sensor integration
-- [ ] Advanced ML recommendations
+### Overview of Collaborative Filtering
 
-### Version History
-- **v1.0.0**: Initial release with core features
-- **v1.1.0**: Added voice queries and FSSAI verification
-- **v1.2.0**: Implemented AI inventory forecasting
-- **v1.3.0**: Enhanced UI and mobile support
+Collaborative Filtering is a recommendation technique that predicts a user's preferences based on the preferences of similar users. In our platform:
 
-## 📞 Support
+- **Users**: Street food vendors (e.g., V1, V2)
+- **Items**: Suppliers (e.g., S1, S2)
+- **Ratings**: Average scores derived from parameters like freshness_rating, on_time_delivery, etc. (1-5 scale)
 
-- **Documentation**: [Builder.io Docs](https://www.builder.io/c/docs/projects)
-- **Email**: [Contact Support](#reach-support)
-- **Issues**: Create GitHub issue
-- **Community**: Join our Discord
+The model uses **user-based collaborative filtering** with K-Nearest Neighbors (KNN) and cosine similarity to identify vendors with similar preferences and predict ratings for unrated suppliers.
+
+### How the Model Works
+
+1. **Build User-Item Matrix**: Creates a table where rows are vendors, columns are suppliers, and cells contain ratings
+2. **Compute Similarities**: Uses KNN with cosine similarity to find similar vendors (neighbors)
+3. **Predict Missing Ratings**: For unrated suppliers, averages ratings from similar neighbors weighted by similarity scores
+4. **Personalized Rankings**: Outputs ranked supplier recommendations tailored to each vendor's preferences
+
+### Key Benefits
+
+- **Handles Sparsity**: Works effectively even when vendors haven't rated most suppliers
+- **Personalization**: Tailors recommendations based on individual vendor preferences
+- **Scalable**: Efficient algorithm that scales with platform growth
+- **Contextual**: Considers multiple rating parameters (freshness, delivery, pricing)
+
+### Data Structure
+
+The system processes rating data with the following structure:
+- `vendor_id`: Unique vendor identifier
+- `supplier_id`: Unique supplier identifier
+- `rating`: Computed average rating (1-5 scale)
+- Individual parameters: `freshness_rating`, `delivery_time_rating`, `price_rating`, etc.
+
+### Implementation Features
+
+- **Similarity Metrics**: Cosine similarity for measuring vendor preference alignment
+- **Neighbor Selection**: Dynamic K-nearest neighbors based on data availability
+- **Fallback Mechanisms**: Global average ratings when insufficient neighbor data exists
+- **Real-time Updates**: Continuous learning from new vendor ratings and feedback
+
+### Use Cases in the Platform
+
+1. **Search Result Ranking**: Prioritizes suppliers based on predicted vendor preferences
+2. **Recommendation Engine**: Suggests new suppliers vendor might like
+3. **Group Order Matching**: Finds vendors with similar preferences for collaborative buying
+4. **Quality Assurance**: Identifies suppliers consistently rated highly by similar vendors
 
 ## 📜 License
 
