@@ -102,13 +102,10 @@ export default function VoiceQuery({
 
   const processVoiceQuery = useMutation(api.voiceQuery.processVoiceQuery);
   const processEnhancedVoiceQuery = useMutation(api.voiceQuery.processEnhancedVoiceQuery);
-  const voiceHistory = useQuery(api.voiceQuery.getVoiceQueryHistory, { 
-    userRole, 
-    limit: 10 
-  });
-  const voiceStats = useQuery(api.voiceQuery.getVoiceQueryStats, { 
-    userRole 
-  });
+
+  // Temporarily disable history queries to avoid auth errors until Convex is updated
+  const voiceHistory = null; // useQuery(api.voiceQuery.getVoiceQueryHistory, { userRole, limit: 10 });
+  const voiceStats = null; // useQuery(api.voiceQuery.getVoiceQueryStats, { userRole });
 
   // Auto-stop recording after 30 seconds
   const MAX_RECORDING_TIME = VOICE_QUERY_CONFIG.MAX_RECORDING_TIME;
@@ -394,7 +391,7 @@ export default function VoiceQuery({
             originalText: "मुझे सब्जियों के लिए सप्लायर चाहिए",
             language: "hi",
             confidence: 0.87,
-            alternatives: ["मुझे सब्जी सप्लायर चाहिए", "सब्जियों के लिए दुकान चाहिए"],
+            alternatives: ["मुझे सब्जी सप्लायर चाहिए", "सब्���ियों के लिए दुकान चाहिए"],
             searchResults: mockSearchResults
           },
           {
@@ -897,7 +894,7 @@ export default function VoiceQuery({
       )}
 
       {/* Voice History */}
-      {showHistory && voiceHistory && (
+      {showHistory && (
         <div className="mt-6 border-t pt-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-gray-900">Voice History</h3>
@@ -911,49 +908,56 @@ export default function VoiceQuery({
             </button>
           </div>
           
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {voiceHistory.map((query, index) => (
-              <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="text-sm text-gray-900">
-                      {query.queryText}
+          {voiceHistory ? (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {voiceHistory.map((query, index) => (
+                <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-900">
+                        {query.queryText}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(query.createdAt).toLocaleString()} •
+                        {LANGUAGE_NAMES[query.language as keyof typeof LANGUAGE_NAMES]?.flag} {query.language} •
+                        {Math.round(query.confidence * 100)}% confidence
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date(query.createdAt).toLocaleString()} • 
-                      {LANGUAGE_NAMES[query.language as keyof typeof LANGUAGE_NAMES]?.flag} {query.language} • 
-                      {Math.round(query.confidence * 100)}% confidence
+                    <div className={`px-2 py-1 text-xs rounded ${
+                      query.queryType === 'search' ? 'bg-green-100 text-green-700' :
+                      query.queryType === 'filter' ? 'bg-blue-100 text-blue-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {query.queryType}
                     </div>
-                  </div>
-                  <div className={`px-2 py-1 text-xs rounded ${
-                    query.queryType === 'search' ? 'bg-green-100 text-green-700' :
-                    query.queryType === 'filter' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
-                    {query.queryType}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-sm">Voice history temporarily unavailable</div>
+              <div className="text-xs mt-1">Backend authentication is being updated</div>
+            </div>
+          )}
           
           {voiceStats && (
             <div className="mt-4 grid grid-cols-3 gap-4 text-center">
               <div className="bg-blue-50 rounded-lg p-3">
                 <div className="text-lg font-semibold text-blue-600">
-                  {voiceStats.totalQueries}
+                  {voiceStats?.totalQueries || 0}
                 </div>
                 <div className="text-xs text-blue-500">Total Queries</div>
               </div>
               <div className="bg-green-50 rounded-lg p-3">
                 <div className="text-lg font-semibold text-green-600">
-                  {voiceStats.avgConfidence}%
+                  {voiceStats?.avgConfidence || 0}%
                 </div>
                 <div className="text-xs text-green-500">Avg Confidence</div>
               </div>
               <div className="bg-purple-50 rounded-lg p-3">
                 <div className="text-lg font-semibold text-purple-600">
-                  {voiceStats.avgProcessingTime}ms
+                  {voiceStats?.avgProcessingTime || 0}ms
                 </div>
                 <div className="text-xs text-purple-500">Avg Speed</div>
               </div>
@@ -963,4 +967,4 @@ export default function VoiceQuery({
       )}
     </div>
   );
-} 
+}
