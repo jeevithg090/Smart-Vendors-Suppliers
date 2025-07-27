@@ -206,9 +206,7 @@ export default defineConfig({
       'react',
       'react-dom',
       'react-router-dom',
-      '@clerk/clerk-react',
-      'convex/react',
-      'convex/react-clerk'
+      'convex/react'
     ],
     exclude: ['@vite/client', '@vite/env']
   },
