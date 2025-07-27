@@ -29,6 +29,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const deleteNotification = useMutation(api.notifications.deleteNotification);
 
   const handleMarkAsRead = async (notificationId: Id<'notifications'>) => {
+    if (isDevelopmentUser) {
+      console.warn('Notifications not available in development mode');
+      return;
+    }
     try {
       await markAsRead({ userEmail: user?.email || '', notificationId });
     } catch (error) {
@@ -37,6 +41,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
 
   const handleMarkAllAsRead = async () => {
+    if (isDevelopmentUser) {
+      console.warn('Notifications not available in development mode');
+      return;
+    }
     try {
       await markAllAsRead({ userEmail: user?.email || '' });
     } catch (error) {
@@ -45,6 +53,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
 
   const handleDelete = async (notificationId: Id<'notifications'>) => {
+    if (isDevelopmentUser) {
+      console.warn('Notifications not available in development mode');
+      return;
+    }
     try {
       await deleteNotification({ userEmail: user?.email || '', notificationId });
     } catch (error) {
