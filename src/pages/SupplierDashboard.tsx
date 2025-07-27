@@ -746,6 +746,8 @@ export default function SupplierDashboard() {
               <p className="opacity-90">Process and fulfill vendor orders efficiently</p>
             </div>
             
+            <TrackingStatusBanner onDemoClick={() => setShowTrackingDemo(true)} />
+
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">Vendor Orders</h3>
               {orders === undefined ? (
