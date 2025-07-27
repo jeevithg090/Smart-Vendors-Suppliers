@@ -21,6 +21,7 @@ export default function VendorDashboard() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics' | 'recipes' | 'negotiations' | 'market'>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<string | null>(null);
+  const [showTrackingDemo, setShowTrackingDemo] = useState(false);
 
   // Get vendor data or create if doesn't exist
   const vendor = useQuery(api.vendors.getByUserId, 
