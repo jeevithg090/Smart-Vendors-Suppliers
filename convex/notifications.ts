@@ -154,33 +154,38 @@ export const deleteNotification = mutation({
 export const getUnreadCount = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    // Return 0 if no email provided (user not logged in)
-    if (!args.userEmail || args.userEmail.trim() === '') {
-      return 0;
+    try {
+      // Return 0 if no email provided (user not logged in)
+      if (!args.userEmail || args.userEmail.trim() === '') {
+        return 0;
+      }
+
+      // Validate user exists with our manual auth system
+      const vendor = await ctx.db
+        .query("vendors")
+        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .first();
+
+      const supplier = await ctx.db
+        .query("suppliers")
+        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .first();
+
+      if (!vendor && !supplier) {
+        return 0; // Return 0 instead of throwing error for non-authenticated users
+      }
+
+      const unreadNotifications = await ctx.db
+        .query("notifications")
+        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .filter((q) => q.eq(q.field("isRead"), false))
+        .collect();
+
+      return unreadNotifications.length;
+    } catch (error) {
+      console.error("Error in getUnreadCount:", error);
+      return 0; // Return 0 on any error to prevent UI crashes
     }
-
-    // Validate user exists with our manual auth system
-    const vendor = await ctx.db
-      .query("vendors")
-      .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
-      .first();
-
-    const supplier = await ctx.db
-      .query("suppliers")
-      .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
-      .first();
-
-    if (!vendor && !supplier) {
-      return 0; // Return 0 instead of throwing error for non-authenticated users
-    }
-
-    const unreadNotifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
-      .filter((q) => q.eq(q.field("isRead"), false))
-      .collect();
-
-    return unreadNotifications.length;
   },
 });
 
