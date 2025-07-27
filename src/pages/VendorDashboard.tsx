@@ -13,7 +13,7 @@ import FinancialAnalytics from '../components/FinancialAnalytics';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'enhancedSearch' | 'groupOrders' | 'orders' | 'analytics'>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Get vendor data or create if doesn't exist
