@@ -307,6 +307,10 @@ export const getImageAnalysisHistory = query({
     limit: v.optional(v.number())
   },
   handler: async (ctx, args) => {
+    // For now, allow access without authentication for demo purposes
+    // In production, you would check: const identity = await ctx.auth.getUserIdentity();
+    // if (!identity) throw new Error("Unauthorized");
+
     const results = await ctx.db
       .query("imageAnalysis")
       .filter((q) => q.eq(q.field("userId"), args.userId))
@@ -544,6 +548,10 @@ export const getVoiceQueryStats = query({
     userRole: v.optional(v.string())
   },
   handler: async (ctx, args) => {
+    // For now, allow access without authentication for demo purposes
+    // In production, you would check: const identity = await ctx.auth.getUserIdentity();
+    // if (!identity) throw new Error("Unauthorized");
+
     let query = ctx.db.query("voiceQueries");
     
     if (args.userId) {
