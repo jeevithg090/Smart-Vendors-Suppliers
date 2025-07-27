@@ -485,10 +485,10 @@ export default function VendorDashboard() {
                   Vendor Dashboard
                 </h1>
                 <p className="text-gray-600">
-                  Welcome back, {vendor.ownerName}!
+                  Welcome back, {displayVendor.ownerName}!
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {vendor.businessName} • {vendor.location.city}, {vendor.location.state}
+                  {displayVendor.businessName} • {displayVendor.location.city}, {displayVendor.location.state}
                 </p>
               </div>
               <button
