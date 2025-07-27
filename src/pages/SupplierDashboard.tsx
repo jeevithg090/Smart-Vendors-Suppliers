@@ -408,7 +408,7 @@ export default function SupplierDashboard() {
             <div className="flex items-center space-x-4">
               <div className="text-sm text-white/90">
                 <div className="flex items-center">
-                  <span className="text-yellow-300">���</span>
+                  <span className="text-yellow-300">★</span>
                   <span className="ml-1">{supplierProfile?.trustScore?.toFixed(1)}</span>
                   {supplierProfile?.isVerified && (
                     <span className="ml-2 bg-white/20 text-white px-2 py-0.5 rounded-full text-xs">Verified</span>
@@ -1246,7 +1246,7 @@ function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClos
           <div className="font-semibold mb-1">Items:</div>
           <ul className="list-disc pl-5 text-sm">
             {order.items?.map((item: any, idx: number) => (
-              <li key={idx}>{item.itemName} × {item.quantity} @ ₹{item.priceAtOrder ?? item.pricePerUnit ?? ''}</li>
+              <li key={idx}>{(item as any).itemName} × {(item as any).quantity} @ ₹{(item as any).priceAtOrder ?? (item as any).pricePerUnit ?? ''}</li>
             ))}
           </ul>
         </div>
