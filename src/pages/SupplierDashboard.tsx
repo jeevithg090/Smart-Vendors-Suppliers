@@ -12,6 +12,7 @@ import SmartPricingEngine from '../components/SmartPricingEngine';
 import InventoryAutomation from '../components/InventoryAutomation';
 import QualityAssurance from '../components/QualityAssurance';
 import SupplierLoyalty from '../components/SupplierLoyalty';
+import OrderTracking from '../components/OrderTracking';
 
 interface InventoryItem {
   _id: string;
