@@ -209,7 +209,7 @@ export default function SupplierNegotiationHub({ vendorId }: Props) {
     justification: ''
   });
 
-  const suppliers = useQuery(api.suppliers.getAll);
+  const suppliers = useQuery(api.suppliers.listAllSuppliers);
 
   const submitNegotiation = () => {
     const negotiation: NegotiationRequest = {
