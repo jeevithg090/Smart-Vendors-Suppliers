@@ -3,6 +3,7 @@ import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useState, useEffect } from 'react'
 import InventoryForecast from '../components/InventoryForecast'
+import FSSAIVerification from '../components/FSSAIVerification'
 
 interface InventoryItem {
   _id: string;
@@ -653,41 +654,52 @@ export default function SupplierDashboard() {
 
         {/* Profile Tab */}
         {activeTab === 'profile' && supplierProfile && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Supplier Profile</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
-                <div className="text-gray-900">{supplierProfile.businessName}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Trust Score</label>
-                <div className="flex items-center">
-                  <span className="text-yellow-500 mr-1">★</span>
-                  <span className="text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-medium text-gray-800 mb-4">Supplier Profile</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                  <div className="text-gray-900">{supplierProfile.businessName}</div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
-                <div className="flex flex-wrap gap-2">
-                  {supplierProfile.categories.map(category => (
-                    <span key={category} className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-sm">
-                      {category}
-                    </span>
-                  ))}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Trust Score</label>
+                  <div className="flex items-center">
+                    <span className="text-yellow-500 mr-1">★</span>
+                    <span className="text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Verification Status</label>
-                <span className={`px-2 py-1 rounded-full text-sm ${
-                  supplierProfile.isVerified 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {supplierProfile.isVerified ? 'Verified' : 'Pending Verification'}
-                </span>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
+                  <div className="flex flex-wrap gap-2">
+                    {supplierProfile.categories.map(category => (
+                      <span key={category} className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-sm">
+                        {category}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Verification Status</label>
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    supplierProfile.isVerified 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {supplierProfile.isVerified ? 'Verified' : 'Pending Verification'}
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* FSSAI Verification Component */}
+            <FSSAIVerification 
+              supplierId={supplierProfile._id as any}
+              onVerificationComplete={(status) => {
+                // Refresh the page to update verification status
+                window.location.reload();
+              }}
+            />
           </div>
         )}
       </div>

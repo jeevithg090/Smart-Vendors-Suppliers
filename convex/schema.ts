@@ -59,6 +59,18 @@ export default defineSchema({
     categories: v.array(v.string()),
     fssaiCertified: v.boolean(),
     fssaiLicense: v.optional(v.string()),
+    fssaiVerificationStatus: v.optional(v.string()), // "pending", "verified", "rejected", "expired", "invalid"
+    fssaiVerificationDate: v.optional(v.number()),
+    fssaiCertificateData: v.optional(v.object({
+      licenseNumber: v.string(),
+      businessName: v.string(),
+      ownerName: v.string(),
+      address: v.string(),
+      validityDate: v.string(),
+      category: v.string(),
+      confidence: v.number()
+    })),
+    fssaiVerificationError: v.optional(v.string()),
     isVerified: v.boolean(),
     trustScore: v.number(),
     businessHours: v.object({

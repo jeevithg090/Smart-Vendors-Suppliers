@@ -3,6 +3,7 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import TrustScoreDisplay from './TrustScoreDisplay';
 import ReviewDisplay from './ReviewDisplay';
+import FSSAIVerification from './FSSAIVerification';
 
 interface SupplierDetailsProps {
   supplierId: string;
@@ -362,6 +363,18 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* FSSAI Verification Component */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">FSSAI Certificate Verification</h3>
+                <FSSAIVerification 
+                  supplierId={supplierId as any}
+                  onVerificationComplete={(status) => {
+                    // Refresh the page or update the supplier details
+                    window.location.reload();
+                  }}
+                />
               </div>
             </div>
           )}
