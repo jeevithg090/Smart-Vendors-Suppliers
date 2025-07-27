@@ -12,7 +12,7 @@ import SmartPricingEngine from '../components/SmartPricingEngine';
 import InventoryAutomation from '../components/InventoryAutomation';
 import QualityAssurance from '../components/QualityAssurance';
 import SupplierLoyalty from '../components/SupplierLoyalty';
-import OrderTracking from '../components/OrderTracking';
+import SimpleOrderTracking from '../components/SimpleOrderTracking';
 
 interface InventoryItem {
   _id: string;
@@ -1051,7 +1051,7 @@ export default function SupplierDashboard() {
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {supplierProfile.isVerified ? '��� Verified Store' : '⏳ Pending Verification'}
+                      {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
                     </span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
