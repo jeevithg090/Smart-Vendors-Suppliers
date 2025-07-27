@@ -408,7 +408,7 @@ export default function SupplierDashboard() {
             <div className="flex items-center space-x-4">
               <div className="text-sm text-white/90">
                 <div className="flex items-center">
-                  <span className="text-yellow-300">★</span>
+                  <span className="text-yellow-300">���</span>
                   <span className="ml-1">{supplierProfile?.trustScore?.toFixed(1)}</span>
                   {supplierProfile?.isVerified && (
                     <span className="ml-2 bg-white/20 text-white px-2 py-0.5 rounded-full text-xs">Verified</span>
@@ -1240,7 +1240,7 @@ function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClos
           <div className="font-medium mb-1">Order #{order._id?.slice ? order._id.slice(-8) : ''}</div>
           <div className="text-sm text-gray-600 mb-1">Status: <span className="font-semibold">{order.status}</span></div>
           <div className="text-sm text-gray-600 mb-1">Placed: {order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</div>
-          <div className="text-sm text-gray-600 mb-1">Total: ₹{order.totalAmount ?? order.totalCost ?? ''}</div>
+          <div className="text-sm text-gray-600 mb-1">Total: ₹{(order as any).totalAmount ?? (order as any).totalCost ?? ''}</div>
         </div>
         <div className="mb-4">
           <div className="font-semibold mb-1">Items:</div>
