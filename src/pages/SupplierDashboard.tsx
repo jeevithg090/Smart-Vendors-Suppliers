@@ -92,6 +92,13 @@ export default function SupplierDashboard() {
       setIsProfileSetup(true)
     } else if (supplierProfile) {
       setIsProfileSetup(false)
+      // Initialize edit form with current profile data
+      setEditProfileForm({
+        businessName: supplierProfile.businessName || '',
+        deliveryRadius: supplierProfile.deliveryRadius || 10,
+        minimumOrder: supplierProfile.minimumOrder || 500,
+        categories: supplierProfile.categories || []
+      })
     }
   }, [supplierProfile])
 
@@ -502,7 +509,7 @@ export default function SupplierDashboard() {
                     <div className="text-2xl font-bold text-yellow-600">{stats.lowStockItems}</div>
                     <div className="text-sm text-gray-600">Low Stock Alerts</div>
                   </div>
-                  <div className="text-3xl text-yellow-500">���️</div>
+                  <div className="text-3xl text-yellow-500">⚠️</div>
                 </div>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500">
