@@ -19,7 +19,7 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
     e.preventDefault();
     setError('');
 
-    console.log('Signup attempt:', { email, firstName, lastName, role, passwordLength: password.length });
+    console.log('Signup attempt:', { email, firstName, lastName, role: preSelectedRole, passwordLength: password.length });
 
     if (!email || !password || !firstName) {
       setError('Please fill in all required fields');
@@ -32,7 +32,7 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
     }
 
     try {
-      const success = await signup(email, password, firstName, lastName, role);
+      const success = await signup(email, password, firstName, lastName, preSelectedRole);
       console.log('Signup result:', success);
       if (!success) {
         setError('Signup failed. Please try again.');
