@@ -36,9 +36,6 @@ export const authenticateUser = mutation({
       throw new Error("Invalid credentials");
     }
 
-    // Check if user exists (for login) or create new user (for signup)
-    let user;
-    
     if (args.isSignup) {
       // Check if user already exists in the role they're trying to sign up for
       if (args.role === "vendor") {
@@ -50,19 +47,8 @@ export const authenticateUser = mutation({
         if (existingVendor) {
           throw new Error("A vendor account with this email already exists");
         }
-      } else {
-        const existingSupplier = await ctx.db
-          .query("suppliers")
-          .withIndex("by_user", (q) => q.eq("userId", args.email))
-          .first();
 
-        if (existingSupplier) {
-          throw new Error("A supplier account with this email already exists");
-        }
-      }
-
-      // Create new user profile based on role
-      if (args.role === "vendor") {
+        // Create new vendor
         const vendorData = {
           userId: args.email,
           businessName: `${args.firstName || 'New'} Vendor`,
@@ -91,9 +77,28 @@ export const authenticateUser = mutation({
         };
 
         const vendorId = await ctx.db.insert("vendors", vendorData);
-        user = { ...vendorData, _id: vendorId, role: "vendor" };
+        return {
+          success: true,
+          user: {
+            id: vendorData.userId,
+            email: vendorData.email,
+            firstName: vendorData.ownerName?.split(' ')[0] || '',
+            lastName: vendorData.ownerName?.split(' ').slice(1).join(' ') || '',
+            role: "vendor",
+            profileId: vendorId
+          }
+        };
       } else {
-        // Create supplier data object with only valid supplier fields
+        const existingSupplier = await ctx.db
+          .query("suppliers")
+          .withIndex("by_user", (q) => q.eq("userId", args.email))
+          .first();
+
+        if (existingSupplier) {
+          throw new Error("A supplier account with this email already exists");
+        }
+
+        // Create new supplier - only include fields that exist in supplier schema
         const supplierData = {
           userId: args.email,
           businessName: `${args.firstName || 'New'} Supplier`,
@@ -123,7 +128,17 @@ export const authenticateUser = mutation({
         };
 
         const supplierId = await ctx.db.insert("suppliers", supplierData);
-        user = { ...supplierData, _id: supplierId, role: "supplier" };
+        return {
+          success: true,
+          user: {
+            id: supplierData.userId,
+            email: supplierData.email,
+            firstName: supplierData.ownerName?.split(' ')[0] || '',
+            lastName: supplierData.ownerName?.split(' ').slice(1).join(' ') || '',
+            role: "supplier",
+            profileId: supplierId
+          }
+        };
       }
     } else {
       // Login - find existing user and check if they have the requested role
