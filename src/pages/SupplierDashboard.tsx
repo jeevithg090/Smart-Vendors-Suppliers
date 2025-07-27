@@ -224,6 +224,33 @@ export default function SupplierDashboard() {
     }
   }
 
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!supplierProfile?._id) return
+
+    try {
+      await updateSupplierProfile({
+        id: supplierProfile._id,
+        businessName: editProfileForm.businessName,
+        deliveryRadius: editProfileForm.deliveryRadius,
+        minimumOrder: editProfileForm.minimumOrder,
+        categories: editProfileForm.categories
+      })
+      setEditingProfile(false)
+    } catch (error) {
+      console.error('Error updating supplier profile:', error)
+    }
+  }
+
+  const handleCategoryToggle = (category: string) => {
+    setEditProfileForm(prev => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter(c => c !== category)
+        : [...prev.categories, category]
+    }))
+  }
+
   if (isProfileSetup) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -518,7 +545,7 @@ export default function SupplierDashboard() {
                     <div className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</div>
                     <div className="text-sm text-gray-600">Total Earnings</div>
                   </div>
-                  <div className="text-3xl text-purple-500">💰</div>
+                  <div className="text-3xl text-purple-500">����</div>
                 </div>
               </div>
             </div>
