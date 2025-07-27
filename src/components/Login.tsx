@@ -12,6 +12,12 @@ export default function Login({ onSwitchToSignup }: LoginProps) {
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
 
+  const handleRoleChange = (newRole: 'vendor' | 'supplier') => {
+    console.log('Role changing from', role, 'to', newRole);
+    setRole(newRole);
+    setError(''); // Clear any previous errors
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
