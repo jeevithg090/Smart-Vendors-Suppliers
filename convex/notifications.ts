@@ -1,6 +1,29 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
+
+// Helper function to validate user authentication
+async function validateUser(ctx: any, userEmail: string) {
+  // Check for empty email
+  if (!userEmail || userEmail.trim() === '') {
+    throw new Error("Not authenticated");
+  }
+
+  const vendor = await ctx.db
+    .query("vendors")
+    .withIndex("by_user", (q: any) => q.eq("userId", userEmail))
+    .first();
+
+  const supplier = await ctx.db
+    .query("suppliers")
+    .withIndex("by_user", (q: any) => q.eq("userId", userEmail))
+    .first();
+
+  if (!vendor && !supplier) {
+    throw new Error("Not authenticated");
+  }
+
+  return { userEmail, role: vendor ? "vendor" : "supplier" };
+}
 
 // Create a notification
 export const createNotification = mutation({
@@ -21,14 +44,11 @@ export const createNotification = mutation({
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const notificationId = await ctx.db.insert("notifications", {
-      userId: identity.subject,
+      userId: identity.userEmail,
       userType: args.userType,
       type: args.type,
       title: args.title,
@@ -48,15 +68,12 @@ export const createNotification = mutation({
 export const getUserNotifications = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const notifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user", (q) => q.eq("userId", identity.userEmail))
       .order("desc")
       .collect();
 
@@ -66,23 +83,20 @@ export const getUserNotifications = query({
 
 // Mark notification as read
 export const markNotificationAsRead = mutation({
-  args: { 
+  args: {
     userEmail: v.string(), // User's email for authentication
-    notificationId: v.id("notifications") 
+    notificationId: v.id("notifications")
   },
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
       throw new Error("Notification not found");
     }
 
-    if (notification.userId !== identity.subject) {
+    if (notification.userId !== identity.userEmail) {
       throw new Error("Not authorized to mark this notification as read");
     }
 
@@ -95,15 +109,12 @@ export const markNotificationAsRead = mutation({
 export const markAllNotificationsAsRead = mutation({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const unreadNotifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user", (q) => q.eq("userId", identity.userEmail))
       .filter((q) => q.eq(q.field("isRead"), false))
       .collect();
 
@@ -122,18 +133,15 @@ export const deleteNotification = mutation({
     notificationId: v.id("notifications") 
   },
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
       throw new Error("Notification not found");
     }
 
-    if (notification.userId !== identity.subject) {
+    if (notification.userId !== identity.userEmail) {
       throw new Error("Not authorized to delete this notification");
     }
 
@@ -146,19 +154,38 @@ export const deleteNotification = mutation({
 export const getUnreadCount = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
+    try {
+      // Return 0 if no email provided (user not logged in)
+      if (!args.userEmail || args.userEmail.trim() === '') {
+        return 0;
+      }
+
+      // Validate user exists with our manual auth system
+      const vendor = await ctx.db
+        .query("vendors")
+        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .first();
+
+      const supplier = await ctx.db
+        .query("suppliers")
+        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .first();
+
+      if (!vendor && !supplier) {
+        return 0; // Return 0 instead of throwing error for non-authenticated users
+      }
+
+      const unreadNotifications = await ctx.db
+        .query("notifications")
+        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .filter((q) => q.eq(q.field("isRead"), false))
+        .collect();
+
+      return unreadNotifications.length;
+    } catch (error) {
+      console.error("Error in getUnreadCount:", error);
+      return 0; // Return 0 on any error to prevent UI crashes
     }
-
-    const unreadNotifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
-      .filter((q) => q.eq(q.field("isRead"), false))
-      .collect();
-
-    return unreadNotifications.length;
   },
 });
 

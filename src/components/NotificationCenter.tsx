@@ -15,16 +15,24 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 }) => {
   const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  
-  const notifications = useQuery(api.notifications.getUserNotifications, {
-    userEmail: user?.email || ''
-  });
+
+  // Skip query for development mode users (those with profileId starting with role_timestamp)
+  const isDevelopmentUser = user?.profileId?.includes('_') && /^\w+_\d+$/.test(user.profileId);
+
+  const notifications = useQuery(
+    api.notifications.getUserNotifications,
+    user?.email && !isDevelopmentUser ? { userEmail: user.email } : "skip"
+  );
   
   const markAsRead = useMutation(api.notifications.markNotificationAsRead);
   const markAllAsRead = useMutation(api.notifications.markAllNotificationsAsRead);
   const deleteNotification = useMutation(api.notifications.deleteNotification);
 
   const handleMarkAsRead = async (notificationId: Id<'notifications'>) => {
+    if (isDevelopmentUser) {
+      console.warn('Notifications not available in development mode');
+      return;
+    }
     try {
       await markAsRead({ userEmail: user?.email || '', notificationId });
     } catch (error) {
@@ -33,6 +41,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
 
   const handleMarkAllAsRead = async () => {
+    if (isDevelopmentUser) {
+      console.warn('Notifications not available in development mode');
+      return;
+    }
     try {
       await markAllAsRead({ userEmail: user?.email || '' });
     } catch (error) {
@@ -41,6 +53,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
 
   const handleDelete = async (notificationId: Id<'notifications'>) => {
+    if (isDevelopmentUser) {
+      console.warn('Notifications not available in development mode');
+      return;
+    }
     try {
       await deleteNotification({ userEmail: user?.email || '', notificationId });
     } catch (error) {
@@ -272,9 +288,14 @@ export const NotificationBell: React.FC<{
   onClick: () => void;
 }> = ({ onClick }) => {
   const { user } = useAuth();
-  const unreadCount = useQuery(api.notifications.getUnreadCount, {
-    userEmail: user?.email || ''
-  });
+
+  // Skip query for development mode users (those with profileId starting with role_timestamp)
+  const isDevelopmentUser = user?.profileId?.includes('_') && /^\w+_\d+$/.test(user.profileId);
+
+  const unreadCount = useQuery(
+    api.notifications.getUnreadCount,
+    user?.email && !isDevelopmentUser ? { userEmail: user.email } : "skip"
+  );
 
   return (
     <button

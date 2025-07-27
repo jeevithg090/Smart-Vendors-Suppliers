@@ -101,9 +101,7 @@ export default defineConfig({
             if (id.includes('react-router')) {
               return 'router-vendor'
             }
-            if (id.includes('@clerk/clerk-react')) {
-              return 'clerk-vendor'
-            }
+
             if (id.includes('convex')) {
               return 'convex-vendor'
             }
@@ -208,9 +206,7 @@ export default defineConfig({
       'react',
       'react-dom',
       'react-router-dom',
-      '@clerk/clerk-react',
-      'convex/react',
-      'convex/react-clerk'
+      'convex/react'
     ],
     exclude: ['@vite/client', '@vite/env']
   },
