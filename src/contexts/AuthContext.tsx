@@ -55,6 +55,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string, role: 'vendor' | 'supplier'): Promise<boolean> => {
     setIsLoading(true);
 
+    // Check if we're in development mode without proper Convex setup
+    const convexUrl = import.meta.env.VITE_CONVEX_URL;
+    const isDevMode = !convexUrl || convexUrl === 'https://placeholder.convex.cloud' || convexUrl.includes('happy-mammal-123');
+
+    if (isDevMode) {
+      console.warn('Development mode: Using local authentication fallback');
+      // For development, create a mock user immediately
+      const userData: User = {
+        id: email,
+        email,
+        firstName: 'Demo',
+        lastName: 'User',
+        role,
+        profileId: `${role}_${Date.now()}`
+      };
+      setUser(userData);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+      setIsLoading(false);
+      return true;
+    }
+
     try {
       const result = await withTimeout(
         authenticateUser({
@@ -63,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role,
           isSignup: false
         }),
-        8000 // 8 second timeout
+        3000 // Reduced to 3 second timeout for faster feedback
       );
 
       if (result.success && result.user) {
@@ -87,7 +108,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Login error:', error);
 
       // Fallback for development mode when Convex is not connected or times out
-      // Check if user exists in localStorage for development
       const savedUser = localStorage.getItem('auth_user');
       if (savedUser && (error.message && (error.message.includes('network') || error.message.includes('connection') || error.message.includes('timeout') || error.message.includes('timed out')))) {
         try {
