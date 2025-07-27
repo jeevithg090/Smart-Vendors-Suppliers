@@ -879,3 +879,11 @@ export const listAllSuppliers = query({
     return await ctx.db.query("suppliers").collect();
   },
 });
+
+// Get all suppliers (alias for compatibility)
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("suppliers").collect();
+  },
+});
