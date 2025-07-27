@@ -909,7 +909,7 @@ export default function VoiceQuery({
           </div>
           
           <div className="space-y-2 max-h-60 overflow-y-auto">
-            {voiceHistory.map((query, index) => (
+            {voiceHistory?.map((query, index) => (
               <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -938,19 +938,19 @@ export default function VoiceQuery({
             <div className="mt-4 grid grid-cols-3 gap-4 text-center">
               <div className="bg-blue-50 rounded-lg p-3">
                 <div className="text-lg font-semibold text-blue-600">
-                  {voiceStats.totalQueries}
+                  {voiceStats?.totalQueries || 0}
                 </div>
                 <div className="text-xs text-blue-500">Total Queries</div>
               </div>
               <div className="bg-green-50 rounded-lg p-3">
                 <div className="text-lg font-semibold text-green-600">
-                  {voiceStats.avgConfidence}%
+                  {voiceStats?.avgConfidence || 0}%
                 </div>
                 <div className="text-xs text-green-500">Avg Confidence</div>
               </div>
               <div className="bg-purple-50 rounded-lg p-3">
                 <div className="text-lg font-semibold text-purple-600">
-                  {voiceStats.avgProcessingTime}ms
+                  {voiceStats?.avgProcessingTime || 0}ms
                 </div>
                 <div className="text-xs text-purple-500">Avg Speed</div>
               </div>
