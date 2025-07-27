@@ -159,10 +159,12 @@ export default function EnhancedSupplierSearch({
     };
   };
 
-  // Perform search when query or filters change
+  // Perform search when query, filters, or Convex data changes
   useEffect(() => {
-    performSearch();
-  }, [debouncedQuery, searchState.filters, searchState.sortBy, searchState.currentPage]);
+    if (convexSuppliers !== undefined) { // Wait for Convex data to load
+      performSearch();
+    }
+  }, [debouncedQuery, searchState.filters, searchState.sortBy, searchState.currentPage, convexSuppliers]);
 
   const performSearch = async () => {
     setSearchState(prev => ({ ...prev, isLoading: true, error: null }));
