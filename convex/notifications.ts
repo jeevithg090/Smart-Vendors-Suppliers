@@ -149,6 +149,11 @@ export const deleteNotification = mutation({
 export const getUnreadCount = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
+    // Return 0 if no email provided (user not logged in)
+    if (!args.userEmail || args.userEmail.trim() === '') {
+      return 0;
+    }
+
     // Validate user exists with our manual auth system
     const vendor = await ctx.db
       .query("vendors")
@@ -161,7 +166,7 @@ export const getUnreadCount = query({
       .first();
 
     if (!vendor && !supplier) {
-      throw new Error("Not authenticated");
+      return 0; // Return 0 instead of throwing error for non-authenticated users
     }
 
     const unreadNotifications = await ctx.db
