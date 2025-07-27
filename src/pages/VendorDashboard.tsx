@@ -433,7 +433,7 @@ export default function VendorDashboard() {
               Back to Dashboard
             </button>
           </div>
-          {vendor && <FinancialAnalytics vendorId={vendor._id} />}
+          {displayVendor && <FinancialAnalytics vendorId={displayVendor._id} />}
         </div>
       </PageLayout>
     );
