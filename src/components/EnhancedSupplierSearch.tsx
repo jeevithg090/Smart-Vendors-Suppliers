@@ -286,6 +286,16 @@ export default function EnhancedSupplierSearch({
     }));
   };
 
+  const handleSemanticSearch = (query: string, analysis?: any) => {
+    setSearchState(prev => ({
+      ...prev,
+      query,
+      isSemanticSearch: true,
+      semanticAnalysis: analysis,
+      currentPage: 0
+    }));
+  };
+
   const loadNextPage = () => {
     if (searchState.currentPage < searchState.totalPages - 1) {
       setSearchState(prev => ({
