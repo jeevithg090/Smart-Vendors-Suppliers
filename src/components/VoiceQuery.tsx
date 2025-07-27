@@ -257,8 +257,19 @@ export default function VoiceQuery({
       
       // Validate audio duration (be more lenient for user experience)
       const audioDuration = recordingTime;
-      if (audioDuration < 200) { // Reduced from 500ms to 200ms for better UX
-        throw new Error('Recording too short. Please try speaking a bit longer.');
+
+      // Very lenient validation - only block extremely short recordings
+      if (audioDuration < 100) { // Just 100ms minimum to avoid obvious mistakes
+        console.warn('Very short recording detected:', audioDuration, 'ms');
+        setTranscriptionText('Recording was very brief. Please try speaking a bit longer for better results.');
+        setError('Please try holding the record button longer and speak clearly.');
+        return;
+      }
+
+      // Warn for short recordings but still process them
+      if (audioDuration < 500) {
+        console.warn('Short recording detected:', audioDuration, 'ms - processing anyway');
+        setTranscriptionText('Processing short recording...');
       }
 
       // Convert blob to array for processing
