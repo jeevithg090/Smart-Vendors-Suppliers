@@ -9,6 +9,9 @@ import SupplierSearch from '../components/SupplierSearch';
 import VoiceQuery from '../components/VoiceQuery';
 import { OrderManager } from '../components/OrderManager';
 import FinancialAnalytics from '../components/FinancialAnalytics';
+import RecipeCostingCalculator from '../components/RecipeCostingCalculator';
+import SupplierNegotiationHub from '../components/SupplierNegotiationHub';
+import MarketIntelligence from '../components/MarketIntelligence';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
