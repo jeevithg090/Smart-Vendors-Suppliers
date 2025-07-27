@@ -810,3 +810,11 @@ Focus on Indian market accuracy and practical recommendations for street food ve
     return forecastWithDate;
   },
 });
+
+// List all suppliers (for marketplace filter)
+export const listAllSuppliers = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("suppliers").collect();
+  },
+});

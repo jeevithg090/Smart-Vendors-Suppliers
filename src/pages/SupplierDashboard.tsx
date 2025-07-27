@@ -2,9 +2,12 @@ import { useAuth } from '../contexts/AuthContext'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useState, useEffect } from 'react'
+import type { Id } from '../../convex/_generated/dataModel';
 import InventoryForecast from '../components/InventoryForecast'
 import FSSAIVerification from '../components/FSSAIVerification'
 import VoiceQuery from '../components/VoiceQuery'
+import { NotificationBell, NotificationCenter } from '../components/NotificationCenter';
+import SupplierAnalytics from '../components/SupplierAnalytics';
 
 interface InventoryItem {
   _id: string;
@@ -39,8 +42,11 @@ interface SupplierProfile {
 
 export default function SupplierDashboard() {
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'orders' | 'forecast' | 'profile'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'orders' | 'forecast' | 'profile' | 'analytics'>('overview')
   const [isProfileSetup, setIsProfileSetup] = useState(false)
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Get supplier profile by user ID
   const supplierProfile = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' })
@@ -50,11 +56,10 @@ export default function SupplierDashboard() {
     supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
   )
   
-  // Get orders for this supplier - temporarily disabled until backend function is deployed
-  // const orders = useQuery(api.orders.getOrdersBySupplier,
-  //   supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
-  // )
-  const orders = [] // Temporary placeholder
+  // Get orders for this supplier
+  const orders = useQuery(api.orders.getOrdersBySupplier,
+    supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
+  )
 
   // Get supplier forecasts
   const forecasts = useQuery(api.suppliers.getSupplierForecasts, 
@@ -64,6 +69,8 @@ export default function SupplierDashboard() {
   // Create supplier profile mutation
   const createSupplier = useMutation(api.suppliers.create)
   const addInventoryItem = useMutation(api.inventory.addInventoryItem)
+  const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
+  const [updatingOrderId, setUpdatingOrderId] = useState<Id<'orders'> | null>(null);
 
   // Check if supplier profile exists, if not show setup
   useEffect(() => {
@@ -76,13 +83,19 @@ export default function SupplierDashboard() {
 
   // Calculate stats
   const stats = {
-    activeOrders: orders?.filter(order => order.status === 'confirmed' || order.status === 'processing').length || 0,
+    activeOrders: orders?.filter((order: Order) => order.status === 'confirmed' || order.status === 'processing').length || 0,
     totalOrders: orders?.length || 0,
-    availableProducts: inventory?.filter(item => item.isAvailable).length || 0,
+    availableProducts: inventory?.filter((item: InventoryItem) => item.isAvailable).length || 0,
     totalProducts: inventory?.length || 0,
-    lowStockItems: inventory?.filter(item => item.currentStock < 10).length || 0,
-    totalRevenue: orders?.reduce((sum, order) => sum + order.totalAmount, 0) || 0
+    lowStockItems: inventory?.filter((item: InventoryItem) => item.currentStock < 10).length || 0,
+    totalRevenue: orders?.reduce((sum: number, order: Order) => sum + order.totalAmount, 0) || 0
   }
+  // Onboarding effect for first-time users
+  useEffect(() => {
+    if (supplierProfile && stats.totalOrders === 0) {
+      setShowOnboarding(true);
+    }
+  }, [supplierProfile, stats.totalOrders]);
 
   // Profile setup form state
   const [profileForm, setProfileForm] = useState({
@@ -334,6 +347,7 @@ export default function SupplierDashboard() {
                 </div>
               </div>
               <VoiceQuery userRole="supplier" className="mr-4" />
+              <NotificationBell onClick={() => setNotificationOpen(true)} />
               <button
                 onClick={logout}
                 className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"
@@ -345,16 +359,40 @@ export default function SupplierDashboard() {
         </div>
       </header>
 
+      <NotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} />
+
       <div className="max-w-7xl mx-auto p-6">
+        {/* Onboarding Banner */}
+        {showOnboarding && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 animate-fade-in">
+            <div className="flex items-center">
+              <div className="text-blue-500 mr-3 text-2xl">👋</div>
+              <div>
+                <h3 className="text-blue-800 font-medium">Welcome to Smart Suppliers!</h3>
+                <p className="text-blue-700 text-sm">
+                  Get started by adding your first inventory item, updating your profile, or viewing analytics. Need help? Click the <span className="font-bold">Help</span> button in the menu.
+                </p>
+                <button
+                  onClick={() => setShowOnboarding(false)}
+                  className="mt-2 text-blue-800 hover:text-blue-900 font-medium text-sm underline"
+                  aria-label="Dismiss onboarding banner"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Navigation Tabs */}
         <div className="bg-white rounded-lg shadow-sm mb-6">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
+            <nav className="-mb-px flex space-x-8" aria-label="Supplier dashboard navigation">
               {[
                 { id: 'overview', label: 'Overview', icon: '📊' },
                 { id: 'inventory', label: 'Inventory', icon: '📦' },
                 { id: 'orders', label: 'Orders', icon: '🛒' },
                 { id: 'forecast', label: 'AI Forecast', icon: '🤖' },
+                { id: 'analytics', label: 'Analytics', icon: '📈' },
                 { id: 'profile', label: 'Profile', icon: '👤' }
               ].map(tab => (
                 <button
@@ -425,7 +463,7 @@ export default function SupplierDashboard() {
                   <span className="text-sm text-gray-500">Next 7 days</span>
                 </div>
                 <div className="space-y-3">
-                  {forecasts.slice(0, 3).map((forecast, index) => (
+                  {forecasts.slice(0, 3).map((forecast: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
                       <div>
                         <div className="font-medium text-gray-900">{forecast.item}</div>
@@ -463,7 +501,7 @@ export default function SupplierDashboard() {
               <h3 className="text-lg font-medium text-gray-800 mb-4">Recent Orders</h3>
               {orders && orders.length > 0 ? (
                 <div className="space-y-3">
-                  {orders.slice(0, 5).map(order => (
+                  {orders.slice(0, 5).map((order: Order) => (
                     <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <div className="font-medium">Order #{order._id.slice(-6)}</div>
@@ -579,7 +617,7 @@ export default function SupplierDashboard() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {inventory.map(item => (
+                      {inventory.map((item: InventoryItem) => (
                         <tr key={item._id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.itemName}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.category}</td>
@@ -615,9 +653,13 @@ export default function SupplierDashboard() {
         {activeTab === 'orders' && (
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-800 mb-4">All Orders</h3>
-            {orders && orders.length > 0 ? (
+            {orders === undefined ? (
+              <div className="flex justify-center items-center p-8 animate-fade-in">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : orders.length > 0 ? (
               <div className="space-y-4">
-                {orders.map(order => (
+                {orders.map((order: Order) => (
                   <div key={order._id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
@@ -638,8 +680,55 @@ export default function SupplierDashboard() {
                         </span>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 mb-2">
                       {order.items.length} items ordered
+                    </div>
+                    <div className="flex space-x-2">
+                      {order.status === 'pending' && (
+                        <button
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs disabled:opacity-50"
+                          disabled={updatingOrderId === order._id}
+                          onClick={async () => {
+                            setUpdatingOrderId(order._id);
+                            await updateOrderStatus({ orderId: order._id, status: 'confirmed' });
+                            setUpdatingOrderId(null);
+                          }}
+                        >
+                          {updatingOrderId === order._id ? 'Confirming...' : 'Confirm'}
+                        </button>
+                      )}
+                      {order.status === 'confirmed' && (
+                        <button
+                          className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs disabled:opacity-50"
+                          disabled={updatingOrderId === order._id}
+                          onClick={async () => {
+                            setUpdatingOrderId(order._id);
+                            await updateOrderStatus({ orderId: order._id, status: 'processing' });
+                            setUpdatingOrderId(null);
+                          }}
+                        >
+                          {updatingOrderId === order._id ? 'Processing...' : 'Process'}
+                        </button>
+                      )}
+                      {order.status === 'processing' && (
+                        <button
+                          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
+                          disabled={updatingOrderId === order._id}
+                          onClick={async () => {
+                            setUpdatingOrderId(order._id);
+                            await updateOrderStatus({ orderId: order._id, status: 'delivered' });
+                            setUpdatingOrderId(null);
+                          }}
+                        >
+                          {updatingOrderId === order._id ? 'Delivering...' : 'Mark as Delivered'}
+                        </button>
+                      )}
+                      <button
+                        className="px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 text-xs"
+                        onClick={() => setSelectedOrderId(order._id)}
+                      >
+                        Details
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -655,6 +744,13 @@ export default function SupplierDashboard() {
         {/* AI Forecast Tab */}
         {activeTab === 'forecast' && supplierProfile && (
           <InventoryForecast supplierId={supplierProfile._id} />
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && supplierProfile && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <SupplierAnalytics supplierId={supplierProfile._id} />
+          </div>
         )}
 
         {/* Profile Tab */}
@@ -677,7 +773,7 @@ export default function SupplierDashboard() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
                   <div className="flex flex-wrap gap-2">
-                    {supplierProfile.categories.map(category => (
+                    {supplierProfile.categories.map((category: string) => (
                       <span key={category} className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-sm">
                         {category}
                       </span>
@@ -708,6 +804,61 @@ export default function SupplierDashboard() {
           </div>
         )}
       </div>
+      {/* Order Details Modal */}
+      {selectedOrderId && (
+        <OrderDetailsModal orderId={selectedOrderId} onClose={() => setSelectedOrderId(null)} />
+      )}
     </div>
   )
+}
+
+function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClose: () => void }) {
+  const order = useQuery(api.orders.getOrderDetails, { orderId });
+  if (!order) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-8 max-w-lg w-full">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Order Details</h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-800">✕</button>
+          </div>
+          <div className="flex justify-center items-center h-32 animate-fade-in">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-8 max-w-lg w-full">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Order Details</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">✕</button>
+        </div>
+        <div className="mb-4">
+          <div className="font-medium mb-1">Order #{order._id?.slice ? order._id.slice(-8) : ''}</div>
+          <div className="text-sm text-gray-600 mb-1">Status: <span className="font-semibold">{order.status}</span></div>
+          <div className="text-sm text-gray-600 mb-1">Placed: {order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</div>
+          <div className="text-sm text-gray-600 mb-1">Total: ₹{order.totalAmount ?? order.totalCost ?? ''}</div>
+        </div>
+        <div className="mb-4">
+          <div className="font-semibold mb-1">Items:</div>
+          <ul className="list-disc pl-5 text-sm">
+            {order.items?.map((item: any, idx: number) => (
+              <li key={idx}>{item.itemName} × {item.quantity} @ ₹{item.priceAtOrder ?? item.pricePerUnit ?? ''}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="mb-4">
+          <div className="font-semibold mb-1">Vendor:</div>
+          <div className="text-sm text-gray-700">{order.vendor?.businessName || 'N/A'}</div>
+          <div className="text-sm text-gray-500">{order.vendor && 'email' in order.vendor ? order.vendor.email : ''}</div>
+        </div>
+        <div className="flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Close</button>
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -1,4 +1,5 @@
 import { mutation } from "./_generated/server";
+import { query } from "./_generated/server";
 
 // Sample data for testing supplier search functionality
 export const addSampleSuppliers = mutation({
@@ -292,6 +293,18 @@ export const addSampleVendor = mutation({
         qualityPreference: "Grade A",
         deliveryTimePreference: "Same Day"
       },
+      // --- Workflow Progress Fields ---
+      currentWorkflowStep: 'discover',
+      lastActivity: Date.now(),
+      discoveryCompleted: true,
+      recommendationsViewed: false,
+      groupOrderParticipated: false,
+      firstOrderPlaced: false,
+      inventoryTracked: false,
+      priceAlertsSet: false,
+      financialAnalyticsViewed: false,
+      communicationUsed: false,
+      // --- End Workflow Progress Fields ---
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
@@ -893,4 +906,78 @@ export const addSampleFinancialRecords = mutation({
       monthsOfData: 6
     };
   },
+});
+
+// Query to get sample workflow state and data for the sample vendor
+export const getSampleWorkflowState = query({
+  args: {},
+  handler: async (ctx) => {
+    // Find the sample vendor
+    const vendor = await ctx.db
+      .query("vendors")
+      .withIndex("by_user", (q) => q.eq("userId", "sample_vendor_1"))
+      .first();
+    if (!vendor) return { error: "Sample vendor not found" };
+
+    // Get sample suppliers
+    const suppliers = await ctx.db.query("suppliers").collect();
+    // Get sample recommendations (if any)
+    const recommendations = await ctx.db
+      .query("recommendations")
+      .withIndex("by_vendor", (q) => q.eq("vendorId", vendor._id))
+      .collect();
+    // Get sample group orders
+    const groupOrders = await ctx.db
+      .query("groupOrders")
+      .withIndex("by_initiator", (q) => q.eq("initiatorId", vendor._id))
+      .collect();
+    // Get sample orders
+    const orders = await ctx.db
+      .query("orders")
+      .withIndex("by_vendor", (q) => q.eq("vendorId", vendor._id))
+      .collect();
+    // Get sample inventory (from all suppliers)
+    const inventory = await ctx.db.query("inventory").collect();
+    // Get sample price alerts
+    const priceAlerts = await ctx.db
+      .query("priceAlerts")
+      .withIndex("by_vendor", (q) => q.eq("vendorId", vendor._id))
+      .collect();
+    // Get sample financial analytics
+    const financialRecords = await ctx.db
+      .query("financialRecords")
+      .withIndex("by_vendor", (q) => q.eq("vendorId", vendor._id))
+      .collect();
+    // Get sample messages
+    const messages = await ctx.db
+      .query("messages")
+      .filter((q) => q.or(
+        q.eq(q.field("senderId"), vendor.userId),
+        q.eq(q.field("receiverId"), vendor.userId)
+      ))
+      .collect();
+
+    return {
+      workflowProgress: {
+        currentWorkflowStep: vendor.currentWorkflowStep,
+        lastActivity: vendor.lastActivity,
+        discoveryCompleted: vendor.discoveryCompleted,
+        recommendationsViewed: vendor.recommendationsViewed,
+        groupOrderParticipated: vendor.groupOrderParticipated,
+        firstOrderPlaced: vendor.firstOrderPlaced,
+        inventoryTracked: vendor.inventoryTracked,
+        priceAlertsSet: vendor.priceAlertsSet,
+        financialAnalyticsViewed: vendor.financialAnalyticsViewed,
+        communicationUsed: vendor.communicationUsed
+      },
+      suppliers,
+      recommendations,
+      groupOrders,
+      orders,
+      inventory,
+      priceAlerts,
+      financialRecords,
+      messages
+    };
+  }
 });

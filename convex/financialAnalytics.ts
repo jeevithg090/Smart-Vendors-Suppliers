@@ -328,3 +328,172 @@ export const checkBudgetAlerts = query({
     return alerts;
   },
 });
+
+// Get supplier revenue analytics by category
+export const getSupplierRevenueByCategory = query({
+  args: {
+    supplierId: v.id("suppliers"),
+    startDate: v.optional(v.number()),
+    endDate: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const records = await ctx.db
+      .query("financialRecords")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .filter((q) => {
+        if (args.startDate && args.endDate) {
+          return q.and(
+            q.gte(q.field("date"), args.startDate!),
+            q.lte(q.field("date"), args.endDate!)
+          );
+        }
+        return true;
+      })
+      .collect();
+
+    // Group by category
+    const categoryRevenue = records.reduce((acc, record) => {
+      if (!acc[record.category]) {
+        acc[record.category] = 0;
+      }
+      acc[record.category] += record.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(categoryRevenue).map(([category, amount]) => ({
+      category,
+      amount,
+    }));
+  },
+});
+
+// Get supplier monthly revenue trends
+export const getSupplierMonthlyRevenue = query({
+  args: {
+    supplierId: v.id("suppliers"),
+    months: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const monthsBack = args.months || 12;
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
+
+    const records = await ctx.db
+      .query("financialRecords")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .filter((q) => q.gte(q.field("date"), startDate.getTime()))
+      .collect();
+
+    // Group by month
+    const monthlyRevenue = records.reduce((acc, record) => {
+      if (!acc[record.month]) {
+        acc[record.month] = 0;
+      }
+      acc[record.month] += record.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(monthlyRevenue)
+      .map(([month, amount]) => ({ month, amount }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+  },
+});
+
+// Get supplier top products by revenue
+export const getSupplierTopProducts = query({
+  args: {
+    supplierId: v.id("suppliers"),
+    limit: v.optional(v.number()),
+    startDate: v.optional(v.number()),
+    endDate: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 10;
+    const records = await ctx.db
+      .query("financialRecords")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .filter((q) => {
+        if (args.startDate && args.endDate) {
+          return q.and(
+            q.gte(q.field("date"), args.startDate!),
+            q.lte(q.field("date"), args.endDate!)
+          );
+        }
+        return true;
+      })
+      .collect();
+
+    // Group by itemName
+    const productRevenue = records.reduce((acc, record) => {
+      if (!acc[record.itemName]) {
+        acc[record.itemName] = 0;
+      }
+      acc[record.itemName] += record.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(productRevenue)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, limit)
+      .map(([itemName, amount]) => ({ itemName, amount }));
+  },
+});
+
+// Get supplier cost optimization recommendations
+export const getSupplierCostOptimizationRecommendations = query({
+  args: {
+    supplierId: v.id("suppliers"),
+  },
+  handler: async (ctx, args) => {
+    const recommendations: any[] = [];
+    // Get recent revenue data (last 3 months)
+    const threeMonthsAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    const records = await ctx.db
+      .query("financialRecords")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .filter((q) => q.gte(q.field("date"), threeMonthsAgo))
+      .collect();
+
+    if (records.length === 0) {
+      return recommendations;
+    }
+
+    // Analyze product sales
+    const productSales = records.reduce((acc, record) => {
+      if (!acc[record.itemName]) {
+        acc[record.itemName] = { count: 0, totalAmount: 0 };
+      }
+      acc[record.itemName].count += 1;
+      acc[record.itemName].totalAmount += record.amount;
+      return acc;
+    }, {} as Record<string, { count: number; totalAmount: number }>);
+
+    // Recommend restocking for high-frequency, low-stock products
+    for (const [itemName, data] of Object.entries(productSales)) {
+      if (data.count > 5 && data.totalAmount > 2000) {
+        recommendations.push({
+          type: "restock_suggestion",
+          itemName,
+          message: `Consider restocking ${itemName} due to high sales in the last 3 months`,
+          potentialRevenue: Math.round(data.totalAmount * 0.2), // Estimate 20% more sales
+          priority: "high",
+        });
+      }
+    }
+
+    // Recommend bundling for slow-moving products
+    for (const [itemName, data] of Object.entries(productSales)) {
+      if (data.count <= 2 && data.totalAmount < 1000) {
+        recommendations.push({
+          type: "bundle_suggestion",
+          itemName,
+          message: `Consider bundling ${itemName} with popular products to boost sales`,
+          potentialRevenue: Math.round(data.totalAmount * 0.1),
+          priority: "medium",
+        });
+      }
+    }
+
+    return recommendations;
+  },
+});
