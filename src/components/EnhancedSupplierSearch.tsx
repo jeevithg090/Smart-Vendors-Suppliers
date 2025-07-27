@@ -95,7 +95,10 @@ export default function EnhancedSupplierSearch({
     totalResults: 0,
     currentPage: 0,
     totalPages: 0,
-    sortBy: 'rating'
+    sortBy: 'rating',
+    isSemanticSearch: false,
+    semanticAnalysis: null,
+    relevanceScores: new Map()
   });
 
   const [debouncedQuery, setDebouncedQuery] = useState(searchState.query);
