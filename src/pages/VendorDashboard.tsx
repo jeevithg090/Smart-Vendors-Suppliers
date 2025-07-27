@@ -295,7 +295,7 @@ export default function VendorDashboard() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">Fresh Vegetables Bulk Order</h3>
-                        <p className="text-sm text-gray-500">Organized by Green Valley Suppliers - {vendor.location.city}</p>
+                        <p className="text-sm text-gray-500">Organized by Green Valley Suppliers - {displayVendor.location.city}</p>
                       </div>
                     </div>
                     <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
