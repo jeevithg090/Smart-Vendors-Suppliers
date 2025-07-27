@@ -47,14 +47,14 @@ interface EnhancedSupplierSearchProps {
     lng: number;
     city: string;
   };
-  onSupplierSelect?: (supplier: AlgoliaSearchResult) => void;
+  onSupplierSelect?: (supplier: SearchResult) => void;
   className?: string;
 }
 
 interface SearchState {
   query: string;
-  filters: AlgoliaSearchFilters;
-  results: AlgoliaSearchResult[];
+  filters: SearchFilters;
+  results: SearchResult[];
   isLoading: boolean;
   error: string | null;
   totalResults: number;
