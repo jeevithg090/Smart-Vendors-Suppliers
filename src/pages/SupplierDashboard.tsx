@@ -863,48 +863,134 @@ export default function SupplierDashboard() {
             </div>
             
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">Business Information</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
-                  <div className="text-lg font-semibold text-gray-900">{supplierProfile.businessName}</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
-                  <div className="flex items-center">
-                    <span className="text-yellow-500 mr-2 text-xl">★</span>
-                    <span className="text-lg font-semibold text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Categories</label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {supplierProfile.categories.map((category: string) => (
-                      <span key={category} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    supplierProfile.isVerified 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
-                  </span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius</label>
-                  <div className="text-lg font-semibold text-gray-900">{supplierProfile.deliveryRadius} km</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
-                  <div className="text-lg font-semibold text-gray-900">₹{supplierProfile.minimumOrder}</div>
-                </div>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold text-gray-800">Business Information</h3>
+                <button
+                  onClick={() => setEditingProfile(!editingProfile)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    editingProfile
+                      ? 'bg-gray-500 hover:bg-gray-600 text-white'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  }`}
+                >
+                  {editingProfile ? 'Cancel' : 'Edit Profile'}
+                </button>
               </div>
+
+              {editingProfile ? (
+                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editProfileForm.businessName}
+                        onChange={(e) => setEditProfileForm({...editProfileForm, businessName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius (km) *</label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        max="100"
+                        value={editProfileForm.deliveryRadius}
+                        onChange={(e) => setEditProfileForm({...editProfileForm, deliveryRadius: Number(e.target.value)})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order Amount (₹) *</label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        value={editProfileForm.minimumOrder}
+                        onChange={(e) => setEditProfileForm({...editProfileForm, minimumOrder: Number(e.target.value)})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Business Categories</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {['Vegetables', 'Fruits', 'Grains', 'Dairy', 'Spices', 'Meat', 'Seafood', 'Oil', 'Pulses', 'Snacks'].map((category) => (
+                        <label key={category} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editProfileForm.categories.includes(category)}
+                            onChange={() => handleCategoryToggle(category)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-gray-700">{category}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setEditingProfile(false)}
+                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
+                    <div className="text-lg font-semibold text-gray-900">{supplierProfile.businessName}</div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
+                    <div className="flex items-center">
+                      <span className="text-yellow-500 mr-2 text-xl">★</span>
+                      <span className="text-lg font-semibold text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Categories</label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {supplierProfile.categories.map((category: string) => (
+                        <span key={category} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      supplierProfile.isVerified
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius</label>
+                    <div className="text-lg font-semibold text-gray-900">{supplierProfile.deliveryRadius} km</div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
+                    <div className="text-lg font-semibold text-gray-900">₹{supplierProfile.minimumOrder}</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* FSSAI Verification Component */}
