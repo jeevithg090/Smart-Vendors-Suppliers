@@ -148,7 +148,7 @@ export default function EnhancedSupplierSearch({
     }));
   };
 
-  const updateFilters = (filters: AlgoliaSearchFilters) => {
+  const updateFilters = (filters: SearchFilters) => {
     setSearchState(prev => ({
       ...prev,
       filters,
