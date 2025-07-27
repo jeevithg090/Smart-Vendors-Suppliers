@@ -1,14 +1,13 @@
-import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import { v } from "convex/values";
 
-// Submit a rating for a supplier after order completion
-export const submitRating = mutation({
+// Add a new rating
+export const addRating = mutation({
   args: {
     vendorId: v.id("vendors"),
     supplierId: v.id("suppliers"),
     orderId: v.id("orders"),
-    rating: v.number(), // Overall rating 1-5
+    rating: v.number(), // 1-5 scale
     review: v.optional(v.string()),
     categories: v.object({
       quality: v.number(),
@@ -18,48 +17,17 @@ export const submitRating = mutation({
     })
   },
   handler: async (ctx, args) => {
-    // Validate rating values
-    if (args.rating < 1 || args.rating > 5) {
-      throw new Error("Overall rating must be between 1 and 5");
-    }
-
-    const categoryRatings = Object.values(args.categories);
-    if (categoryRatings.some(rating => rating < 1 || rating > 5)) {
-      throw new Error("Category ratings must be between 1 and 5");
-    }
-
-    // Check if order exists and belongs to the vendor
-    const order = await ctx.db.get(args.orderId);
-    if (!order) {
-      throw new Error("Order not found");
-    }
-
-    if (order.vendorId !== args.vendorId) {
-      throw new Error("Order does not belong to this vendor");
-    }
-
-    if (order.supplierId !== args.supplierId) {
-      throw new Error("Order supplier mismatch");
-    }
-
-    // Check if order is delivered
-    if (order.status !== "delivered") {
-      throw new Error("Can only rate completed orders");
-    }
-
     // Check if rating already exists for this order
     const existingRating = await ctx.db
       .query("ratings")
       .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
       .first();
-
+    
     if (existingRating) {
-      throw new Error("Rating already submitted for this order");
+      throw new Error("Rating already exists for this order");
     }
-
-    const now = Date.now();
-
-    // Create the rating
+    
+    // Insert the rating
     const ratingId = await ctx.db.insert("ratings", {
       vendorId: args.vendorId,
       supplierId: args.supplierId,
@@ -67,25 +35,21 @@ export const submitRating = mutation({
       rating: args.rating,
       review: args.review,
       categories: args.categories,
-      createdAt: now
+      createdAt: Date.now()
     });
-
-    // Update supplier trust score
+    
+    // Update supplier's trust score
     await updateSupplierTrustScore(ctx, args.supplierId);
-
-    // Basic fraud detection (enhanced version will be added later)
-    await detectSuspiciousRatingPatterns(ctx, args.vendorId, args.supplierId);
-
+    
     return ratingId;
-  }
+  },
 });
 
 // Get ratings for a supplier
 export const getSupplierRatings = query({
-  args: {
+  args: { 
     supplierId: v.id("suppliers"),
-    limit: v.optional(v.number()),
-    offset: v.optional(v.number())
+    limit: v.optional(v.number())
   },
   handler: async (ctx, args) => {
     const ratings = await ctx.db
@@ -93,30 +57,23 @@ export const getSupplierRatings = query({
       .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
       .order("desc")
       .take(args.limit || 20);
-
+    
     // Get vendor details for each rating
     const ratingsWithVendors = await Promise.all(
       ratings.map(async (rating) => {
         const vendor = await ctx.db.get(rating.vendorId);
-        const order = await ctx.db.get(rating.orderId);
-        
         return {
           ...rating,
           vendor: vendor ? {
             businessName: vendor.businessName,
-            location: vendor.location.city
-          } : null,
-          order: order ? {
-            items: order.items,
-            totalCost: order.totalCost,
-            createdAt: order.createdAt
+            ownerName: vendor.ownerName
           } : null
         };
       })
     );
-
+    
     return ratingsWithVendors;
-  }
+  },
 });
 
 // Get rating statistics for a supplier
@@ -127,7 +84,7 @@ export const getSupplierRatingStats = query({
       .query("ratings")
       .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
       .collect();
-
+    
     if (ratings.length === 0) {
       return {
         totalRatings: 0,
@@ -139,13 +96,15 @@ export const getSupplierRatingStats = query({
           pricing: 0
         },
         ratingDistribution: {
-          1: 0, 2: 0, 3: 0, 4: 0, 5: 0
-        },
-        recentRatings: []
+          5: 0,
+          4: 0,
+          3: 0,
+          2: 0,
+          1: 0
+        }
       };
     }
-
-    // Calculate averages
+    
     const totalRatings = ratings.length;
     const averageRating = ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings;
     
@@ -155,38 +114,157 @@ export const getSupplierRatingStats = query({
       communication: ratings.reduce((sum, r) => sum + r.categories.communication, 0) / totalRatings,
       pricing: ratings.reduce((sum, r) => sum + r.categories.pricing, 0) / totalRatings
     };
-
-    // Calculate rating distribution
-    const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    ratings.forEach(rating => {
-      const roundedRating = Math.round(rating.rating) as keyof typeof ratingDistribution;
-      ratingDistribution[roundedRating]++;
-    });
-
-    // Get recent ratings with reviews
-    const recentRatings = ratings
-      .filter(r => r.review && r.review.trim().length > 0)
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, 5);
-
+    
+    const ratingDistribution = ratings.reduce((acc, r) => {
+      const roundedRating = Math.round(r.rating) as 1 | 2 | 3 | 4 | 5;
+      acc[roundedRating] = (acc[roundedRating] || 0) + 1;
+      return acc;
+    }, { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+    
     return {
       totalRatings,
-      averageRating: Math.round(averageRating * 10) / 10,
-      categoryAverages: {
-        quality: Math.round(categoryAverages.quality * 10) / 10,
-        delivery: Math.round(categoryAverages.delivery * 10) / 10,
-        communication: Math.round(categoryAverages.communication * 10) / 10,
-        pricing: Math.round(categoryAverages.pricing * 10) / 10
-      },
-      ratingDistribution,
-      recentRatings
+      averageRating,
+      categoryAverages,
+      ratingDistribution
     };
-  }
+  },
 });
 
-// Get vendor's rating history
-export const getVendorRatingHistory = query({
-  args: {
+// Get trust score breakdown for a supplier
+export const getTrustScoreBreakdown = query({
+  args: { supplierId: v.id("suppliers") },
+  handler: async (ctx, args) => {
+    const supplier = await ctx.db.get(args.supplierId);
+    if (!supplier) {
+      throw new Error("Supplier not found");
+    }
+    
+    const ratings = await ctx.db
+      .query("ratings")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .collect();
+    
+    const orders = await ctx.db
+      .query("orders")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .collect();
+    
+    // Base score calculation
+    let baseScore = 2.0; // Starting score
+    
+    // Rating-based score (40% weight)
+    let ratingScore = 0;
+    if (ratings.length > 0) {
+      const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+      ratingScore = avgRating * 0.4;
+    }
+    
+    // Volume bonus (20% weight)
+    const completedOrders = orders.filter(o => o.status === 'delivered').length;
+    const volumeBonus = Math.min(completedOrders * 0.05, 1.0); // Max 1.0 bonus
+    
+    // Consistency bonus (20% weight)
+    const recentOrders = orders.filter(o => 
+      o.createdAt > Date.now() - 30 * 24 * 60 * 60 * 1000 // Last 30 days
+    );
+    const onTimeDeliveries = recentOrders.filter(o => 
+      o.actualDelivery && o.actualDelivery <= o.estimatedDelivery
+    ).length;
+    const consistencyBonus = recentOrders.length > 0 
+      ? (onTimeDeliveries / recentOrders.length) * 0.8 
+      : 0;
+    
+    // Certification bonus (10% weight)
+    const certificationBonus = supplier.fssaiCertified ? 0.5 : 0;
+    
+    // Verification bonus (10% weight)
+    const verificationBonus = supplier.isVerified ? 0.3 : 0;
+    
+    const currentScore = Math.min(
+      baseScore + ratingScore + volumeBonus + consistencyBonus + certificationBonus + verificationBonus,
+      5.0
+    );
+    
+    return {
+      currentScore,
+      factors: {
+        baseScore,
+        ratingScore,
+        volumeBonus,
+        consistencyBonus,
+        certificationBonus,
+        verificationBonus
+      },
+      breakdown: {
+        totalOrders: orders.length,
+        completedOrders,
+        totalRatings: ratings.length,
+        averageRating: ratings.length > 0 
+          ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length 
+          : 0,
+        onTimeDeliveryRate: recentOrders.length > 0 
+          ? (onTimeDeliveries / recentOrders.length) * 100 
+          : 0
+      }
+    };
+  },
+});
+
+// Update supplier trust score (internal function)
+async function updateSupplierTrustScore(ctx: any, supplierId: any) {
+  const supplier = await ctx.db.get(supplierId);
+  if (!supplier) return;
+  
+  const ratings = await ctx.db
+    .query("ratings")
+    .withIndex("by_supplier", (q) => q.eq("supplierId", supplierId))
+    .collect();
+  
+  const orders = await ctx.db
+    .query("orders")
+    .withIndex("by_supplier", (q) => q.eq("supplierId", supplierId))
+    .collect();
+  
+  // Calculate new trust score using the same logic as getTrustScoreBreakdown
+  let baseScore = 2.0;
+  
+  let ratingScore = 0;
+  if (ratings.length > 0) {
+    const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+    ratingScore = avgRating * 0.4;
+  }
+  
+  const completedOrders = orders.filter(o => o.status === 'delivered').length;
+  const volumeBonus = Math.min(completedOrders * 0.05, 1.0);
+  
+  const recentOrders = orders.filter(o => 
+    o.createdAt > Date.now() - 30 * 24 * 60 * 60 * 1000
+  );
+  const onTimeDeliveries = recentOrders.filter(o => 
+    o.actualDelivery && o.actualDelivery <= o.estimatedDelivery
+  ).length;
+  const consistencyBonus = recentOrders.length > 0 
+    ? (onTimeDeliveries / recentOrders.length) * 0.8 
+    : 0;
+  
+  const certificationBonus = supplier.fssaiCertified ? 0.5 : 0;
+  const verificationBonus = supplier.isVerified ? 0.3 : 0;
+  
+  const newTrustScore = Math.min(
+    baseScore + ratingScore + volumeBonus + consistencyBonus + certificationBonus + verificationBonus,
+    5.0
+  );
+  
+  // Update supplier's trust score
+  await ctx.db.patch(supplierId, {
+    trustScore: newTrustScore,
+    updatedAt: Date.now()
+  });
+}
+
+// Get ratings by vendor
+export const getVendorRatings = query({
+  args: { 
     vendorId: v.id("vendors"),
     limit: v.optional(v.number())
   },
@@ -195,245 +273,70 @@ export const getVendorRatingHistory = query({
       .query("ratings")
       .withIndex("by_vendor", (q) => q.eq("vendorId", args.vendorId))
       .order("desc")
-      .take(args.limit || 50);
-
+      .take(args.limit || 20);
+    
     // Get supplier details for each rating
     const ratingsWithSuppliers = await Promise.all(
       ratings.map(async (rating) => {
         const supplier = await ctx.db.get(rating.supplierId);
-        const order = await ctx.db.get(rating.orderId);
-        
         return {
           ...rating,
           supplier: supplier ? {
             businessName: supplier.businessName,
-            location: supplier.location.city
-          } : null,
-          order: order ? {
-            items: order.items,
-            totalCost: order.totalCost
+            ownerName: supplier.ownerName
           } : null
         };
       })
     );
-
+    
     return ratingsWithSuppliers;
-  }
+  },
 });
 
-// Check if vendor can rate an order
-export const canRateOrder = query({
+// Update rating
+export const updateRating = mutation({
   args: {
-    vendorId: v.id("vendors"),
-    orderId: v.id("orders")
+    ratingId: v.id("ratings"),
+    rating: v.optional(v.number()),
+    review: v.optional(v.string()),
+    categories: v.optional(v.object({
+      quality: v.number(),
+      delivery: v.number(),
+      communication: v.number(),
+      pricing: v.number()
+    }))
   },
   handler: async (ctx, args) => {
-    const order = await ctx.db.get(args.orderId);
-    if (!order) {
-      return { canRate: false, reason: "Order not found" };
+    const { ratingId, ...updates } = args;
+    
+    const existingRating = await ctx.db.get(ratingId);
+    if (!existingRating) {
+      throw new Error("Rating not found");
     }
-
-    if (order.vendorId !== args.vendorId) {
-      return { canRate: false, reason: "Order does not belong to this vendor" };
-    }
-
-    if (order.status !== "delivered") {
-      return { canRate: false, reason: "Order must be delivered to rate" };
-    }
-
-    // Check if already rated
-    const existingRating = await ctx.db
-      .query("ratings")
-      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
-      .first();
-
-    if (existingRating) {
-      return { canRate: false, reason: "Order already rated" };
-    }
-
-    return { canRate: true, reason: null };
-  }
+    
+    await ctx.db.patch(ratingId, updates);
+    
+    // Update supplier's trust score
+    await updateSupplierTrustScore(ctx, existingRating.supplierId);
+    
+    return ratingId;
+  },
 });
 
-// Basic fraud detection for suspicious rating patterns
-async function detectSuspiciousRatingPatterns(ctx: any, vendorId: Id<"vendors">, supplierId: Id<"suppliers">) {
-  const now = Date.now();
-  const oneDayAgo = now - (24 * 60 * 60 * 1000);
-  const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
-
-  // Get recent ratings from this vendor
-  const vendorRatings = await ctx.db
-    .query("ratings")
-    .withIndex("by_vendor", (q: any) => q.eq("vendorId", vendorId))
-    .filter((q: any) => q.gte(q.field("createdAt"), oneWeekAgo))
-    .collect();
-
-  // Get recent ratings for this supplier
-  const supplierRatings = await ctx.db
-    .query("ratings")
-    .withIndex("by_supplier", (q: any) => q.eq("supplierId", supplierId))
-    .filter((q: any) => q.gte(q.field("createdAt"), oneDayAgo))
-    .collect();
-
-  let suspiciousFlags: string[] = [];
-
-  // Flag 1: Too many ratings from same vendor in short time
-  const vendorRatingsToday = vendorRatings.filter((r: any) => r.createdAt >= oneDayAgo);
-  if (vendorRatingsToday.length > 5) {
-    suspiciousFlags.push("Excessive ratings from single vendor");
-  }
-
-  // Flag 2: All ratings are extreme (all 5s or all 1s)
-  const supplierRatingsToday = supplierRatings.filter((r: any) => r.createdAt >= oneDayAgo);
-  if (supplierRatingsToday.length >= 3) {
-    const allHigh = supplierRatingsToday.every((r: any) => r.rating >= 4.5);
-    const allLow = supplierRatingsToday.every((r: any) => r.rating <= 1.5);
-    
-    if (allHigh || allLow) {
-      suspiciousFlags.push("Suspicious rating pattern detected");
-    }
-  }
-
-  // Flag 3: Identical review text
-  const recentReviews = supplierRatingsToday
-    .filter((r: any) => r.review && r.review.trim().length > 10)
-    .map((r: any) => r.review!.toLowerCase().trim());
-  
-  const uniqueReviews = new Set(recentReviews);
-  if (recentReviews.length >= 3 && uniqueReviews.size < recentReviews.length * 0.7) {
-    suspiciousFlags.push("Similar review content detected");
-  }
-
-  // Log suspicious activity if flags exist
-  if (suspiciousFlags.length > 0) {
-    console.warn(`Suspicious rating activity detected:`, {
-      vendorId,
-      supplierId,
-      flags: suspiciousFlags,
-      timestamp: now
-    });
-  }
-}
-
-// Update supplier trust score based on ratings
-async function updateSupplierTrustScore(ctx: any, supplierId: Id<"suppliers">) {
-  const supplier = await ctx.db.get(supplierId);
-  if (!supplier) return;
-
-  const ratings = await ctx.db
-    .query("ratings")
-    .withIndex("by_supplier", (q: any) => q.eq("supplierId", supplierId))
-    .collect();
-
-  if (ratings.length === 0) return;
-
-  // Calculate weighted trust score
-  const recentRatings = ratings
-    .sort((a: any, b: any) => b.createdAt - a.createdAt)
-    .slice(0, 50); // Consider last 50 ratings
-
-  // Weight recent ratings more heavily
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  recentRatings.forEach((rating: any, index: number) => {
-    const weight = Math.exp(-index * 0.1); // Exponential decay for older ratings
-    const compositeScore = (
-      rating.rating * 0.4 +
-      rating.categories.quality * 0.25 +
-      rating.categories.delivery * 0.2 +
-      rating.categories.communication * 0.1 +
-      rating.categories.pricing * 0.05
-    );
-    
-    weightedSum += compositeScore * weight;
-    totalWeight += weight;
-  });
-
-  const baseScore = weightedSum / totalWeight;
-
-  // Apply bonuses and penalties
-  let trustScore = baseScore;
-
-  // Bonus for high volume of ratings
-  if (ratings.length >= 50) trustScore += 0.2;
-  else if (ratings.length >= 20) trustScore += 0.1;
-
-  // Bonus for consistency (low standard deviation)
-  const avgRating = ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length;
-  const variance = ratings.reduce((sum: number, r: any) => sum + Math.pow(r.rating - avgRating, 2), 0) / ratings.length;
-  const stdDev = Math.sqrt(variance);
-  
-  if (stdDev < 0.5) trustScore += 0.15;
-  else if (stdDev < 1.0) trustScore += 0.05;
-
-  // Bonus for FSSAI certification
-  if (supplier.fssaiCertified) trustScore += 0.1;
-
-  // Bonus for being verified
-  if (supplier.isVerified) trustScore += 0.1;
-
-  // Cap the trust score between 1 and 5
-  trustScore = Math.max(1, Math.min(5, trustScore));
-
-  await ctx.db.patch(supplierId, {
-    trustScore: Math.round(trustScore * 10) / 10,
-    updatedAt: Date.now()
-  });
-}
-
-
-
-// Get trust score breakdown for a supplier
-export const getTrustScoreBreakdown = query({
-  args: { supplierId: v.id("suppliers") },
+// Delete rating
+export const deleteRating = mutation({
+  args: { ratingId: v.id("ratings") },
   handler: async (ctx, args) => {
-    const supplier = await ctx.db.get(args.supplierId);
-    if (!supplier) return null;
-
-    const ratings = await ctx.db
-      .query("ratings")
-      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
-      .collect();
-
-    const breakdown = {
-      currentScore: supplier.trustScore,
-      factors: {
-        baseRating: 0,
-        volumeBonus: 0,
-        consistencyBonus: 0,
-        certificationBonus: 0,
-        verificationBonus: 0
-      },
-      metrics: {
-        totalRatings: ratings.length,
-        averageRating: 0,
-        consistency: 0,
-        isFssaiCertified: supplier.fssaiCertified,
-        isVerified: supplier.isVerified
-      }
-    };
-
-    if (ratings.length > 0) {
-      const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
-      const variance = ratings.reduce((sum, r) => sum + Math.pow(r.rating - avgRating, 2), 0) / ratings.length;
-      const stdDev = Math.sqrt(variance);
-
-      breakdown.factors.baseRating = avgRating;
-      breakdown.metrics.averageRating = Math.round(avgRating * 10) / 10;
-      breakdown.metrics.consistency = Math.round((5 - stdDev) * 10) / 10; // Higher is better
-
-      // Calculate bonuses
-      if (ratings.length >= 50) breakdown.factors.volumeBonus = 0.2;
-      else if (ratings.length >= 20) breakdown.factors.volumeBonus = 0.1;
-
-      if (stdDev < 0.5) breakdown.factors.consistencyBonus = 0.15;
-      else if (stdDev < 1.0) breakdown.factors.consistencyBonus = 0.05;
+    const rating = await ctx.db.get(args.ratingId);
+    if (!rating) {
+      throw new Error("Rating not found");
     }
-
-    if (supplier.fssaiCertified) breakdown.factors.certificationBonus = 0.1;
-    if (supplier.isVerified) breakdown.factors.verificationBonus = 0.1;
-
-    return breakdown;
-  }
+    
+    await ctx.db.delete(args.ratingId);
+    
+    // Update supplier's trust score
+    await updateSupplierTrustScore(ctx, rating.supplierId);
+    
+    return args.ratingId;
+  },
 });

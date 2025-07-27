@@ -368,18 +368,136 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_category", ["category"]),
 
-  // Voice Queries table
+  // Enhanced Voice Queries table
   voiceQueries: defineTable({
     userId: v.string(), // Clerk user ID
     userRole: v.string(), // "vendor" or "supplier"
+    queryType: v.string(), // "search", "filter", "general", "image_description"
     queryText: v.string(), // Original transcribed text
     language: v.string(), // Detected language code
     englishText: v.string(), // Translated to English
+    confidence: v.number(), // Speech recognition confidence
+    
+    // Search-specific fields
+    searchResults: v.optional(v.object({
+      items: v.array(v.string()),
+      suppliers: v.array(v.string()),
+      filters: v.object({
+        location: v.optional(v.string()),
+        priceRange: v.optional(v.object({
+          min: v.number(),
+          max: v.number()
+        })),
+        categories: v.optional(v.array(v.string())),
+        deliveryTime: v.optional(v.string()),
+        quality: v.optional(v.string()),
+        fssaiRequired: v.optional(v.boolean())
+      })
+    })),
+    
+    // Filter-specific fields
+    appliedFilters: v.optional(v.object({
+      location: v.optional(v.string()),
+      priceRange: v.optional(v.object({
+        min: v.number(),
+        max: v.number()
+      })),
+      categories: v.optional(v.array(v.string())),
+      deliveryTime: v.optional(v.string()),
+      quality: v.optional(v.string()),
+      fssaiRequired: v.optional(v.boolean())
+    })),
+    
+    // Image-related fields
+    imageId: v.optional(v.string()),
+    identifiedItems: v.optional(v.array(v.string())),
+    
     response: v.string(), // AI response
+    responseLanguage: v.string(), // Response language
+    processingTime: v.number(), // Processing time in ms
     audioDuration: v.optional(v.number()), // Recording duration in ms
     createdAt: v.number(),
   }).index("by_user", ["userId"])
     .index("by_role", ["userRole"])
     .index("by_language", ["language"])
+    .index("by_query_type", ["queryType"])
     .index("by_created", ["createdAt"]),
+
+  // Image Analysis table
+  imageAnalysis: defineTable({
+    userId: v.string(),
+    imageUrl: v.string(),
+    imageHash: v.string(), // For duplicate detection
+    analysisResults: v.object({
+      identifiedItems: v.array(v.object({
+        name: v.string(),
+        confidence: v.number(),
+        category: v.string(),
+        alternatives: v.optional(v.array(v.string()))
+      })),
+      ingredients: v.array(v.object({
+        name: v.string(),
+        confidence: v.number(),
+        category: v.string(),
+        alternatives: v.optional(v.array(v.string()))
+      })),
+      overallConfidence: v.number()
+    }),
+    supplierSuggestions: v.array(v.object({
+      supplierId: v.id("suppliers"),
+      relevantIngredients: v.array(v.string()),
+      matchScore: v.number(),
+      priceEstimate: v.optional(v.number())
+    })),
+    userFeedback: v.optional(v.object({
+      correctIdentification: v.boolean(),
+      actualItems: v.optional(v.array(v.string())),
+      rating: v.number(),
+      comments: v.optional(v.string())
+    })),
+    createdAt: v.number()
+  }).index("by_user", ["userId"])
+    .index("by_hash", ["imageHash"])
+    .index("by_created", ["createdAt"]),
+
+  // Voice Preferences table
+  voicePreferences: defineTable({
+    userId: v.string(),
+    preferredLanguage: v.string(),
+    voiceSpeed: v.number(), // For TTS
+    autoTranslate: v.boolean(),
+    voiceShortcuts: v.object({}), // Dynamic key-value pairs for custom commands
+    filterPresets: v.object({}), // Named filter configurations
+    privacySettings: v.object({
+      storeAudio: v.boolean(),
+      shareForImprovement: v.boolean(),
+      retentionDays: v.number()
+    }),
+    createdAt: v.number(),
+    updatedAt: v.number()
+  }).index("by_user", ["userId"]),
+
+  // Voice Learning Data table (for improving recognition)
+  voiceLearningData: defineTable({
+    userId: v.string(),
+    language: v.string(),
+    commonPhrases: v.array(v.object({
+      phrase: v.string(),
+      frequency: v.number(),
+      context: v.string(),
+      lastUsed: v.number()
+    })),
+    vocabularyPreferences: v.array(v.object({
+      term: v.string(),
+      preferredTranslation: v.string(),
+      category: v.string()
+    })),
+    correctionHistory: v.array(v.object({
+      original: v.string(),
+      corrected: v.string(),
+      timestamp: v.number()
+    })),
+    updatedAt: v.number()
+  }).index("by_user", ["userId"])
+    .index("by_language", ["language"]),
 });

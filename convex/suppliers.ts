@@ -581,6 +581,67 @@ export const getSupplierForecasts = query({
   },
 });
 
+// FSSAI License Verification
+export const verifyFSSAILicense = mutation({
+  args: {
+    supplierId: v.id("suppliers"),
+    licenseNumber: v.string(),
+    verificationData: v.object({
+      isValid: v.boolean(),
+      licenseNumber: v.string(),
+      businessName: v.string(),
+      ownerName: v.string(),
+      address: v.string(),
+      validityDate: v.string(),
+      category: v.string(),
+      confidence: v.number()
+    })
+  },
+  handler: async (ctx, args) => {
+    const supplier = await ctx.db.get(args.supplierId);
+    if (!supplier) {
+      throw new Error("Supplier not found");
+    }
+
+    if (args.verificationData.isValid) {
+      await ctx.db.patch(args.supplierId, {
+        fssaiCertified: true,
+        fssaiLicense: args.licenseNumber,
+        fssaiVerificationStatus: "verified",
+        fssaiVerificationDate: Date.now(),
+        fssaiCertificateData: {
+          licenseNumber: args.verificationData.licenseNumber,
+          businessName: args.verificationData.businessName,
+          ownerName: args.verificationData.ownerName,
+          address: args.verificationData.address,
+          validityDate: args.verificationData.validityDate,
+          category: args.verificationData.category,
+          confidence: args.verificationData.confidence
+        },
+        updatedAt: Date.now()
+      });
+
+      // Recalculate trust score with FSSAI bonus
+      const currentTrustScore = supplier.trustScore;
+      const newTrustScore = Math.min(currentTrustScore + 0.5, 5.0); // Add 0.5 for FSSAI certification
+      
+      await ctx.db.patch(args.supplierId, {
+        trustScore: newTrustScore
+      });
+
+      return { success: true, message: "FSSAI license verified successfully" };
+    } else {
+      await ctx.db.patch(args.supplierId, {
+        fssaiVerificationStatus: "invalid",
+        fssaiVerificationError: "Invalid license number",
+        updatedAt: Date.now()
+      });
+
+      return { success: false, message: "Invalid FSSAI license number" };
+    }
+  },
+});
+
 // Manual forecast generation for a specific supplier
 export const generateForecastForSupplier = mutation({
   args: { supplierId: v.id("suppliers") },

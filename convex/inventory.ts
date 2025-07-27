@@ -1,24 +1,145 @@
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
 
-// Get inventory for a specific supplier
+// Add new inventory item
+export const addInventoryItem = mutation({
+  args: {
+    supplierId: v.id("suppliers"),
+    itemName: v.string(),
+    category: v.string(),
+    currentStock: v.number(),
+    unit: v.string(),
+    pricePerUnit: v.number(),
+    minimumOrder: v.number(),
+    quality: v.string(),
+    expiryDate: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("inventory", {
+      supplierId: args.supplierId,
+      itemName: args.itemName,
+      category: args.category,
+      currentStock: args.currentStock,
+      unit: args.unit,
+      pricePerUnit: args.pricePerUnit,
+      minimumOrder: args.minimumOrder,
+      quality: args.quality,
+      expiryDate: args.expiryDate,
+      lastUpdated: Date.now(),
+      isAvailable: args.currentStock > 0
+    });
+  },
+});
+
+// Get inventory by supplier
 export const getInventoryBySupplier = query({
   args: { supplierId: v.id("suppliers") },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("inventory")
       .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .order("desc")
       .collect();
   },
 });
 
-// Alias for getInventoryBySupplier (used by OrderPlacement component)
-export const getSupplierInventory = query({
-  args: { supplierId: v.id("suppliers") },
+// Update inventory item
+export const updateInventoryItem = mutation({
+  args: {
+    id: v.id("inventory"),
+    currentStock: v.optional(v.number()),
+    pricePerUnit: v.optional(v.number()),
+    minimumOrder: v.optional(v.number()),
+    quality: v.optional(v.string()),
+    expiryDate: v.optional(v.number()),
+    isAvailable: v.optional(v.boolean())
+  },
   handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    
+    // If stock is being updated, automatically set availability
+    if (updates.currentStock !== undefined) {
+      updates.isAvailable = updates.currentStock > 0;
+    }
+    
+    return await ctx.db.patch(id, {
+      ...updates,
+      lastUpdated: Date.now()
+    });
+  },
+});
+
+// Delete inventory item
+export const deleteInventoryItem = mutation({
+  args: { id: v.id("inventory") },
+  handler: async (ctx, args) => {
+    return await ctx.db.delete(args.id);
+  },
+});
+
+// Search inventory items
+export const searchInventory = query({
+  args: {
+    searchTerm: v.optional(v.string()),
+    category: v.optional(v.string()),
+    minPrice: v.optional(v.number()),
+    maxPrice: v.optional(v.number()),
+    availableOnly: v.optional(v.boolean()),
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    let items = await ctx.db.query("inventory").collect();
+    
+    // Apply filters
+    if (args.searchTerm) {
+      const searchLower = args.searchTerm.toLowerCase();
+      items = items.filter(item => 
+        item.itemName.toLowerCase().includes(searchLower) ||
+        item.category.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (args.category) {
+      items = items.filter(item => item.category === args.category);
+    }
+    
+    if (args.minPrice !== undefined) {
+      items = items.filter(item => item.pricePerUnit >= args.minPrice!);
+    }
+    
+    if (args.maxPrice !== undefined) {
+      items = items.filter(item => item.pricePerUnit <= args.maxPrice!);
+    }
+    
+    if (args.availableOnly) {
+      items = items.filter(item => item.isAvailable && item.currentStock > 0);
+    }
+    
+    // Sort by last updated (newest first)
+    items.sort((a, b) => b.lastUpdated - a.lastUpdated);
+    
+    // Apply limit
+    if (args.limit) {
+      items = items.slice(0, args.limit);
+    }
+    
+    return items;
+  },
+});
+
+// Get low stock items for a supplier
+export const getLowStockItems = query({
+  args: { 
+    supplierId: v.id("suppliers"),
+    threshold: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const threshold = args.threshold || 10;
+    
     return await ctx.db
       .query("inventory")
       .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .filter((q) => q.lt(q.field("currentStock"), threshold))
       .collect();
   },
 });
@@ -35,184 +156,61 @@ export const getInventoryByCategory = query({
   },
 });
 
-// Get inventory item by name
-export const getInventoryByItem = query({
-  args: { itemName: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("inventory")
-      .withIndex("by_item", (q) => q.eq("itemName", args.itemName))
-      .filter((q) => q.eq(q.field("isAvailable"), true))
-      .collect();
-  },
-});
-
-// Get all available inventory with real-time updates
-export const getAvailableInventory = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("inventory")
-      .withIndex("by_availability", (q) => q.eq("isAvailable", true))
-      .collect();
-  },
-});
-
-// Update inventory stock
-export const updateInventoryStock = mutation({
+// Bulk update inventory stock (for order processing)
+export const bulkUpdateStock = mutation({
   args: {
-    inventoryId: v.id("inventory"),
-    newStock: v.number(),
-    pricePerUnit: v.optional(v.number()),
+    updates: v.array(v.object({
+      itemId: v.id("inventory"),
+      quantityUsed: v.number()
+    }))
   },
   handler: async (ctx, args) => {
-    const inventory = await ctx.db.get(args.inventoryId);
-    if (!inventory) {
-      throw new Error("Inventory item not found");
-    }
-
-    const updateData: any = {
-      currentStock: args.newStock,
-      lastUpdated: Date.now(),
-      isAvailable: args.newStock > 0,
-    };
-
-    if (args.pricePerUnit !== undefined) {
-      updateData.pricePerUnit = args.pricePerUnit;
-    }
-
-    await ctx.db.patch(args.inventoryId, updateData);
-
-    // Trigger price alert checks if price changed
-    if (args.pricePerUnit !== undefined && args.pricePerUnit !== inventory.pricePerUnit) {
-      await checkPriceAlerts(ctx, inventory.itemName, args.pricePerUnit, inventory.supplierId);
-    }
-
-    return await ctx.db.get(args.inventoryId);
-  },
-});
-
-// Add new inventory item
-export const addInventoryItem = mutation({
-  args: {
-    supplierId: v.id("suppliers"),
-    itemName: v.string(),
-    category: v.string(),
-    currentStock: v.number(),
-    unit: v.string(),
-    pricePerUnit: v.number(),
-    minimumOrder: v.number(),
-    quality: v.string(),
-    expiryDate: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const inventoryId = await ctx.db.insert("inventory", {
-      ...args,
-      lastUpdated: Date.now(),
-      isAvailable: args.currentStock > 0,
-    });
-
-    return await ctx.db.get(inventoryId);
-  },
-});
-
-// Get price history for an item
-export const getPriceHistory = query({
-  args: { 
-    itemName: v.string(),
-    supplierId: v.optional(v.id("suppliers")),
-    days: v.optional(v.number())
-  },
-  handler: async (ctx, args) => {
-    const daysBack = args.days || 30;
-    const cutoffTime = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
-
-    let query = ctx.db
-      .query("inventory")
-      .withIndex("by_item", (q) => q.eq("itemName", args.itemName));
-
-    if (args.supplierId) {
-      query = query.filter((q) => q.eq(q.field("supplierId"), args.supplierId));
-    }
-
-    const inventoryHistory = await query
-      .filter((q) => q.gte(q.field("lastUpdated"), cutoffTime))
-      .collect();
-
-    // Group by supplier and create price history
-    const priceHistory = inventoryHistory.map(item => ({
-      supplierId: item.supplierId,
-      price: item.pricePerUnit,
-      stock: item.currentStock,
-      timestamp: item.lastUpdated,
-      isAvailable: item.isAvailable,
-    })).sort((a, b) => a.timestamp - b.timestamp);
-
-    return priceHistory;
-  },
-});
-
-// Get low stock alerts
-export const getLowStockAlerts = query({
-  args: { supplierId: v.optional(v.id("suppliers")) },
-  handler: async (ctx, args) => {
-    const inventory = args.supplierId 
-      ? await ctx.db.query("inventory")
-          .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId!))
-          .collect()
-      : await ctx.db.query("inventory").collect();
-
-    return inventory.filter(item => 
-      item.currentStock <= item.minimumOrder && item.isAvailable
-    );
-  },
-});
-
-// Helper function to check price alerts
-async function checkPriceAlerts(ctx: any, itemName: string, newPrice: number, supplierId: any) {
-  // Update alerts for this specific supplier and item
-  const specificAlerts = await ctx.db
-    .query("priceAlerts")
-    .withIndex("by_item", (q: any) => q.eq("itemName", itemName))
-    .filter((q: any) => q.eq(q.field("supplierId"), supplierId))
-    .filter((q: any) => q.eq(q.field("isActive"), true))
-    .collect();
-
-  for (const alert of specificAlerts) {
-    const updateData: any = { currentPrice: newPrice };
+    const results = [];
     
-    if (newPrice <= alert.targetPrice) {
-      updateData.lastTriggered = Date.now();
-    }
-    
-    await ctx.db.patch(alert._id, updateData);
-  }
-
-  // Update alerts for this item without specific supplier (they track lowest price)
-  const generalAlerts = await ctx.db
-    .query("priceAlerts")
-    .withIndex("by_item", (q: any) => q.eq("itemName", itemName))
-    .filter((q: any) => q.eq(q.field("supplierId"), undefined))
-    .filter((q: any) => q.eq(q.field("isActive"), true))
-    .collect();
-
-  for (const alert of generalAlerts) {
-    // Get the current lowest price across all suppliers
-    const inventoryItems = await ctx.db
-      .query("inventory")
-      .withIndex("by_item", (q: any) => q.eq("itemName", itemName))
-      .filter((q: any) => q.eq(q.field("isAvailable"), true))
-      .collect();
-    
-    if (inventoryItems.length > 0) {
-      const lowestPrice = Math.min(...inventoryItems.map((item: any) => item.pricePerUnit));
-      const updateData: any = { currentPrice: lowestPrice };
-      
-      if (lowestPrice <= alert.targetPrice) {
-        updateData.lastTriggered = Date.now();
+    for (const update of args.updates) {
+      const item = await ctx.db.get(update.itemId);
+      if (item) {
+        const newStock = Math.max(0, item.currentStock - update.quantityUsed);
+        await ctx.db.patch(update.itemId, {
+          currentStock: newStock,
+          isAvailable: newStock > 0,
+          lastUpdated: Date.now()
+        });
+        results.push({ itemId: update.itemId, newStock });
       }
-      
-      await ctx.db.patch(alert._id, updateData);
     }
-  }
-}
+    
+    return results;
+  },
+});
+
+// Get inventory statistics for a supplier
+export const getInventoryStats = query({
+  args: { supplierId: v.id("suppliers") },
+  handler: async (ctx, args) => {
+    const inventory = await ctx.db
+      .query("inventory")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .collect();
+    
+    const totalItems = inventory.length;
+    const availableItems = inventory.filter(item => item.isAvailable).length;
+    const lowStockItems = inventory.filter(item => item.currentStock < 10).length;
+    const outOfStockItems = inventory.filter(item => item.currentStock === 0).length;
+    
+    const totalValue = inventory.reduce((sum, item) => 
+      sum + (item.currentStock * item.pricePerUnit), 0
+    );
+    
+    const categories = [...new Set(inventory.map(item => item.category))];
+    
+    return {
+      totalItems,
+      availableItems,
+      lowStockItems,
+      outOfStockItems,
+      totalValue,
+      categories: categories.length
+    };
+  },
+});

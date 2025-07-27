@@ -143,9 +143,9 @@ const TrustScoreDisplay: React.FC<TrustScoreDisplayProps> = ({
               <div key={category}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm text-gray-600 capitalize">{category}</span>
-                  <span className="text-sm font-medium text-gray-700">{rating.toFixed(1)}</span>
+                  <span className="text-sm font-medium text-gray-700">{(rating as number).toFixed(1)}</span>
                 </div>
-                {renderProgressBar(rating)}
+                {renderProgressBar(rating as number)}
               </div>
             ))}
           </div>
