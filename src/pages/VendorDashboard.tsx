@@ -539,31 +539,31 @@ export default function VendorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-blue-600 mb-1">
-                    {vendor.isVerified ? 'Verified' : 'Pending'}
+                    {displayVendor.isVerified ? 'Verified' : 'Pending'}
                   </div>
                   <div className="text-gray-600">Verification Status</div>
-                  {!vendor.isVerified && (
+                  {!displayVendor.isVerified && (
                     <div className="text-xs text-blue-600 mt-1">
                       Complete profile to verify
                     </div>
                   )}
                 </div>
                 <div className="text-3xl">
-                  {vendor.isVerified ? '✅' : '⏳'}
+                  {displayVendor.isVerified ? '✅' : '⏳'}
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-green-50 p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-green-600 mb-1">
-                    {vendor.preferences.preferredCategories.length}
+                    {displayVendor.preferences.preferredCategories.length}
                   </div>
                   <div className="text-gray-600">Preferred Categories</div>
                   <div className="text-xs text-green-600 mt-1">
-                    {vendor.preferences.preferredCategories.slice(0, 2).join(', ')}
-                    {vendor.preferences.preferredCategories.length > 2 && '...'}
+                    {displayVendor.preferences.preferredCategories.slice(0, 2).join(', ')}
+                    {displayVendor.preferences.preferredCategories.length > 2 && '...'}
                   </div>
                 </div>
                 <div className="text-3xl">🏷️</div>
