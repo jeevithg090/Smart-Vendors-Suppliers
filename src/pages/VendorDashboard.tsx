@@ -759,6 +759,11 @@ export default function VendorDashboard() {
           </div>
         </div>
       )}
+
+      {/* Tracking Feature Demo Modal */}
+      {showTrackingDemo && (
+        <TrackingFeatureDemo onClose={() => setShowTrackingDemo(false)} />
+      )}
     </PageLayout>
   );
 }
