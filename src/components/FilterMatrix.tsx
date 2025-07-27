@@ -24,7 +24,7 @@ interface FilterPreset {
   id: string;
   name: string;
   description: string;
-  filters: Partial<AlgoliaSearchFilters>;
+  filters: Partial<SearchFilters>;
   icon: string;
 }
 
