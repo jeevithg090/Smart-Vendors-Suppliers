@@ -815,7 +815,7 @@ export default function SupplierDashboard() {
                         )}
                         <button
                           className="px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 text-xs"
-                          onClick={() => setSelectedOrderId(order._id)}
+                          onClick={() => setSelectedOrderId(order._id as Id<'orders'>)}
                         >
                           Details
                         </button>
