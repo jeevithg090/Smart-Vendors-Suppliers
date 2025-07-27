@@ -24,6 +24,8 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
     e.preventDefault();
     setError('');
 
+    console.log('Signup attempt:', { email, firstName, lastName, role, passwordLength: password.length });
+
     if (!email || !password || !firstName) {
       setError('Please fill in all required fields');
       return;
@@ -36,6 +38,7 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
 
     try {
       const success = await signup(email, password, firstName, lastName, role);
+      console.log('Signup result:', success);
       if (!success) {
         setError('Signup failed. Please try again.');
       }
