@@ -102,13 +102,10 @@ export default function VoiceQuery({
 
   const processVoiceQuery = useMutation(api.voiceQuery.processVoiceQuery);
   const processEnhancedVoiceQuery = useMutation(api.voiceQuery.processEnhancedVoiceQuery);
-  const voiceHistory = useQuery(api.voiceQuery.getVoiceQueryHistory, { 
-    userRole, 
-    limit: 10 
-  });
-  const voiceStats = useQuery(api.voiceQuery.getVoiceQueryStats, { 
-    userRole 
-  });
+
+  // Temporarily disable history queries to avoid auth errors until Convex is updated
+  const voiceHistory = null; // useQuery(api.voiceQuery.getVoiceQueryHistory, { userRole, limit: 10 });
+  const voiceStats = null; // useQuery(api.voiceQuery.getVoiceQueryStats, { userRole });
 
   // Auto-stop recording after 30 seconds
   const MAX_RECORDING_TIME = VOICE_QUERY_CONFIG.MAX_RECORDING_TIME;
@@ -963,4 +960,4 @@ export default function VoiceQuery({
       )}
     </div>
   );
-} 
+}
