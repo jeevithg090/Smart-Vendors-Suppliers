@@ -510,24 +510,24 @@ export default function VendorDashboard() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Trust Score</h3>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600 mb-2">
-                    ⭐ {vendor.trustScore.toFixed(1)}
+                    ⭐ {displayVendor.trustScore.toFixed(1)}
                   </div>
                   <div className="text-sm text-gray-600 mb-4">
-                    {vendor.isVerified ? 'Verified Vendor' : 'Pending Verification'}
+                    {displayVendor.isVerified ? 'Verified Vendor' : 'Pending Verification'}
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Total Orders:</span>
-                      <span className="font-medium">{vendorStats?.totalOrders || 0}</span>
+                      <span className="font-medium">{displayVendorStats?.totalOrders || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Completed:</span>
-                      <span className="font-medium">{vendorStats?.completedOrders || 0}</span>
+                      <span className="font-medium">{displayVendorStats?.completedOrders || 0}</span>
                     </div>
-                    {vendorStats?.averageRating && (
+                    {displayVendorStats?.averageRating && (
                       <div className="flex justify-between">
                         <span>Avg Rating:</span>
-                        <span className="font-medium">{vendorStats.averageRating.toFixed(1)}/5</span>
+                        <span className="font-medium">{displayVendorStats.averageRating.toFixed(1)}/5</span>
                       </div>
                     )}
                   </div>
