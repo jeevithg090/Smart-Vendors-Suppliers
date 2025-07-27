@@ -118,6 +118,14 @@ export default function VendorDashboard() {
     );
   }
 
+  const handleHeaderSearch = (query: string) => {
+    if (query.trim()) {
+      // Switch to enhanced search tab and perform search
+      setActiveTab('enhancedSearch');
+      // The search will be handled by the EnhancedSupplierSearch component
+    }
+  };
+
   const PageLayout = ({ children }: { children: React.ReactNode }) => (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -128,6 +136,36 @@ export default function VendorDashboard() {
               <span className="text-2xl mr-3">🏪</span>
               <h1 className="text-xl font-semibold text-gray-800">Smart Street</h1>
             </div>
+
+            {/* Search Bar */}
+            <div className="flex-1 max-w-2xl mx-8">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search suppliers, products, or ask anything..."
+                  className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50 hover:bg-white transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const target = e.target as HTMLInputElement;
+                      handleHeaderSearch(target.value);
+                    }
+                  }}
+                  onFocus={() => setActiveTab('enhancedSearch')}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1">
+                    <span>✨</span>
+                    <span className="font-medium">AI</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
                 Welcome, {user?.firstName || 'User'}!
