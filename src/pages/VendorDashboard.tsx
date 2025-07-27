@@ -324,7 +324,7 @@ export default function VendorDashboard() {
                   
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">Delivery:</span> {vendor.location.city}
+                      <span className="font-medium">Delivery:</span> {displayVendor.location.city}
                     </div>
                     <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-sm">
                       Join Order
@@ -340,7 +340,7 @@ export default function VendorDashboard() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">Rice & Grains Wholesale</h3>
-                        <p className="text-sm text-gray-500">Organized by Metro Supplies - {vendor.location.city}</p>
+                        <p className="text-sm text-gray-500">Organized by Metro Supplies - {displayVendor.location.city}</p>
                       </div>
                     </div>
                     <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
