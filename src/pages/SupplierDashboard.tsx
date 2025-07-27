@@ -83,6 +83,7 @@ export default function SupplierDashboard() {
   const addInventoryItem = useMutation(api.inventory.addInventoryItem)
   const updateInventoryItem = useMutation(api.inventory.updateInventoryItem)
   const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
+  const updateSupplierProfile = useMutation(api.suppliers.updateProfile);
   const [updatingOrderId, setUpdatingOrderId] = useState<Id<'orders'> | null>(null);
 
   // Check if supplier profile exists, if not show setup
@@ -501,7 +502,7 @@ export default function SupplierDashboard() {
                     <div className="text-2xl font-bold text-yellow-600">{stats.lowStockItems}</div>
                     <div className="text-sm text-gray-600">Low Stock Alerts</div>
                   </div>
-                  <div className="text-3xl text-yellow-500">⚠️</div>
+                  <div className="text-3xl text-yellow-500">���️</div>
                 </div>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500">
