@@ -505,9 +505,11 @@ interface SupplierCardProps {
   supplier: SearchResult;
   onSelect: () => void;
   showDistance: boolean;
+  relevanceScore?: number;
+  showAIBadge?: boolean;
 }
 
-function SupplierCard({ supplier, onSelect, showDistance }: SupplierCardProps) {
+function SupplierCard({ supplier, onSelect, showDistance, relevanceScore, showAIBadge }: SupplierCardProps) {
   return (
     <div 
       onClick={onSelect}
