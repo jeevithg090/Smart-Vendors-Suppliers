@@ -596,8 +596,8 @@ export default function VendorDashboard() {
           {/* Quick Actions */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <button 
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <button
                 onClick={() => setActiveTab('workflow')}
                 className="p-4 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 text-center shadow-lg"
                 aria-label="Go to Smart Workflow"
@@ -606,8 +606,8 @@ export default function VendorDashboard() {
                 <div className="font-medium">Smart Workflow</div>
                 <div className="text-sm opacity-90">Guided sourcing</div>
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => setActiveTab('suppliers')}
                 className="p-4 bg-white border-2 border-orange-200 rounded-lg hover:border-orange-400 transition-colors text-center"
                 aria-label="Find Suppliers"
@@ -616,8 +616,8 @@ export default function VendorDashboard() {
                 <div className="font-medium text-gray-800">Find Suppliers</div>
                 <div className="text-sm text-gray-600">Search for suppliers</div>
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => setActiveTab('groupOrders')}
                 className="p-4 bg-white border-2 border-blue-200 rounded-lg hover:border-blue-400 transition-colors text-center"
                 aria-label="Join Group Orders"
@@ -626,8 +626,8 @@ export default function VendorDashboard() {
                 <div className="font-medium text-gray-800">Group Orders</div>
                 <div className="text-sm text-gray-600">Join bulk purchases</div>
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => setActiveTab('orders')}
                 className="p-4 bg-white border-2 border-green-200 rounded-lg hover:border-green-400 transition-colors text-center"
                 aria-label="Place and Track Orders"
@@ -636,15 +636,48 @@ export default function VendorDashboard() {
                 <div className="font-medium text-gray-800">Orders</div>
                 <div className="text-sm text-gray-600">Place & track orders</div>
               </button>
-              
-              <button 
-                onClick={() => setActiveTab('analytics')}
+            </div>
+
+            {/* Enhanced Features Row */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button
+                onClick={() => setActiveTab('recipes')}
+                className="p-4 bg-white border-2 border-yellow-200 rounded-lg hover:border-yellow-400 transition-colors text-center"
+                aria-label="Recipe Costing Calculator"
+              >
+                <div className="text-2xl mb-2">🧮</div>
+                <div className="font-medium text-gray-800">Recipe Costing</div>
+                <div className="text-sm text-gray-600">Calculate dish costs</div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('negotiations')}
+                className="p-4 bg-white border-2 border-indigo-200 rounded-lg hover:border-indigo-400 transition-colors text-center"
+                aria-label="Supplier Negotiations"
+              >
+                <div className="text-2xl mb-2">🤝</div>
+                <div className="font-medium text-gray-800">Negotiations</div>
+                <div className="text-sm text-gray-600">Price negotiations</div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('market')}
                 className="p-4 bg-white border-2 border-purple-200 rounded-lg hover:border-purple-400 transition-colors text-center"
-                aria-label="View Analytics"
+                aria-label="Market Intelligence"
               >
                 <div className="text-2xl mb-2">📊</div>
+                <div className="font-medium text-gray-800">Market Intel</div>
+                <div className="text-sm text-gray-600">Price trends & insights</div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className="p-4 bg-white border-2 border-pink-200 rounded-lg hover:border-pink-400 transition-colors text-center"
+                aria-label="View Analytics"
+              >
+                <div className="text-2xl mb-2">📈</div>
                 <div className="font-medium text-gray-800">Analytics</div>
-                <div className="text-sm text-gray-600">View spending insights</div>
+                <div className="text-sm text-gray-600">Financial insights</div>
               </button>
             </div>
           </div>
