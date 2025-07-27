@@ -56,12 +56,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
 
     try {
-      const result = await authenticateUser({
-        email,
-        password,
-        role,
-        isSignup: false
-      });
+      const result = await withTimeout(
+        authenticateUser({
+          email,
+          password,
+          role,
+          isSignup: false
+        }),
+        8000 // 8 second timeout
+      );
 
       if (result.success && result.user) {
         const userData: User = {
