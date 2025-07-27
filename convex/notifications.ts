@@ -128,18 +128,15 @@ export const deleteNotification = mutation({
     notificationId: v.id("notifications") 
   },
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
       throw new Error("Notification not found");
     }
 
-    if (notification.userId !== identity.subject) {
+    if (notification.userId !== identity.userEmail) {
       throw new Error("Not authorized to delete this notification");
     }
 
