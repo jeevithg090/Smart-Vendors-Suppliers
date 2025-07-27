@@ -273,9 +273,13 @@ export const NotificationBell: React.FC<{
   onClick: () => void;
 }> = ({ onClick }) => {
   const { user } = useAuth();
+
+  // Skip query for development mode users (those with profileId starting with role_timestamp)
+  const isDevelopmentUser = user?.profileId?.includes('_') && /^\w+_\d+$/.test(user.profileId);
+
   const unreadCount = useQuery(
     api.notifications.getUnreadCount,
-    user?.email ? { userEmail: user.email } : "skip"
+    user?.email && !isDevelopmentUser ? { userEmail: user.email } : "skip"
   );
 
   return (
