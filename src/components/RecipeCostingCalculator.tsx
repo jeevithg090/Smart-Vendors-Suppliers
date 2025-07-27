@@ -118,6 +118,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
   const suppliers = useQuery(api.suppliers.listAllSuppliers);
   const allInventory = useQuery(api.inventory.searchInventory, {});
 
+  // Handle loading states and errors gracefully
+  const isLoading = suppliers === undefined || allInventory === undefined;
+
   const calculateRecipeCost = () => {
     const ingredientCost = currentRecipe.ingredients.reduce((total, ingredient) => {
       return total + (ingredient.quantity * ingredient.pricePerUnit / 1000); // Convert to per kg/liter pricing
