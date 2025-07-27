@@ -420,6 +420,44 @@ export default function EnhancedSupplierSearch({
         </div>
       )}
 
+      {/* Semantic Search Results Summary */}
+      {searchState.semanticAnalysis && searchState.isSemanticSearch && (
+        <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <div className="text-purple-500 text-2xl">🧠</div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-purple-900 mb-2">
+                AI Search Analysis
+              </h3>
+              <p className="text-purple-800 mb-3">
+                {searchState.semanticAnalysis.intent}
+              </p>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {searchState.semanticAnalysis.categories?.map((category: string, index: number) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 font-medium"
+                  >
+                    📂 {category}
+                  </span>
+                ))}
+                {searchState.semanticAnalysis.tags?.map((tag: string, index: number) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-pink-100 text-pink-800 font-medium"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+              <div className="text-sm text-purple-700">
+                Search Confidence: {Math.round(searchState.semanticAnalysis.confidence * 100)}%
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Results Grid */}
       {searchState.results.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
@@ -429,6 +467,8 @@ export default function EnhancedSupplierSearch({
               supplier={supplier}
               onSelect={() => onSupplierSelect?.(supplier)}
               showDistance={!!vendorLocation}
+              relevanceScore={searchState.relevanceScores.get(supplier.name)}
+              showAIBadge={searchState.isSemanticSearch}
             />
           ))}
         </div>
