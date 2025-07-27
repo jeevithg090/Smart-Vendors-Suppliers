@@ -86,10 +86,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Login error:', error);
 
-      // Fallback for development mode when Convex is not connected
+      // Fallback for development mode when Convex is not connected or times out
       // Check if user exists in localStorage for development
       const savedUser = localStorage.getItem('auth_user');
-      if (savedUser && (error.message && (error.message.includes('network') || error.message.includes('connection')))) {
+      if (savedUser && (error.message && (error.message.includes('network') || error.message.includes('connection') || error.message.includes('timeout') || error.message.includes('timed out')))) {
         try {
           const parsedUser = JSON.parse(savedUser);
           if (parsedUser.email === email) {
