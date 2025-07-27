@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AlgoliaSearchFilters, AlgoliaSearchResult } from '../types/search';
+import { mockSearchService } from '../services/mockSearchService';
 import FilterMatrix from './FilterMatrix';
 
 interface EnhancedSupplierSearchProps {
