@@ -255,10 +255,10 @@ export default function VoiceQuery({
         type: mediaRecorderRef.current?.mimeType || 'audio/webm' 
       });
       
-      // Validate audio duration
+      // Validate audio duration (be more lenient for user experience)
       const audioDuration = recordingTime;
-      if (audioDuration < 500) {
-        throw new Error(ERROR_MESSAGES.AUDIO_TOO_SHORT);
+      if (audioDuration < 200) { // Reduced from 500ms to 200ms for better UX
+        throw new Error('Recording too short. Please try speaking a bit longer.');
       }
 
       // Convert blob to array for processing
