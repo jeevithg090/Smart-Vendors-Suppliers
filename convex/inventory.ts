@@ -192,18 +192,18 @@ export const getInventoryStats = query({
       .query("inventory")
       .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
       .collect();
-    
+
     const totalItems = inventory.length;
     const availableItems = inventory.filter(item => item.isAvailable).length;
     const lowStockItems = inventory.filter(item => item.currentStock < 10).length;
     const outOfStockItems = inventory.filter(item => item.currentStock === 0).length;
-    
-    const totalValue = inventory.reduce((sum, item) => 
+
+    const totalValue = inventory.reduce((sum, item) =>
       sum + (item.currentStock * item.pricePerUnit), 0
     );
-    
+
     const categories = [...new Set(inventory.map(item => item.category))];
-    
+
     return {
       totalItems,
       availableItems,
@@ -212,5 +212,13 @@ export const getInventoryStats = query({
       totalValue,
       categories: categories.length
     };
+  },
+});
+
+// Get all inventory items (alias for compatibility)
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("inventory").collect();
   },
 });
