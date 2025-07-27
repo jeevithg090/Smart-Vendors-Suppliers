@@ -38,6 +38,10 @@ interface Order {
   items: any[];
   vendorId: string;
   createdAt: number;
+  vendor?: {
+    businessName: string;
+    email?: string;
+  };
 }
 
 interface SupplierProfile {

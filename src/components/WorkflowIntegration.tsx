@@ -145,7 +145,9 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
   useEffect(() => {
     if (workflowState) {
       const completedSteps = workflowSteps.filter(step => step.completed).length;
-      setCurrentStep(completedSteps);
+      // Find the first incomplete step or default to 'discover'
+      const firstIncompleteStep = workflowSteps.find(step => !step.completed);
+      setCurrentStep(firstIncompleteStep?.id || 'discover');
     }
   }, [workflowState]);
 
@@ -261,7 +263,7 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
                     className="border border-gray-300 rounded-md px-3 py-2 text-sm"
                   >
                     <option value="">All Categories</option>
-                    {[...new Set((allInventory||[]).map(i => i.category))].map(cat => (
+                    {[...new Set((allInventory||[]).map(i => i.category))].map((cat: string) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
