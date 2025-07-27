@@ -1,0 +1,419 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+  VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
+  VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+
+jobs:
+  # Code Quality and Security Checks
+  quality-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Security audit
+        run: npm audit --audit-level=moderate
+
+      - name: Check for vulnerabilities
+        run: |
+          npm install -g snyk
+          snyk test --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # Unit and Integration Tests
+  test:
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test -- --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  # End-to-End Tests
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start preview server
+        run: npm run preview &
+        
+      - name: Wait for server
+        run: npx wait-on http://localhost:4173
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Build and Performance Tests
+  build:
+    runs-on: ubuntu-latest
+    needs: [quality-checks, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Analyze bundle size
+        run: |
+          npm install -g bundlesize
+          bundlesize
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/
+          retention-days: 30
+
+  # Deploy to Staging
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, build]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist/
+
+      - name: Deploy to Vercel (Staging)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Run smoke tests on staging
+        run: |
+          npx wait-on https://smart-street-staging.vercel.app
+          curl -f https://smart-street-staging.vercel.app || exit 1
+
+  # Deploy to Production
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, build]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist/
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Run production smoke tests
+        run: |
+          npx wait-on https://smart-street.vercel.app
+          curl -f https://smart-street.vercel.app || exit 1
+
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: 'Smart Street has been successfully deployed to production! 🚀'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Security Scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run OWASP ZAP security scan
+        uses: zaproxy/action-full-scan@v0.4.0
+        with:
+          target: 'https://smart-street-staging.vercel.app'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Check for security vulnerabilities in dependencies
+        run: |
+          npm audit --audit-level=high
+          npx audit-ci --high
+
+      - name: Validate security configuration
+        run: |
+          node -e "
+            const config = require('./src/config/security.ts');
+            console.log('Security configuration validated');
+            console.log('CSP directives:', Object.keys(config.SECURITY_CONFIG.csp.directives).length);
+            console.log('Allowed domains:', config.SECURITY_CONFIG.network.allowedDomains.length);
+          "
+
+  # Performance Monitoring
+  performance-monitoring:
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Lighthouse performance audit
+        run: |
+          npm install -g lighthouse
+          lighthouse https://smart-street.vercel.app --output=json --output-path=./lighthouse-report.json
+          
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-report
+          path: lighthouse-report.json
+
+      - name: Check performance thresholds
+        run: |
+          node -e "
+            const report = require('./lighthouse-report.json');
+            const performance = report.lhr.categories.performance.score * 100;
+            const accessibility = report.lhr.categories.accessibility.score * 100;
+            const bestPractices = report.lhr.categories['best-practices'].score * 100;
+            const seo = report.lhr.categories.seo.score * 100;
+            
+            console.log('Performance Scores:');
+            console.log('Performance:', performance);
+            console.log('Accessibility:', accessibility);
+            console.log('Best Practices:', bestPractices);
+            console.log('SEO:', seo);
+            
+            // Create performance report
+            const performanceReport = {
+              timestamp: new Date().toISOString(),
+              scores: { performance, accessibility, bestPractices, seo },
+              metrics: {
+                fcp: report.lhr.audits['first-contentful-paint'].numericValue,
+                lcp: report.lhr.audits['largest-contentful-paint'].numericValue,
+                cls: report.lhr.audits['cumulative-layout-shift'].numericValue,
+                fid: report.lhr.audits['max-potential-fid'].numericValue
+              }
+            };
+            
+            require('fs').writeFileSync('performance-report.json', JSON.stringify(performanceReport, null, 2));
+            
+            if (performance < 80) {
+              console.error('Performance score below threshold (80)');
+              process.exit(1);
+            }
+            if (accessibility < 90) {
+              console.error('Accessibility score below threshold (90)');
+              process.exit(1);
+            }
+          "
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: performance-report.json
+
+  # Deployment Health Check
+  deployment-health-check:
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: Health check endpoints
+        run: |
+          # Check main application
+          curl -f https://smart-street.vercel.app || exit 1
+          
+          # Check API endpoints
+          curl -f https://smart-street.vercel.app/api/health || echo "Health endpoint not available"
+          
+          # Check critical user flows
+          curl -f https://smart-street.vercel.app/vendor/auth || exit 1
+          curl -f https://smart-street.vercel.app/supplier/auth || exit 1
+
+      - name: Run smoke tests
+        run: |
+          npx playwright test --grep="@smoke" --reporter=json > smoke-test-results.json || true
+          
+          # Check if critical tests passed
+          node -e "
+            const results = require('./smoke-test-results.json');
+            const failed = results.suites.reduce((acc, suite) => 
+              acc + suite.specs.reduce((specAcc, spec) => 
+                specAcc + spec.tests.filter(test => test.status === 'failed').length, 0), 0);
+            
+            if (failed > 0) {
+              console.error('Smoke tests failed:', failed);
+              process.exit(1);
+            }
+            console.log('All smoke tests passed');
+          "
+
+      - name: Monitor application metrics
+        run: |
+          # Basic uptime check
+          response_time=$(curl -o /dev/null -s -w '%{time_total}' https://smart-street.vercel.app)
+          echo "Response time: ${response_time}s"
+          
+          # Check if response time is acceptable (< 3 seconds)
+          node -e "
+            const responseTime = parseFloat('$response_time');
+            if (responseTime > 3) {
+              console.error('Response time too high:', responseTime);
+              process.exit(1);
+            }
+            console.log('Response time acceptable:', responseTime);
+          "
+
+  # Rollback on Failure
+  rollback-on-failure:
+    runs-on: ubuntu-latest
+    needs: [deployment-health-check]
+    if: failure() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Rollback deployment
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --rollback'
+          working-directory: ./
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: '🚨 Production deployment failed and was rolled back!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

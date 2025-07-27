@@ -1,0 +1,68 @@
+/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
+import type * as financialAnalytics from "../financialAnalytics.js";
+import type * as groupOrders from "../groupOrders.js";
+import type * as inventory from "../inventory.js";
+import type * as messages from "../messages.js";
+import type * as notifications from "../notifications.js";
+import type * as orders from "../orders.js";
+import type * as priceAlerts from "../priceAlerts.js";
+import type * as ratings from "../ratings.js";
+import type * as recommendations from "../recommendations.js";
+import type * as requests from "../requests.js";
+import type * as sampleData from "../sampleData.js";
+import type * as suppliers from "../suppliers.js";
+import type * as support from "../support.js";
+import type * as test from "../test.js";
+import type * as vendors from "../vendors.js";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  crons: typeof crons;
+  financialAnalytics: typeof financialAnalytics;
+  groupOrders: typeof groupOrders;
+  inventory: typeof inventory;
+  messages: typeof messages;
+  notifications: typeof notifications;
+  orders: typeof orders;
+  priceAlerts: typeof priceAlerts;
+  ratings: typeof ratings;
+  recommendations: typeof recommendations;
+  requests: typeof requests;
+  sampleData: typeof sampleData;
+  suppliers: typeof suppliers;
+  support: typeof support;
+  test: typeof test;
+  vendors: typeof vendors;
+}>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;

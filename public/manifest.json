@@ -1,0 +1,27 @@
+{
+  "name": "Smart Street - Street Food Sourcing Platform",
+  "short_name": "Smart Street",
+  "description": "Connect street food vendors with trusted suppliers for affordable raw materials",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff7ed",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa-512x512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "business", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "orientation": "portrait-primary"
+}
