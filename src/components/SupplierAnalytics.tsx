@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -66,6 +66,18 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
 
   const totalRevenue = revenueByCategory?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0;
 
+  // Memoize transformed data to prevent infinite re-renders
+  const chartData = useMemo(() => ({
+    monthlyRevenue: monthlyRevenue?.map((item: any) => ({
+      ...item,
+      monthFormatted: formatMonth(item.month)
+    })) || [],
+    topProducts: topProducts?.map((item: any) => ({
+      name: item.itemName,
+      amount: item.amount
+    })) || []
+  }), [monthlyRevenue, topProducts]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -110,10 +122,7 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Revenue Trend</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={monthlyRevenue?.map((item: any) => ({
-            ...item,
-            monthFormatted: formatMonth(item.month)
-          }))}>
+          <LineChart data={chartData.monthlyRevenue}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="monthFormatted" />
             <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
@@ -158,10 +167,7 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Products</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topProducts?.map((item: any) => ({
-              name: item.itemName,
-              amount: item.amount
-            }))}>
+            <BarChart data={chartData.topProducts}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name" 
@@ -236,4 +242,4 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
   );
 };
 
-export default SupplierAnalytics; 
+export default SupplierAnalytics;

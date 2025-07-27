@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -67,6 +67,18 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
 
   const totalSpending = spendingByCategory?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0;
 
+  // Memoize transformed data to prevent infinite re-renders
+  const chartData = useMemo(() => ({
+    monthlySpending: monthlySpending?.map((item: any) => ({
+      ...item,
+      monthFormatted: formatMonth(item.month)
+    })) || [],
+    topSuppliers: topSuppliers?.map((item: any) => ({
+      name: item.supplier?.businessName || 'Unknown',
+      amount: item.totalSpent
+    })) || []
+  }), [monthlySpending, topSuppliers]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -111,10 +123,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Spending Trend</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={monthlySpending?.map((item: any) => ({
-            ...item,
-            monthFormatted: formatMonth(item.month)
-          }))}>
+          <LineChart data={chartData.monthlySpending}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="monthFormatted" />
             <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
@@ -159,10 +168,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Suppliers</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topSuppliers?.map((item: any) => ({
-              name: item.supplier?.businessName || 'Unknown',
-              amount: item.totalSpent
-            }))}>
+            <BarChart data={chartData.topSuppliers}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name" 
