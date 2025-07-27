@@ -517,12 +517,26 @@ function SupplierCard({ supplier, onSelect, showDistance, relevanceScore, showAI
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
-            {supplier.name}
-          </h3>
+          <div className="flex items-center space-x-2 mb-1">
+            <h3 className="font-semibold text-gray-900 line-clamp-2">
+              {supplier.name}
+            </h3>
+            {showAIBadge && relevanceScore && relevanceScore > 0.7 && (
+              <div className="flex-shrink-0">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border border-purple-200">
+                  ✨ AI Match
+                </span>
+              </div>
+            )}
+          </div>
           <p className="text-sm text-gray-600 mb-2 line-clamp-2">
             {supplier.description}
           </p>
+          {relevanceScore && showAIBadge && (
+            <div className="text-xs text-purple-600 mb-2">
+              Relevance: {Math.round(relevanceScore * 100)}%
+            </div>
+          )}
         </div>
         {supplier.isVerified && (
           <div className="flex-shrink-0 ml-2">
