@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { safeDivide, safePercentage, validateNumber, safeRound } from '../utils/numberValidation';
 
 interface PriceHistoryProps {
   itemName: string;
@@ -52,7 +53,7 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
       };
     }
 
-    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+    const avgPrice = safeDivide(prices.reduce((sum, price) => sum + price, 0), prices.length, 0);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
 
@@ -60,7 +61,7 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
     const firstPrice = prices[0];
     const lastPrice = prices[prices.length - 1];
     const change = lastPrice - firstPrice;
-    const changePercent = (change / firstPrice) * 100;
+    const changePercent = safePercentage(change, firstPrice, 0);
 
     let trend: 'rising' | 'falling' | 'stable' = 'stable';
     if (Math.abs(changePercent) > 5) {
@@ -68,8 +69,8 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
     }
 
     // Calculate volatility (standard deviation)
-    const variance = prices.reduce((sum, price) => sum + Math.pow(price - avgPrice, 2), 0) / prices.length;
-    const volatility = Math.sqrt(variance);
+    const variance = safeDivide(prices.reduce((sum, price) => sum + Math.pow(price - avgPrice, 2), 0), prices.length, 0);
+    const volatility = validateNumber(Math.sqrt(variance), 0);
 
     return {
       trend,
@@ -98,8 +99,8 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
 
     return Object.entries(groupedByDay)
       .map(([date, points]) => {
-        const avgPrice = points.reduce((sum, p) => sum + p.price, 0) / points.length;
-        const totalStock = points.reduce((sum, p) => sum + p.stock, 0);
+        const avgPrice = safeDivide(points.reduce((sum, p) => sum + validateNumber(p.price, 0), 0), points.length, 0);
+        const totalStock = points.reduce((sum, p) => sum + validateNumber(p.stock, 0), 0);
         return {
           date,
           avgPrice,
@@ -174,25 +175,25 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
               {getTrendIcon(trendAnalysis.trend)} {trendAnalysis.trend}
             </div>
             <div className="text-xs text-gray-500">
-              {trendAnalysis.changePercent > 0 ? '+' : ''}{trendAnalysis.changePercent.toFixed(1)}%
+              {trendAnalysis.changePercent > 0 ? '+' : ''}{safeRound(trendAnalysis.changePercent, 1, 0).toFixed(1)}%
             </div>
           </div>
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="text-sm text-blue-600 mb-1">Average Price</div>
             <div className="text-lg font-semibold text-blue-600">
-              ₹{trendAnalysis.avgPrice.toFixed(2)}
+              ₹{safeRound(trendAnalysis.avgPrice, 2, 0).toFixed(2)}
             </div>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <div className="text-sm text-green-600 mb-1">Lowest Price</div>
             <div className="text-lg font-semibold text-green-600">
-              ₹{trendAnalysis.minPrice.toFixed(2)}
+              ₹{safeRound(trendAnalysis.minPrice, 2, 0).toFixed(2)}
             </div>
           </div>
           <div className="bg-red-50 p-4 rounded-lg">
             <div className="text-sm text-red-600 mb-1">Highest Price</div>
             <div className="text-lg font-semibold text-red-600">
-              ₹{trendAnalysis.maxPrice.toFixed(2)}
+              ₹{safeRound(trendAnalysis.maxPrice, 2, 0).toFixed(2)}
             </div>
           </div>
         </div>
@@ -233,18 +234,17 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
               <div className="absolute inset-4">
                 <div className="h-full flex items-end space-x-1">
                   {chartData.map((point, index) => {
-                    const height = ((point.avgPrice - trendAnalysis.minPrice) / 
-                                   (trendAnalysis.maxPrice - trendAnalysis.minPrice)) * 100;
+                    const height = safePercentage((point.avgPrice - trendAnalysis.minPrice), (trendAnalysis.maxPrice - trendAnalysis.minPrice), 5);
                     return (
                       <div
                         key={index}
                         className="flex-1 bg-blue-500 rounded-t hover:bg-blue-600 transition-colors cursor-pointer group relative"
                         style={{ height: `${Math.max(height, 5)}%` }}
-                        title={`${formatDate(point.timestamp)}: ₹${point.avgPrice.toFixed(2)}`}
+                        title={`${formatDate(point.timestamp)}: ₹${safeRound(point.avgPrice, 2, 0).toFixed(2)}`}
                       >
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                           {formatDate(point.timestamp)}<br />
-                          ₹{point.avgPrice.toFixed(2)}
+                          ₹{safeRound(point.avgPrice, 2, 0).toFixed(2)}
                         </div>
                       </div>
                     );
@@ -253,9 +253,9 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
                 
                 {/* Y-axis labels */}
                 <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500 -ml-12">
-                  <span>₹{trendAnalysis.maxPrice.toFixed(0)}</span>
-                  <span>₹{((trendAnalysis.maxPrice + trendAnalysis.minPrice) / 2).toFixed(0)}</span>
-                  <span>₹{trendAnalysis.minPrice.toFixed(0)}</span>
+                  <span>₹{safeRound(trendAnalysis.maxPrice, 0, 0).toFixed(0)}</span>
+                  <span>₹{safeRound(safeDivide(trendAnalysis.maxPrice + trendAnalysis.minPrice, 2, 0), 0, 0).toFixed(0)}</span>
+                  <span>₹{safeRound(trendAnalysis.minPrice, 0, 0).toFixed(0)}</span>
                 </div>
               </div>
               
@@ -299,13 +299,13 @@ const PriceHistory: React.FC<PriceHistoryProps> = ({ itemName, supplierId }) => 
                         {new Date(point.timestamp).toLocaleDateString('en-IN')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ₹{point.avgPrice.toFixed(2)}
+                        ₹{safeRound(point.avgPrice, 2, 0).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {point.totalStock} units
+                        {validateNumber(point.totalStock, 0)} units
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {point.dataPoints} suppliers
+                        {validateNumber(point.dataPoints, 0)} suppliers
                       </td>
                     </tr>
                   ))}

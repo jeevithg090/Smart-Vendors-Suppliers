@@ -12,6 +12,9 @@ import SmartPricingEngine from '../components/SmartPricingEngine';
 import InventoryAutomation from '../components/InventoryAutomation';
 import QualityAssurance from '../components/QualityAssurance';
 import SupplierLoyalty from '../components/SupplierLoyalty';
+import SimpleOrderTracking from '../components/SimpleOrderTracking';
+import TrackingStatusBanner from '../components/TrackingStatusBanner';
+import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
 
 interface InventoryItem {
   _id: string;
@@ -53,6 +56,8 @@ export default function SupplierDashboard() {
   const [isProfileSetup, setIsProfileSetup] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null);
+  const [showOrderTracking, setShowOrderTracking] = useState<Id<'orders'> | null>(null);
+  const [showTrackingDemo, setShowTrackingDemo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
@@ -741,6 +746,8 @@ export default function SupplierDashboard() {
               <p className="opacity-90">Process and fulfill vendor orders efficiently</p>
             </div>
             
+            <TrackingStatusBanner onDemoClick={() => setShowTrackingDemo(true)} />
+
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">Vendor Orders</h3>
               {orders === undefined ? (
@@ -757,23 +764,37 @@ export default function SupplierDashboard() {
                           <p className="text-sm text-gray-600">
                             {new Date(order.createdAt).toLocaleDateString()}
                           </p>
+                          {order.vendor && (
+                            <p className="text-sm text-blue-600">
+                              {order.vendor.businessName}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
                           <div className="font-medium">₹{order.totalAmount}</div>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            order.status === 'delivered' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {order.status}
-                          </span>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                              order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              order.status === 'processing' ? 'bg-purple-100 text-purple-800' :
+                              order.status === 'shipped' ? 'bg-orange-100 text-orange-800' :
+                              order.status === 'delivered' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                            {order.status === 'shipped' && (
+                              <span className="bg-green-100 text-green-800 px-2 py-1 text-xs rounded-full">
+                                📦 Shipped
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-600 mb-2">
+                      <div className="text-sm text-gray-600 mb-3">
                         {order.items.length} items ordered
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         {order.status === 'pending' && (
                           <button
                             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs disabled:opacity-50"
@@ -806,6 +827,19 @@ export default function SupplierDashboard() {
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
                               setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'shipped' });
+                              setUpdatingOrderId(null);
+                            }}
+                          >
+                            {updatingOrderId === order._id ? 'Shipping...' : 'Mark as Shipped'}
+                          </button>
+                        )}
+                        {order.status === 'shipped' && (
+                          <button
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
+                            disabled={updatingOrderId === order._id}
+                            onClick={async () => {
+                              setUpdatingOrderId(order._id as Id<'orders'>);
                               await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'delivered' });
                               setUpdatingOrderId(null);
                             }}
@@ -819,6 +853,14 @@ export default function SupplierDashboard() {
                         >
                           Details
                         </button>
+                        {(order.status === 'confirmed' || order.status === 'processing' || order.status === 'shipped') && (
+                          <button
+                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs"
+                            onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                          >
+                            Manage Tracking
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1207,6 +1249,24 @@ export default function SupplierDashboard() {
       {/* Order Details Modal */}
       {selectedOrderId && (
         <OrderDetailsModal orderId={selectedOrderId} onClose={() => setSelectedOrderId(null)} />
+      )}
+
+      {/* Order Tracking Modal */}
+      {showOrderTracking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <SimpleOrderTracking
+              orderId={showOrderTracking}
+              userRole="supplier"
+              onClose={() => setShowOrderTracking(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tracking Feature Demo Modal */}
+      {showTrackingDemo && (
+        <TrackingFeatureDemo onClose={() => setShowTrackingDemo(false)} />
       )}
     </div>
   )

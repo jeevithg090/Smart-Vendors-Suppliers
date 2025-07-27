@@ -12,11 +12,16 @@ import FinancialAnalytics from '../components/FinancialAnalytics';
 import RecipeCostingCalculator from '../components/RecipeCostingCalculator';
 import SupplierNegotiationHub from '../components/SupplierNegotiationHub';
 import MarketIntelligence from '../components/MarketIntelligence';
+import SimpleOrderTracking from '../components/SimpleOrderTracking';
+import TrackingStatusBanner from '../components/TrackingStatusBanner';
+import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics' | 'recipes' | 'negotiations' | 'market'>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<string | null>(null);
+  const [showTrackingDemo, setShowTrackingDemo] = useState(false);
 
   // Get vendor data or create if doesn't exist
   const vendor = useQuery(api.vendors.getByUserId, 
@@ -645,7 +650,7 @@ export default function VendorDashboard() {
                 className="p-4 bg-white border-2 border-yellow-200 rounded-lg hover:border-yellow-400 transition-colors text-center"
                 aria-label="Recipe Costing Calculator"
               >
-                <div className="text-2xl mb-2">🧮</div>
+                <div className="text-2xl mb-2">����</div>
                 <div className="font-medium text-gray-800">Recipe Costing</div>
                 <div className="text-sm text-gray-600">Calculate dish costs</div>
               </button>
@@ -741,6 +746,24 @@ export default function VendorDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Order Tracking Modal */}
+      {selectedOrderForTracking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <SimpleOrderTracking
+              orderId={selectedOrderForTracking as any}
+              userRole="vendor"
+              onClose={() => setSelectedOrderForTracking(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tracking Feature Demo Modal */}
+      {showTrackingDemo && (
+        <TrackingFeatureDemo onClose={() => setShowTrackingDemo(false)} />
+      )}
     </PageLayout>
   );
 }

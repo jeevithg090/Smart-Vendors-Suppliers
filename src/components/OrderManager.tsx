@@ -4,7 +4,8 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { OrderPlacement } from './OrderPlacement';
-import { OrderTracking } from './OrderTracking';
+import SimpleOrderTracking from './SimpleOrderTracking';
+import TrackingStatusBanner from './TrackingStatusBanner';
 import { OrderHistory } from './OrderHistory';
 import { OrderConfirmation } from './OrderConfirmation';
 
@@ -131,9 +132,10 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 ← Back to Order History
               </button>
             </div>
-            <OrderTracking
+            <SimpleOrderTracking
               orderId={selectedOrderId}
-              vendorId={vendor._id}
+              userRole="vendor"
+              onClose={handleBackToHistory}
             />
           </div>
         );
@@ -164,6 +166,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 Place New Order
               </button>
             </div>
+            <TrackingStatusBanner />
             <OrderHistory
               vendorId={vendor._id}
               onViewOrder={handleViewOrder}
