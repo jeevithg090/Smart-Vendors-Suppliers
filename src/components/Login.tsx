@@ -7,18 +7,11 @@ interface LoginProps {
   onBackToRoleSelection: () => void;
 }
 
-export default function Login({ onSwitchToSignup }: LoginProps) {
+export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleSelection }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'vendor' | 'supplier'>('vendor');
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
-
-  const handleRoleChange = (newRole: 'vendor' | 'supplier') => {
-    console.log('Role changing from', role, 'to', newRole);
-    setRole(newRole);
-    setError(''); // Clear any previous errors
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +118,7 @@ export default function Login({ onSwitchToSignup }: LoginProps) {
                     : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <div className="text-2xl mb-1">🚚</div>
+                <div className="text-2xl mb-1">���</div>
                 <div className="text-sm font-medium">Supplier</div>
                 <div className="text-xs text-gray-500">Sell to vendors</div>
               </button>
