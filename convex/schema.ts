@@ -146,6 +146,24 @@ export default defineSchema({
     paymentStatus: v.string(), // "pending", "paid", "failed", "refunded"
     paymentMethod: v.string(),
     notes: v.optional(v.string()),
+    // Enhanced tracking information
+    trackingInfo: v.optional(v.array(v.object({
+      trackingNumber: v.string(),
+      carrier: v.string(),
+      estimatedDelivery: v.optional(v.number()),
+      isThirdParty: v.boolean(),
+      thirdPartyProvider: v.optional(v.string()),
+      delegatedBy: v.optional(v.id("suppliers")),
+      notes: v.optional(v.string()),
+      addedAt: v.number(),
+      status: v.string(), // "shipped", "in_transit", "out_for_delivery", "delivered", "exception"
+      trackingHistory: v.array(v.object({
+        status: v.string(),
+        location: v.optional(v.string()),
+        notes: v.optional(v.string()),
+        timestamp: v.number()
+      }))
+    }))),
     createdAt: v.number(),
     updatedAt: v.number()
   }).index("by_vendor", ["vendorId"])
