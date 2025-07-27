@@ -92,6 +92,13 @@ export default function SupplierDashboard() {
       setIsProfileSetup(true)
     } else if (supplierProfile) {
       setIsProfileSetup(false)
+      // Initialize edit form with current profile data
+      setEditProfileForm({
+        businessName: supplierProfile.businessName || '',
+        deliveryRadius: supplierProfile.deliveryRadius || 10,
+        minimumOrder: supplierProfile.minimumOrder || 500,
+        categories: supplierProfile.categories || []
+      })
     }
   }, [supplierProfile])
 
