@@ -14,21 +14,32 @@ const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 if (!CONVEX_URL) {
   console.warn('Missing VITE_CONVEX_URL environment variable');
   console.warn('Please run `npx convex dev` to set up Convex, or set the environment variable manually.');
-  console.warn('Running in development mode with mock data.');
+  console.warn('Running in development mode with enhanced fallback functionality.');
 }
 
 console.log('Environment check:');
-console.log('CONVEX_URL:', CONVEX_URL);
+console.log('CONVEX_URL:', CONVEX_URL || 'Not configured - using development mode');
 
-// Use a valid deployment URL or create a development-only client
+// Create Convex client with better fallback handling
 let convex: ConvexReactClient;
 
 if (CONVEX_URL && CONVEX_URL !== 'https://placeholder.convex.cloud') {
-  convex = new ConvexReactClient(CONVEX_URL);
+  try {
+    convex = new ConvexReactClient(CONVEX_URL);
+    console.log('✅ Convex client initialized successfully');
+  } catch (error) {
+    console.warn('Failed to initialize Convex client:', error);
+    // Fallback to development mode
+    convex = new ConvexReactClient('https://happy-mammal-123.convex.cloud');
+  }
 } else {
-  // For development without Convex setup, use a minimal mock
-  console.warn('Using development mode - Convex features may not work');
-  convex = new ConvexReactClient('https://happy-mammal-123.convex.cloud'); // Valid format but won't connect
+  // Enhanced development mode with better mock setup
+  console.warn('🔧 Development Mode: Using enhanced local functionality');
+  console.log('📝 Note: All data will be stored locally and reset on page refresh');
+  console.log('🚀 To enable full backend features, run: npx convex dev');
+  
+  // Use a dummy URL that won't connect but allows the app to function
+  convex = new ConvexReactClient('https://development-mode.convex.cloud');
 }
 
 const root = createRoot(document.getElementById('root')!)

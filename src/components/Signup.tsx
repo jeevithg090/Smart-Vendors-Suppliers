@@ -3,20 +3,23 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface SignupProps {
   onSwitchToLogin: () => void;
+  preSelectedRole: 'vendor' | 'supplier';
+  onBackToRoleSelection: () => void;
 }
 
-export default function Signup({ onSwitchToLogin }: SignupProps) {
+export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleSelection }: SignupProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState<'vendor' | 'supplier'>('vendor');
   const [error, setError] = useState('');
   const { signup, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    console.log('Signup attempt:', { email, firstName, lastName, role: preSelectedRole, passwordLength: password.length });
 
     if (!email || !password || !firstName) {
       setError('Please fill in all required fields');
@@ -29,7 +32,8 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
     }
 
     try {
-      const success = await signup(email, password, firstName, lastName, role);
+      const success = await signup(email, password, firstName, lastName, preSelectedRole);
+      console.log('Signup result:', success);
       if (!success) {
         setError('Signup failed. Please try again.');
       }
@@ -48,10 +52,10 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             <span className="text-2xl">🏪</span>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Join Smart Street
+            Join Smart Street as {preSelectedRole === 'vendor' ? 'Vendor' : 'Supplier'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Connect with suppliers and vendors in your area
+            {preSelectedRole === 'vendor' ? 'Start buying from suppliers in your area' : 'Start selling to vendors in your area'}
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -123,36 +127,22 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              I am a: *
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <div className="flex items-center justify-center">
+              <div className="text-lg mr-2">
+                {preSelectedRole === 'vendor' ? '🏪' : '🚚'}
+              </div>
+              <div className="text-sm">
+                <span className="font-medium text-orange-800">
+                  Creating account as {preSelectedRole === 'vendor' ? 'Vendor' : 'Supplier'}
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => setRole('vendor')}
-                className={`p-3 border rounded-lg text-center transition-colors ${
-                  role === 'vendor'
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+                onClick={onBackToRoleSelection}
+                className="ml-auto text-xs text-orange-600 hover:text-orange-500 underline"
               >
-                <div className="text-2xl mb-1">🏪</div>
-                <div className="text-sm font-medium">Vendor</div>
-                <div className="text-xs text-gray-500">Buy from suppliers</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('supplier')}
-                className={`p-3 border rounded-lg text-center transition-colors ${
-                  role === 'supplier'
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <div className="text-2xl mb-1">🚚</div>
-                <div className="text-sm font-medium">Supplier</div>
-                <div className="text-xs text-gray-500">Sell to vendors</div>
+                Change
               </button>
             </div>
           </div>

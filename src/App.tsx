@@ -1,8 +1,7 @@
-import { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
-import Login from './components/Login'
-import Signup from './components/Signup'
+import AuthFlow from './components/AuthFlow'
 
 // Lazy load components for better performance
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -16,15 +15,9 @@ const LoadingSpinner = () => (
   </div>
 )
 
-// Auth component that handles login/signup switching
+// Auth component that handles role selection and authentication flow
 const AuthComponent = () => {
-  const [isLogin, setIsLogin] = useState(true);
-
-  return isLogin ? (
-    <Login onSwitchToSignup={() => setIsLogin(false)} />
-  ) : (
-    <Signup onSwitchToLogin={() => setIsLogin(true)} />
-  );
+  return <AuthFlow />;
 };
 
 // Protected route component
