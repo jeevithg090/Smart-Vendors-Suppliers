@@ -107,7 +107,7 @@ class AlgoliaSearchService {
     // Import mock data dynamically
     const { mockVendors } = await import('../data/mockVendors');
 
-    let results = mockVendors.map((vendor, index) => ({
+    let results: (AlgoliaSearchResult & { distance?: number })[] = mockVendors.map((vendor, index) => ({
       objectID: `vendor-${index + 1}`,
       ...vendor,
       _geoloc: {
