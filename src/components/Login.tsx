@@ -95,7 +95,7 @@ export default function Login({ onSwitchToSignup }: LoginProps) {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setRole('vendor')}
+                onClick={() => handleRoleChange('vendor')}
                 className={`p-3 border rounded-lg text-center transition-colors ${
                   role === 'vendor'
                     ? 'border-orange-500 bg-orange-50 text-orange-700'
@@ -108,7 +108,7 @@ export default function Login({ onSwitchToSignup }: LoginProps) {
               </button>
               <button
                 type="button"
-                onClick={() => setRole('supplier')}
+                onClick={() => handleRoleChange('supplier')}
                 className={`p-3 border rounded-lg text-center transition-colors ${
                   role === 'supplier'
                     ? 'border-orange-500 bg-orange-50 text-orange-700'
