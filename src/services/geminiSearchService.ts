@@ -26,13 +26,19 @@ interface SupplierData {
   isFastDelivery: boolean;
 }
 
+import { GEMINI_CONFIG, isGeminiAvailable } from '../config/gemini';
+
 class GeminiSearchService {
   private apiKey: string;
   private baseUrl: string;
 
   constructor() {
-    this.apiKey = 'AIzaSyCWbri8Ugc41bgM05rcTDR-fQTEISBQHco';
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    this.apiKey = GEMINI_CONFIG.API_KEY;
+    this.baseUrl = GEMINI_CONFIG.BASE_URL;
+  }
+
+  isAvailable(): boolean {
+    return isGeminiAvailable();
   }
 
   async enhanceSearchQuery(request: GeminiSearchRequest): Promise<GeminiSearchResponse> {
