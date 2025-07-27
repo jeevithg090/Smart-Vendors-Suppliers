@@ -49,7 +49,7 @@ export function ErrorReportingDashboard() {
       const perfSummary = performanceMonitoring.getPerformanceSummary();
       
       // Calculate error stats
-      const errorMetrics = Object.entries(perfSummary).filter(([key]) => 
+      const errorMetrics = Object.entries(perfSummary || {}).filter(([key]) =>
         key.includes('Error') || key.includes('error')
       );
       
@@ -91,7 +91,7 @@ export function ErrorReportingDashboard() {
   const getRecentErrors = (perfSummary: Record<string, any>) => {
     // This would ideally come from a more detailed error log
     // For now, we'll simulate recent errors based on the summary
-    return Object.entries(perfSummary)
+    return Object.entries(perfSummary || {})
       .filter(([key]) => key.includes('Error'))
       .map(([key, stats]) => ({
         timestamp: Date.now() - Math.random() * 3600000, // Random time in last hour
