@@ -1,5 +1,3 @@
-import { algoliasearch } from 'algoliasearch';
-
 export interface AlgoliaSearchFilters {
   categories?: string[];
   tags?: string[];
@@ -54,29 +52,11 @@ export interface AlgoliaSearchResult {
 }
 
 class AlgoliaSearchService {
-  private client: any;
-  private index: any;
   private isConfigured: boolean;
 
   constructor() {
     this.isConfigured = false;
-    this.initializeClient();
-  }
-
-  private initializeClient() {
-    const appId = import.meta.env.VITE_ALGOLIA_APP_ID;
-    const searchKey = import.meta.env.VITE_ALGOLIA_SEARCH_KEY;
-    const indexName = import.meta.env.VITE_ALGOLIA_INDEX_NAME || 'vendors';
-
-    if (appId && searchKey) {
-      this.client = algoliasearch(appId, searchKey);
-      this.index = this.client.initIndex(indexName);
-      this.isConfigured = true;
-      console.log('Algolia client initialized successfully');
-    } else {
-      console.warn('Algolia not configured - using fallback search');
-      this.isConfigured = false;
-    }
+    console.log('AlgoliaSearchService initialized in fallback mode');
   }
 
   async search(
@@ -94,95 +74,7 @@ class AlgoliaSearchService {
     nbPages: number;
     processingTimeMS: number;
   }> {
-    // Fallback for development without Algolia
-    if (!this.isConfigured) {
-      return this.fallbackSearch(query, filters, options);
-    }
-
-    try {
-      const searchOptions: any = {
-        hitsPerPage: options.hitsPerPage || 20,
-        page: options.page || 0,
-        facets: ['categories', 'tags', 'isVerified', 'isFastDelivery'],
-        filters: this.buildFilterString(filters),
-      };
-
-      // Add geolocation search if user location provided
-      if (filters.userLocation && filters.maxDistance) {
-        searchOptions.aroundLatLng = `${filters.userLocation.lat},${filters.userLocation.lng}`;
-        searchOptions.aroundRadius = filters.maxDistance * 1000; // Convert km to meters
-      }
-
-      // Add custom ranking if specified
-      if (options.sortBy) {
-        searchOptions.customRanking = this.getCustomRanking(options.sortBy);
-      }
-
-      const result = await this.index.search(query, searchOptions);
-
-      // Calculate distance for results if user location provided
-      if (filters.userLocation) {
-        result.hits = result.hits.map((hit: any) => ({
-          ...hit,
-          distance: this.calculateDistance(
-            filters.userLocation!,
-            { lat: hit.location.lat, lng: hit.location.lng }
-          )
-        }));
-      }
-
-      return {
-        hits: result.hits,
-        nbHits: result.nbHits,
-        page: result.page,
-        nbPages: result.nbPages,
-        processingTimeMS: result.processingTimeMS
-      };
-    } catch (error) {
-      console.error('Algolia search error:', error);
-      return this.fallbackSearch(query, filters, options);
-    }
-  }
-
-  private buildFilterString(filters: AlgoliaSearchFilters): string {
-    const filterParts: string[] = [];
-
-    if (filters.categories && filters.categories.length > 0) {
-      const categoryFilter = filters.categories.map(cat => `category:"${cat}"`).join(' OR ');
-      filterParts.push(`(${categoryFilter})`);
-    }
-
-    if (filters.tags && filters.tags.length > 0) {
-      const tagFilter = filters.tags.map(tag => `tags:"${tag}"`).join(' OR ');
-      filterParts.push(`(${tagFilter})`);
-    }
-
-    if (filters.isVerified !== undefined) {
-      filterParts.push(`isVerified:${filters.isVerified}`);
-    }
-
-    if (filters.isFastDelivery !== undefined) {
-      filterParts.push(`isFastDelivery:${filters.isFastDelivery}`);
-    }
-
-    if (filters.minRating !== undefined) {
-      filterParts.push(`rating >= ${filters.minRating}`);
-    }
-
-    return filterParts.join(' AND ');
-  }
-
-  private getCustomRanking(sortBy: string): string[] {
-    switch (sortBy) {
-      case 'rating':
-        return ['desc(rating)', 'desc(reviewCount)'];
-      case 'distance':
-        return ['asc(distance)'];
-      case 'reviewCount':
-        return ['desc(reviewCount)', 'desc(rating)'];
-      default:
-        return ['desc(rating)', 'desc(reviewCount)'];
-    }
+    return this.fallbackSearch(query, filters, options);
   }
 
   private calculateDistance(
@@ -312,20 +204,6 @@ class AlgoliaSearchService {
 
   // Get facet values for building filter UI
   async getFacetValues(facetName: string): Promise<any[]> {
-    if (!this.isConfigured) {
-      return this.getFallbackFacetValues(facetName);
-    }
-
-    try {
-      const result = await this.index.searchForFacetValues(facetName);
-      return result.facetHits;
-    } catch (error) {
-      console.error('Error getting facet values:', error);
-      return this.getFallbackFacetValues(facetName);
-    }
-  }
-
-  private getFallbackFacetValues(facetName: string): any[] {
     switch (facetName) {
       case 'categories':
         return [
