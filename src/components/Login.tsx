@@ -91,36 +91,22 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              I am a:
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <div className="flex items-center justify-center">
+              <div className="text-lg mr-2">
+                {preSelectedRole === 'vendor' ? '🏪' : '🚚'}
+              </div>
+              <div className="text-sm">
+                <span className="font-medium text-orange-800">
+                  Signing in as {preSelectedRole === 'vendor' ? 'Vendor' : 'Supplier'}
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => handleRoleChange('vendor')}
-                className={`p-3 border rounded-lg text-center transition-colors ${
-                  role === 'vendor'
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+                onClick={onBackToRoleSelection}
+                className="ml-auto text-xs text-orange-600 hover:text-orange-500 underline"
               >
-                <div className="text-2xl mb-1">🏪</div>
-                <div className="text-sm font-medium">Vendor</div>
-                <div className="text-xs text-gray-500">Buy from suppliers</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleChange('supplier')}
-                className={`p-3 border rounded-lg text-center transition-colors ${
-                  role === 'supplier'
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <div className="text-2xl mb-1">🚚</div>
-                <div className="text-sm font-medium">Supplier</div>
-                <div className="text-xs text-gray-500">Sell to vendors</div>
+                Change
               </button>
             </div>
           </div>
