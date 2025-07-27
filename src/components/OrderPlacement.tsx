@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { validateNumber, safeMultiply, safeRound } from '../utils/numberValidation';
 
 interface OrderItem {
   itemName: string;
@@ -65,7 +66,11 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
     
     // Recalculate total price when quantity or price changes
     if (field === 'quantity' || field === 'pricePerUnit') {
-      updatedItems[index].totalPrice = updatedItems[index].quantity * updatedItems[index].pricePerUnit;
+      updatedItems[index].totalPrice = safeMultiply(
+        validateNumber(updatedItems[index].quantity, 0),
+        validateNumber(updatedItems[index].pricePerUnit, 0),
+        0
+      );
     }
     
     setItems(updatedItems);
@@ -75,11 +80,15 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
     updateItem(index, 'itemName', inventoryItem.itemName);
     updateItem(index, 'unit', inventoryItem.unit);
     updateItem(index, 'pricePerUnit', inventoryItem.pricePerUnit);
-    updateItem(index, 'totalPrice', items[index].quantity * inventoryItem.pricePerUnit);
+    updateItem(index, 'totalPrice', safeMultiply(
+      validateNumber(items[index].quantity, 0),
+      validateNumber(inventoryItem.pricePerUnit, 0),
+      0
+    ));
   };
 
   const getTotalCost = () => {
-    return items.reduce((sum, item) => sum + item.totalPrice, 0);
+    return items.reduce((sum, item) => sum + validateNumber(item.totalPrice, 0), 0);
   };
 
   const validateOrder = (): string | null => {
@@ -241,7 +250,7 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
                     type="number"
                     min="1"
                     value={item.quantity}
-                    onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
+                    onChange={(e) => updateItem(index, 'quantity', validateNumber(parseInt(e.target.value), 0))}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                     required
                   />
@@ -281,7 +290,7 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
                       Total
                     </label>
                     <div className="text-lg font-semibold text-green-600">
-                      ₹{item.totalPrice.toFixed(2)}
+                      ₹{safeRound(validateNumber(item.totalPrice, 0), 2, 0).toFixed(2)}
                     </div>
                   </div>
                   <button
@@ -324,7 +333,7 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
             <h3 className="font-semibold mb-2">Order Summary</h3>
             <div className="flex justify-between text-lg font-bold">
               <span>Total Cost:</span>
-              <span className="text-green-600">₹{getTotalCost().toFixed(2)}</span>
+              <span className="text-green-600">₹{safeRound(getTotalCost(), 2, 0).toFixed(2)}</span>
             </div>
             {supplier && getTotalCost() < supplier.minimumOrder && (
               <p className="text-red-600 text-sm mt-1">
