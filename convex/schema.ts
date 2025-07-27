@@ -33,6 +33,18 @@ export default defineSchema({
       qualityPreference: v.string(),
       deliveryTimePreference: v.string()
     }),
+    // --- Workflow Progress Fields ---
+    currentWorkflowStep: v.optional(v.string()), // e.g., 'discover', 'recommendations', ...
+    lastActivity: v.optional(v.number()),
+    discoveryCompleted: v.optional(v.boolean()),
+    recommendationsViewed: v.optional(v.boolean()),
+    groupOrderParticipated: v.optional(v.boolean()),
+    firstOrderPlaced: v.optional(v.boolean()),
+    inventoryTracked: v.optional(v.boolean()),
+    priceAlertsSet: v.optional(v.boolean()),
+    financialAnalyticsViewed: v.optional(v.boolean()),
+    communicationUsed: v.optional(v.boolean()),
+    // --- End Workflow Progress Fields ---
     createdAt: v.number(),
     updatedAt: v.number()
   }).index("by_user", ["userId"])
@@ -243,7 +255,9 @@ export default defineSchema({
     date: v.number(),
     month: v.string(), // "2024-01" format
     year: v.number()
-  }).index("by_vendor", ["vendorId"])
+  })
+    .index("by_vendor", ["vendorId"])
+    .index("by_supplier", ["supplierId"])
     .index("by_month", ["month"])
     .index("by_year", ["year"])
     .index("by_category", ["category"]),

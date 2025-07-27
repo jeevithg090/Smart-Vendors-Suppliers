@@ -7,10 +7,13 @@ import WorkflowIntegration from '../components/WorkflowIntegration';
 import VendorProfileManagement from '../components/VendorProfileManagement';
 import SupplierSearch from '../components/SupplierSearch';
 import VoiceQuery from '../components/VoiceQuery';
+import { OrderManager } from '../components/OrderManager';
+import FinancialAnalytics from '../components/FinancialAnalytics';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics'>('dashboard');
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Get vendor data or create if doesn't exist
   const vendor = useQuery(api.vendors.getByUserId, 
@@ -54,12 +57,19 @@ export default function VendorDashboard() {
     }
   }, [user, vendor, createVendor]);
 
+  // Onboarding effect for first-time users
+  useEffect(() => {
+    if (vendor && vendorStats?.totalOrders === 0) {
+      setShowOnboarding(true);
+    }
+  }, [vendor, vendorStats]);
+
   // Loading state
   if (!vendor) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto animate-fade-in"></div>
           <p className="mt-4 text-gray-600">Setting up your vendor profile...</p>
         </div>
       </div>
@@ -315,12 +325,77 @@ export default function VendorDashboard() {
     );
   }
 
+  // Orders Tab
+  if (activeTab === 'orders') {
+    return (
+      <PageLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </div>
+          <OrderManager />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Analytics Tab
+  if (activeTab === 'analytics') {
+    return (
+      <PageLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </div>
+          {vendor && <FinancialAnalytics vendorId={vendor._id} />}
+        </div>
+      </PageLayout>
+    );
+  }
+
   // Main Dashboard
   return (
     <PageLayout>
       <div className="max-w-7xl mx-auto p-6">
+        {/* Onboarding Banner */}
+        {showOnboarding && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 animate-fade-in">
+            <div className="flex items-center">
+              <div className="text-blue-500 mr-3 text-2xl">👋</div>
+              <div>
+                <h3 className="text-blue-800 font-medium">Welcome to Smart Vendors!</h3>
+                <p className="text-blue-700 text-sm">
+                  Get started by searching for suppliers, placing your first order, or joining a group order. Need help? Click the <span className="font-bold">Help</span> button in the menu.
+                </p>
+                <button
+                  onClick={() => setShowOnboarding(false)}
+                  className="mt-2 text-blue-800 hover:text-blue-900 font-medium text-sm underline"
+                  aria-label="Dismiss onboarding banner"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Backend Connected Banner */}
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
           <div className="flex items-center">
             <div className="text-green-500 mr-3">✅</div>
             <div>
@@ -332,7 +407,7 @@ export default function VendorDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in">
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
@@ -456,6 +531,7 @@ export default function VendorDashboard() {
               <button 
                 onClick={() => setActiveTab('workflow')}
                 className="p-4 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 text-center shadow-lg"
+                aria-label="Go to Smart Workflow"
               >
                 <div className="text-2xl mb-2">🚀</div>
                 <div className="font-medium">Smart Workflow</div>
@@ -465,6 +541,7 @@ export default function VendorDashboard() {
               <button 
                 onClick={() => setActiveTab('suppliers')}
                 className="p-4 bg-white border-2 border-orange-200 rounded-lg hover:border-orange-400 transition-colors text-center"
+                aria-label="Find Suppliers"
               >
                 <div className="text-2xl mb-2">🔍</div>
                 <div className="font-medium text-gray-800">Find Suppliers</div>
@@ -474,25 +551,31 @@ export default function VendorDashboard() {
               <button 
                 onClick={() => setActiveTab('groupOrders')}
                 className="p-4 bg-white border-2 border-blue-200 rounded-lg hover:border-blue-400 transition-colors text-center"
+                aria-label="Join Group Orders"
               >
                 <div className="text-2xl mb-2">👥</div>
                 <div className="font-medium text-gray-800">Group Orders</div>
                 <div className="text-sm text-gray-600">Join bulk purchases</div>
               </button>
               
-              <button className="p-4 bg-white border-2 border-green-200 rounded-lg hover:border-green-400 transition-colors text-center">
-                <div className="text-2xl mb-2">📊</div>
-                <div className="font-medium text-gray-800">Analytics</div>
-                <div className="text-sm text-gray-600">View spending insights</div>
+              <button 
+                onClick={() => setActiveTab('orders')}
+                className="p-4 bg-white border-2 border-green-200 rounded-lg hover:border-green-400 transition-colors text-center"
+                aria-label="Place and Track Orders"
+              >
+                <div className="text-2xl mb-2">📦</div>
+                <div className="font-medium text-gray-800">Orders</div>
+                <div className="text-sm text-gray-600">Place & track orders</div>
               </button>
               
               <button 
-                onClick={() => setActiveTab('profile')}
+                onClick={() => setActiveTab('analytics')}
                 className="p-4 bg-white border-2 border-purple-200 rounded-lg hover:border-purple-400 transition-colors text-center"
+                aria-label="View Analytics"
               >
-                <div className="text-2xl mb-2">⚙️</div>
-                <div className="font-medium text-gray-800">Profile Settings</div>
-                <div className="text-sm text-gray-600">Manage preferences</div>
+                <div className="text-2xl mb-2">📊</div>
+                <div className="font-medium text-gray-800">Analytics</div>
+                <div className="text-sm text-gray-600">View spending insights</div>
               </button>
             </div>
           </div>
