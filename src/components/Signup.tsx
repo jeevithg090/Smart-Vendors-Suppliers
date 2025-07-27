@@ -28,9 +28,15 @@ export default function Signup({ onSwitchToLogin }: SignupProps) {
       return;
     }
 
-    const success = await signup(email, password, firstName, lastName, role);
-    if (!success) {
-      setError('Signup failed. Please try again.');
+    try {
+      const success = await signup(email, password, firstName, lastName, role);
+      if (!success) {
+        setError('Signup failed. Please try again.');
+      }
+      // If successful, the user will be redirected automatically via the auth state change
+    } catch (error) {
+      console.error('Signup component error:', error);
+      setError('Signup failed due to connection issues. Please try again.');
     }
   };
 
