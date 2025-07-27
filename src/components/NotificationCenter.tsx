@@ -272,9 +272,10 @@ export const NotificationBell: React.FC<{
   onClick: () => void;
 }> = ({ onClick }) => {
   const { user } = useAuth();
-  const unreadCount = useQuery(api.notifications.getUnreadCount, {
-    userEmail: user?.email || ''
-  });
+  const unreadCount = useQuery(
+    api.notifications.getUnreadCount,
+    user?.email ? { userEmail: user.email } : "skip"
+  );
 
   return (
     <button
