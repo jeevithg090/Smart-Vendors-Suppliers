@@ -1,6 +1,24 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
+
+// Helper function to validate user authentication
+async function validateUser(ctx: any, userEmail: string) {
+  const vendor = await ctx.db
+    .query("vendors")
+    .withIndex("by_user", (q: any) => q.eq("userId", userEmail))
+    .first();
+
+  const supplier = await ctx.db
+    .query("suppliers")
+    .withIndex("by_user", (q: any) => q.eq("userId", userEmail))
+    .first();
+
+  if (!vendor && !supplier) {
+    throw new Error("Not authenticated");
+  }
+
+  return { userEmail, role: vendor ? "vendor" : "supplier" };
+}
 
 // Create a notification
 export const createNotification = mutation({
