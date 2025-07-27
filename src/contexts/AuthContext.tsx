@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string, role: 'vendor' | 'supplier'): Promise<boolean> => {
     setIsLoading(true);
-    
+
     try {
       const result = await authenticateUser({
         email,
@@ -76,11 +76,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(false);
         return true;
       }
-      
+
       setIsLoading(false);
       return false;
     } catch (error) {
       console.error('Login error:', error);
+
+      // Fallback for development mode when Convex is not connected
+      // Check if user exists in localStorage for development
+      const savedUser = localStorage.getItem('auth_user');
+      if (savedUser && (error.message && (error.message.includes('network') || error.message.includes('connection')))) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          if (parsedUser.email === email) {
+            console.warn('Convex connection failed, using local fallback for development');
+            setUser(parsedUser);
+            setIsLoading(false);
+            return true;
+          }
+        } catch (parseError) {
+          console.error('Error parsing saved user during fallback:', parseError);
+        }
+      }
+
       setIsLoading(false);
       return false;
     }
