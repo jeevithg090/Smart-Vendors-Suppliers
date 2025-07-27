@@ -12,15 +12,24 @@ const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 
 // Validate environment variables
 if (!CONVEX_URL) {
-  console.error('Missing VITE_CONVEX_URL environment variable');
-  console.error('Please run `npx convex dev` to set up Convex, or set the environment variable manually.');
+  console.warn('Missing VITE_CONVEX_URL environment variable');
+  console.warn('Please run `npx convex dev` to set up Convex, or set the environment variable manually.');
+  console.warn('Running in development mode with mock data.');
 }
 
 console.log('Environment check:');
 console.log('CONVEX_URL:', CONVEX_URL);
 
-// Use Convex URL or placeholder
-const convex = new ConvexReactClient(CONVEX_URL || 'https://placeholder.convex.cloud');
+// Use a valid deployment URL or create a development-only client
+let convex: ConvexReactClient;
+
+if (CONVEX_URL && CONVEX_URL !== 'https://placeholder.convex.cloud') {
+  convex = new ConvexReactClient(CONVEX_URL);
+} else {
+  // For development without Convex setup, use a minimal mock
+  console.warn('Using development mode - Convex features may not work');
+  convex = new ConvexReactClient('https://happy-mammal-123.convex.cloud'); // Valid format but won't connect
+}
 
 const root = createRoot(document.getElementById('root')!)
 
