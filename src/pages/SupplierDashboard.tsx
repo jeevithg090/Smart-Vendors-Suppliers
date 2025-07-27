@@ -49,7 +49,7 @@ interface SupplierProfile {
 
 export default function SupplierDashboard() {
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'analytics' | 'profile'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'analytics' | 'profile' | 'pricing' | 'automation' | 'quality' | 'loyalty'>('dashboard')
   const [isProfileSetup, setIsProfileSetup] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null);
