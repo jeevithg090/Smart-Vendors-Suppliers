@@ -54,6 +54,7 @@ export default function SupplierDashboard() {
   const [isProfileSetup, setIsProfileSetup] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null);
+  const [showOrderTracking, setShowOrderTracking] = useState<Id<'orders'> | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
