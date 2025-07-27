@@ -83,6 +83,7 @@ export default function SupplierDashboard() {
   const addInventoryItem = useMutation(api.inventory.addInventoryItem)
   const updateInventoryItem = useMutation(api.inventory.updateInventoryItem)
   const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
+  const updateSupplierProfile = useMutation(api.suppliers.update);
   const [updatingOrderId, setUpdatingOrderId] = useState<Id<'orders'> | null>(null);
 
   // Check if supplier profile exists, if not show setup
