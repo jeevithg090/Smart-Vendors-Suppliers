@@ -215,9 +215,9 @@ export default function VendorDashboard() {
           </div>
           <EnhancedSupplierSearch
             vendorLocation={{
-              lat: vendor.location.coordinates.lat,
-              lng: vendor.location.coordinates.lng,
-              city: vendor.location.city
+              lat: displayVendor.location.coordinates.lat,
+              lng: displayVendor.location.coordinates.lng,
+              city: displayVendor.location.city
             }}
           />
         </div>
