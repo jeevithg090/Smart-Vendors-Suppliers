@@ -1,7 +1,45 @@
 import { useState, useEffect, useMemo } from 'react';
-import { AlgoliaSearchFilters, AlgoliaSearchResult } from '../types/search';
-import { mockSearchService } from '../services/mockSearchService';
 import FilterMatrix from './FilterMatrix';
+
+interface SearchFilters {
+  categories?: string[];
+  tags?: string[];
+  isVerified?: boolean;
+  isFastDelivery?: boolean;
+  minRating?: number;
+  maxDistance?: number;
+  userLocation?: {
+    lat: number;
+    lng: number;
+  };
+}
+
+interface SearchResult {
+  objectID: string;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+  rating: number;
+  reviewCount: number;
+  location: {
+    lat: number;
+    lng: number;
+    address: string;
+    city: string;
+    state: string;
+  };
+  isVerified: boolean;
+  isFastDelivery: boolean;
+  minOrder: number;
+  deliveryRadius: number;
+  businessHours: {
+    open: string;
+    close: string;
+    days: string[];
+  };
+  distance?: number;
+}
 
 interface EnhancedSupplierSearchProps {
   vendorLocation?: {
