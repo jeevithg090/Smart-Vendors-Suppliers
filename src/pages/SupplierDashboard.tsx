@@ -74,8 +74,8 @@ export default function SupplierDashboard() {
     supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
   )
   
-  // Get orders for this supplier with tracking info
-  const orders = useQuery(api.orderTracking.getSupplierOrdersWithTracking,
+  // Get orders for this supplier
+  const orders = useQuery(api.orders.getOrdersBySupplier,
     supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
   )
 
