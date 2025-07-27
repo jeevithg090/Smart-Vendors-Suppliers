@@ -172,10 +172,16 @@ export default function EnhancedSupplierSearch({
       let relevanceScores = new Map<string, number>();
       let semanticAnalysis = null;
 
-      // Get mock suppliers
-      const availableSuppliers = await mockSearch(debouncedQuery, searchState.filters);
+      // Wait for Convex data and convert to SearchResult format
+      if (!convexSuppliers) {
+        // Still loading from Convex
+        setSearchState(prev => ({ ...prev, isLoading: true }));
+        return;
+      }
 
-      // Use semantic search if query is substantial
+      const availableSuppliers = convexSuppliers.map(convertConvexToSearchResult);
+
+      // Use semantic search if query is substantial and enabled
       if (debouncedQuery.length > 2 && searchState.isSemanticSearch) {
         try {
           const semanticResult = await geminiSearchService.semanticSupplierSearch(
@@ -188,12 +194,13 @@ export default function EnhancedSupplierSearch({
           relevanceScores = semanticResult.relevanceScores;
           semanticAnalysis = semanticResult.searchAnalysis;
 
-          console.log('Semantic search completed:', semanticResult);
+          console.log('Semantic search completed with Convex data:', semanticResult);
         } catch (semanticError) {
-          console.error('Semantic search failed, falling back to regular search:', semanticError);
+          console.error('Semantic search failed, falling back to Convex search:', semanticError);
           results = availableSuppliers;
         }
       } else {
+        // Use regular Convex search results
         results = availableSuppliers;
       }
 
