@@ -572,7 +572,7 @@ export default function VendorDashboard() {
           </div>
 
           {/* Profile Completion Alert */}
-          {vendor.trustScore < 2.5 && (
+          {displayVendor.trustScore < 2.5 && (
             <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-yellow-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
