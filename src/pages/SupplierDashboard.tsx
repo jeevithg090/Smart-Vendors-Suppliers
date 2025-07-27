@@ -751,7 +751,7 @@ export default function SupplierDashboard() {
                 </div>
               ) : orders.length > 0 ? (
                 <div className="space-y-4">
-                  {orders.map((order: Order) => (
+                  {orders.map((order: any) => (
                     <div key={order._id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
@@ -759,23 +759,47 @@ export default function SupplierDashboard() {
                           <p className="text-sm text-gray-600">
                             {new Date(order.createdAt).toLocaleDateString()}
                           </p>
+                          {order.vendor && (
+                            <p className="text-sm text-blue-600">
+                              {order.vendor.businessName}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
-                          <div className="font-medium">₹{order.totalAmount}</div>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            order.status === 'delivered' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {order.status}
-                          </span>
+                          <div className="font-medium">₹{order.totalCost}</div>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                              order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              order.status === 'processing' ? 'bg-purple-100 text-purple-800' :
+                              order.status === 'shipped' ? 'bg-orange-100 text-orange-800' :
+                              order.status === 'delivered' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                            {order.hasTracking && (
+                              <span className="bg-green-100 text-green-800 px-2 py-1 text-xs rounded-full">
+                                📦 Tracked
+                              </span>
+                            )}
+                            {order.isThirdPartyDelivery && (
+                              <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs rounded-full">
+                                3rd Party
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-600 mb-2">
+                      <div className="text-sm text-gray-600 mb-3">
                         {order.items.length} items ordered
+                        {order.hasTracking && (
+                          <span className="ml-2 text-green-600">
+                            • {order.trackingCount} tracking number{order.trackingCount > 1 ? 's' : ''}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         {order.status === 'pending' && (
                           <button
                             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs disabled:opacity-50"
@@ -802,17 +826,20 @@ export default function SupplierDashboard() {
                             {updatingOrderId === order._id ? 'Processing...' : 'Process'}
                           </button>
                         )}
-                        {order.status === 'processing' && (
+                        {(order.status === 'processing' || order.status === 'confirmed') && !order.hasTracking && (
                           <button
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
-                            disabled={updatingOrderId === order._id}
-                            onClick={async () => {
-                              setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'delivered' });
-                              setUpdatingOrderId(null);
-                            }}
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+                            onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
                           >
-                            {updatingOrderId === order._id ? 'Delivering...' : 'Mark as Delivered'}
+                            Add Tracking
+                          </button>
+                        )}
+                        {order.hasTracking && order.status !== 'delivered' && (
+                          <button
+                            className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-xs"
+                            onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                          >
+                            Update Tracking
                           </button>
                         )}
                         <button
@@ -820,6 +847,12 @@ export default function SupplierDashboard() {
                           onClick={() => setSelectedOrderId(order._id as Id<'orders'>)}
                         >
                           Details
+                        </button>
+                        <button
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs"
+                          onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                        >
+                          Track Order
                         </button>
                       </div>
                     </div>
