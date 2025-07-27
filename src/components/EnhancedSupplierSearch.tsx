@@ -214,14 +214,43 @@ export default function EnhancedSupplierSearch({
     setSearchState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const results = await mockSearch(debouncedQuery, searchState.filters);
+      let results: SearchResult[];
+      let relevanceScores = new Map<string, number>();
+      let semanticAnalysis = null;
+
+      // Get mock suppliers
+      const availableSuppliers = await mockSearch(debouncedQuery, searchState.filters);
+
+      // Use semantic search if query is substantial
+      if (debouncedQuery.length > 2 && searchState.isSemanticSearch) {
+        try {
+          const semanticResult = await geminiSearchService.semanticSupplierSearch(
+            debouncedQuery,
+            vendorLocation ? 'vendor' : 'supplier',
+            availableSuppliers
+          );
+
+          results = semanticResult.results;
+          relevanceScores = semanticResult.relevanceScores;
+          semanticAnalysis = semanticResult.searchAnalysis;
+
+          console.log('Semantic search completed:', semanticResult);
+        } catch (semanticError) {
+          console.error('Semantic search failed, falling back to regular search:', semanticError);
+          results = availableSuppliers;
+        }
+      } else {
+        results = availableSuppliers;
+      }
 
       setSearchState(prev => ({
         ...prev,
         results,
         totalResults: results.length,
         totalPages: 1,
-        isLoading: false
+        isLoading: false,
+        semanticAnalysis,
+        relevanceScores
       }));
     } catch (error) {
       console.error('Search error:', error);
