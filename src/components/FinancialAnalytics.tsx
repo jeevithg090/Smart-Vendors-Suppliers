@@ -41,6 +41,13 @@ const formatMonth = (monthStr: string) => {
 const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => {
   const [timeRange, setTimeRange] = useState<number>(6); // months
 
+  // Memoize date calculations to prevent re-renders
+  const dateRange = useMemo(() => {
+    const endDate = Date.now();
+    const startDate = endDate - (timeRange * 30 * 24 * 60 * 60 * 1000);
+    return { startDate, endDate };
+  }, [timeRange]);
+
   const monthlySpending = useQuery(api.financialAnalytics.getMonthlySpending, {
     vendorId,
     months: timeRange,
@@ -48,15 +55,15 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
 
   const spendingByCategory = useQuery(api.financialAnalytics.getSpendingByCategory, {
     vendorId,
-    startDate: Date.now() - (timeRange * 30 * 24 * 60 * 60 * 1000),
-    endDate: Date.now(),
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
   });
 
   const topSuppliers = useQuery(api.financialAnalytics.getTopSuppliers, {
     vendorId,
     limit: 5,
-    startDate: Date.now() - (timeRange * 30 * 24 * 60 * 60 * 1000),
-    endDate: Date.now(),
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
   });
 
   const costOptimizationRecommendations = useQuery(

@@ -36,7 +36,7 @@ export const MessagingInterface: React.FC<MessagingInterfaceProps> = ({
     if (messages && messages.length > 0 && user?.email) {
       markAsRead({ userEmail: user.email, senderId: otherUserId });
     }
-  }, [messages, otherUserId, markAsRead, user?.email]);
+  }, [messages, otherUserId, user?.email]);
 
   useEffect(() => {
     scrollToBottom();
