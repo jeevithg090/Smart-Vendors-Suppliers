@@ -142,15 +142,17 @@ export const authenticateUser = mutation({
       }
     } else {
       // Login - find existing user and check if they have the requested role
+      let vendor, supplier;
+
       try {
         console.log("Attempting login for email:", args.email, "role:", args.role);
 
-        const vendor = await ctx.db
+        vendor = await ctx.db
           .query("vendors")
           .withIndex("by_user", (q) => q.eq("userId", args.email))
           .first();
 
-        const supplier = await ctx.db
+        supplier = await ctx.db
           .query("suppliers")
           .withIndex("by_user", (q) => q.eq("userId", args.email))
           .first();
