@@ -369,19 +369,27 @@ export default function EnhancedSupplierSearch({
         <div className="text-gray-600">
           {searchState.totalResults > 0 ? (
             <>
-              Showing {searchState.results.length} of {searchState.totalResults} suppliers
+              Showing {searchState.results.length} of {searchState.totalResults} suppliers from Convex
               {vendorLocation && ` near ${vendorLocation.city}`}
+              {searchState.isSemanticSearch && (
+                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                  ✨ AI Enhanced
+                </span>
+              )}
             </>
-          ) : searchState.isLoading ? (
-            'Searching...'
+          ) : searchState.isLoading || convexSuppliers === undefined ? (
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+              <span>Loading suppliers from Convex...</span>
+            </div>
           ) : (
-            'No suppliers found'
+            'No suppliers found in database'
           )}
         </div>
-        
+
         {searchState.query && (
           <div className="text-sm text-gray-500">
-            Search results for "{searchState.query}"
+            Search: "{searchState.query}"
           </div>
         )}
       </div>
