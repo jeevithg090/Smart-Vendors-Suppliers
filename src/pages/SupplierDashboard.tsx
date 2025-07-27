@@ -52,6 +52,13 @@ export default function SupplierDashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({
+    businessName: '',
+    deliveryRadius: 0,
+    minimumOrder: 0,
+    categories: [] as string[]
+  });
 
   // Get supplier profile by user ID
   const supplierProfile = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' })
