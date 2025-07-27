@@ -101,9 +101,7 @@ export default defineConfig({
             if (id.includes('react-router')) {
               return 'router-vendor'
             }
-            if (id.includes('@clerk/clerk-react')) {
-              return 'clerk-vendor'
-            }
+
             if (id.includes('convex')) {
               return 'convex-vendor'
             }
