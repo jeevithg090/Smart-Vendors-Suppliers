@@ -116,9 +116,9 @@ export default function FilterMatrix({
   };
 
   // Update specific filter
-  const updateFilter = <K extends keyof AlgoliaSearchFilters>(
-    key: K, 
-    value: AlgoliaSearchFilters[K]
+  const updateFilter = <K extends keyof SearchFilters>(
+    key: K,
+    value: SearchFilters[K]
   ) => {
     setActivePreset(null); // Clear preset when manually changing filters
     onFiltersChange({
@@ -128,7 +128,7 @@ export default function FilterMatrix({
   };
 
   // Toggle array filter (categories, tags)
-  const toggleArrayFilter = <K extends keyof AlgoliaSearchFilters>(
+  const toggleArrayFilter = <K extends keyof SearchFilters>(
     key: K,
     value: string
   ) => {
@@ -136,8 +136,8 @@ export default function FilterMatrix({
     const newArray = currentArray.includes(value)
       ? currentArray.filter(item => item !== value)
       : [...currentArray, value];
-    
-    updateFilter(key, newArray as AlgoliaSearchFilters[K]);
+
+    updateFilter(key, newArray as SearchFilters[K]);
   };
 
   // Count active filters
