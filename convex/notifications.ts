@@ -104,15 +104,12 @@ export const markNotificationAsRead = mutation({
 export const markAllNotificationsAsRead = mutation({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
+    // Validate user authentication
+    const identity = await validateUser(ctx, args.userEmail);
 
     const unreadNotifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user", (q) => q.eq("userId", identity.userEmail))
       .filter((q) => q.eq(q.field("isRead"), false))
       .collect();
 
