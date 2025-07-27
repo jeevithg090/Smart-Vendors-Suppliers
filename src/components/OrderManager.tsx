@@ -131,7 +131,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 ← Back to Order History
               </button>
             </div>
-            <OrderTracking
+            <SimpleOrderTracking
               orderId={selectedOrderId}
               userRole="vendor"
               onClose={handleBackToHistory}
