@@ -805,8 +805,8 @@ export default function SupplierDashboard() {
                             className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
-                              setUpdatingOrderId(order._id);
-                              await updateOrderStatus({ orderId: order._id, status: 'delivered' });
+                              setUpdatingOrderId(order._id as Id<'orders'>);
+                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'delivered' });
                               setUpdatingOrderId(null);
                             }}
                           >
