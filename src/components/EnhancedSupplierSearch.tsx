@@ -63,6 +63,9 @@ interface SearchState {
   currentPage: number;
   totalPages: number;
   sortBy: string;
+  isSemanticSearch: boolean;
+  semanticAnalysis: any;
+  relevanceScores: Map<string, number>;
 }
 
 const SORT_OPTIONS = [
