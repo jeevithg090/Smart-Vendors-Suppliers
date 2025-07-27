@@ -33,12 +33,14 @@
   },
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
+    "@types/recordrtc": "^5.6.14",
     "convex": "^1.25.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-is": "^19.1.0",
     "react-router-dom": "^7.7.1",
-    "recharts": "^3.1.0"
+    "recharts": "^3.1.0",
+    "recordrtc": "^5.6.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

@@ -367,4 +367,19 @@ export default defineSchema({
     .index("by_respondent", ["respondentId"])
     .index("by_status", ["status"])
     .index("by_category", ["category"]),
+
+  // Voice Queries table
+  voiceQueries: defineTable({
+    userId: v.string(), // Clerk user ID
+    userRole: v.string(), // "vendor" or "supplier"
+    queryText: v.string(), // Original transcribed text
+    language: v.string(), // Detected language code
+    englishText: v.string(), // Translated to English
+    response: v.string(), // AI response
+    audioDuration: v.optional(v.number()), // Recording duration in ms
+    createdAt: v.number(),
+  }).index("by_user", ["userId"])
+    .index("by_role", ["userRole"])
+    .index("by_language", ["language"])
+    .index("by_created", ["createdAt"]),
 });

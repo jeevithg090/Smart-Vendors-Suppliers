@@ -4,6 +4,7 @@ import { api } from '../../convex/_generated/api'
 import { useState, useEffect } from 'react'
 import InventoryForecast from '../components/InventoryForecast'
 import FSSAIVerification from '../components/FSSAIVerification'
+import VoiceQuery from '../components/VoiceQuery'
 
 interface InventoryItem {
   _id: string;
@@ -184,12 +185,15 @@ export default function SupplierDashboard() {
                 <span className="text-2xl mr-3">🚚</span>
                 <h1 className="text-xl font-semibold text-gray-800">Smart Street - Supplier Setup</h1>
               </div>
-              <button
-                onClick={logout}
-                className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"
-              >
-                Logout
-              </button>
+              <div className="flex items-center space-x-4">
+                <VoiceQuery userRole="supplier" className="mr-4" />
+                <button
+                  onClick={logout}
+                  className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -329,6 +333,7 @@ export default function SupplierDashboard() {
                   )}
                 </div>
               </div>
+              <VoiceQuery userRole="supplier" className="mr-4" />
               <button
                 onClick={logout}
                 className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"

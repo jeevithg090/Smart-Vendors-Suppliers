@@ -1,10 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-// import type { Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
 
 // Send a message
 export const sendMessage = mutation({
   args: {
+    userEmail: v.string(), // User's email for authentication
     receiverId: v.string(),
     receiverType: v.string(),
     content: v.string(),
@@ -12,7 +13,8 @@ export const sendMessage = mutation({
     orderId: v.optional(v.id("orders")),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -46,13 +48,15 @@ export const sendMessage = mutation({
   },
 });
 
-// Get conversation between two users
+// Get conversation messages
 export const getConversation = query({
-  args: {
-    otherUserId: v.string(),
+  args: { 
+    userEmail: v.string(), // User's email for authentication
+    otherUserId: v.string() 
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -71,22 +75,49 @@ export const getConversation = query({
       )
       .collect();
 
-    const allMessages = [...messages, ...reverseMessages]
-      .sort((a, b) => a.createdAt - b.createdAt);
-
-    return allMessages;
+    return [...messages, ...reverseMessages].sort((a, b) => a.createdAt - b.createdAt);
   },
 });
 
-// Get all conversations for current user
-export const getConversations = query({
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
+// Mark messages as read
+export const markAsRead = mutation({
+  args: { 
+    userEmail: v.string(), // User's email for authentication
+    senderId: v.string() 
+  },
+  handler: async (ctx, args) => {
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    // Get messages where user is sender or receiver
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_conversation", (q) => 
+        q.eq("senderId", args.senderId).eq("receiverId", identity.subject)
+      )
+      .filter((q) => q.eq(q.field("isRead"), false))
+      .collect();
+
+    for (const message of messages) {
+      await ctx.db.patch(message._id, { isRead: true });
+    }
+
+    return messages.length;
+  },
+});
+
+// Get user's conversations list
+export const getConversations = query({
+  args: { userEmail: v.string() }, // User's email for authentication
+  handler: async (ctx, args) => {
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
     const sentMessages = await ctx.db
       .query("messages")
       .withIndex("by_sender", (q) => q.eq("senderId", identity.subject))
@@ -97,93 +128,41 @@ export const getConversations = query({
       .withIndex("by_receiver", (q) => q.eq("receiverId", identity.subject))
       .collect();
 
-    // Group by conversation partner
-    const conversationMap = new Map();
+    // Get unique conversation partners
+    const conversationPartners = new Set<string>();
+    
+    sentMessages.forEach(msg => conversationPartners.add(msg.receiverId));
+    receivedMessages.forEach(msg => conversationPartners.add(msg.senderId));
 
-    [...sentMessages, ...receivedMessages].forEach((message) => {
-      const partnerId = message.senderId === identity.subject 
-        ? message.receiverId 
-        : message.senderId;
-      
-      if (!conversationMap.has(partnerId) || 
-          message.createdAt > conversationMap.get(partnerId).lastMessage.createdAt) {
-        conversationMap.set(partnerId, {
+    const conversations = [];
+    
+    for (const partnerId of conversationPartners) {
+      const lastMessage = [...sentMessages, ...receivedMessages]
+        .filter(msg => msg.senderId === partnerId || msg.receiverId === partnerId)
+        .sort((a, b) => b.createdAt - a.createdAt)[0];
+
+      if (lastMessage) {
+        conversations.push({
           partnerId,
-          partnerType: message.senderId === identity.subject 
-            ? message.receiverType 
-            : message.senderType,
-          lastMessage: message,
-          unreadCount: 0,
+          lastMessage: lastMessage.content,
+          lastMessageTime: lastMessage.createdAt,
+          unreadCount: receivedMessages.filter(msg => 
+            msg.senderId === partnerId && !msg.isRead
+          ).length
         });
       }
-    });
-
-    // Calculate unread counts
-    for (const [partnerId, conversation] of conversationMap) {
-      const unreadCount = receivedMessages.filter(
-        (msg) => msg.senderId === partnerId && !msg.isRead
-      ).length;
-      conversation.unreadCount = unreadCount;
     }
 
-    // Get partner details
-    const conversations = [];
-    for (const [partnerId, conversation] of conversationMap) {
-      let partnerDetails = null;
-      
-      if (conversation.partnerType === "vendor") {
-        partnerDetails = await ctx.db
-          .query("vendors")
-          .withIndex("by_user", (q) => q.eq("userId", partnerId))
-          .first();
-      } else if (conversation.partnerType === "supplier") {
-        partnerDetails = await ctx.db
-          .query("suppliers")
-          .withIndex("by_user", (q) => q.eq("userId", partnerId))
-          .first();
-      }
-
-      conversations.push({
-        ...conversation,
-        partnerDetails,
-      });
-    }
-
-    return conversations.sort((a, b) => b.lastMessage.createdAt - a.lastMessage.createdAt);
-  },
-});
-
-// Mark messages as read
-export const markAsRead = mutation({
-  args: {
-    senderId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
-    const unreadMessages = await ctx.db
-      .query("messages")
-      .withIndex("by_conversation", (q) => 
-        q.eq("senderId", args.senderId).eq("receiverId", identity.subject)
-      )
-      .filter((q) => q.eq(q.field("isRead"), false))
-      .collect();
-
-    for (const message of unreadMessages) {
-      await ctx.db.patch(message._id, { isRead: true });
-    }
-
-    return unreadMessages.length;
+    return conversations.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
   },
 });
 
 // Get unread message count
 export const getUnreadCount = query({
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
+  args: { userEmail: v.string() }, // User's email for authentication
+  handler: async (ctx, args) => {
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -198,22 +177,29 @@ export const getUnreadCount = query({
   },
 });
 
-// Get messages for an order
-export const getOrderMessages = query({
-  args: {
-    orderId: v.id("orders"),
+// Delete a message
+export const deleteMessage = mutation({
+  args: { 
+    userEmail: v.string(), // User's email for authentication
+    messageId: v.id("messages") 
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    const messages = await ctx.db
-      .query("messages")
-      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
-      .collect();
+    const message = await ctx.db.get(args.messageId);
+    if (!message) {
+      throw new Error("Message not found");
+    }
 
-    return messages.sort((a, b) => a.createdAt - b.createdAt);
+    if (message.senderId !== identity.subject) {
+      throw new Error("Not authorized to delete this message");
+    }
+
+    await ctx.db.delete(args.messageId);
+    return true;
   },
 });

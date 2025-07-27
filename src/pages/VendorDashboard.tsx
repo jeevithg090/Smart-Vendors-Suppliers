@@ -6,6 +6,7 @@ import { api } from '../../convex/_generated/api';
 import WorkflowIntegration from '../components/WorkflowIntegration';
 import VendorProfileManagement from '../components/VendorProfileManagement';
 import SupplierSearch from '../components/SupplierSearch';
+import VoiceQuery from '../components/VoiceQuery';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
@@ -79,6 +80,7 @@ export default function VendorDashboard() {
               <span className="text-sm text-gray-600">
                 Welcome, {user?.firstName || 'User'}!
               </span>
+              <VoiceQuery userRole="vendor" className="mr-4" />
               <button
                 onClick={logout}
                 className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"

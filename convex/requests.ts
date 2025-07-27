@@ -1,9 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 
 // Create a new demand request
 export const createDemandRequest = mutation({
   args: {
+    userEmail: v.string(), // User's email for authentication
     itemName: v.string(),
     quantity: v.number(),
     unit: v.string(),
@@ -15,7 +17,8 @@ export const createDemandRequest = mutation({
     requireFssai: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -23,7 +26,7 @@ export const createDemandRequest = mutation({
     // Get the vendor
     const vendor = await ctx.db
       .query("vendors")
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
       .first();
 
     if (!vendor) {
@@ -61,264 +64,135 @@ export const createDemandRequest = mutation({
   },
 });
 
-// Get all requests for a vendor
+// Get demand requests for a vendor
 export const getVendorRequests = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return [];
-    }
-
-    const vendor = await ctx.db
-      .query("vendors")
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
-      .first();
-
-    if (!vendor) {
-      return [];
-    }
-
-    const requests = await ctx.db
-      .query("requests")
-      .filter((q) => q.eq(q.field("vendorId"), vendor._id))
-      .order("desc")
-      .collect();
-
-    // Get vendor details for each request
-    const requestsWithVendor = await Promise.all(
-      requests.map(async (request) => {
-        const vendorDetails = await ctx.db.get(request.vendorId);
-        return {
-          ...request,
-          vendor: vendorDetails,
-        };
-      })
-    );
-
-    return requestsWithVendor;
-  },
-});
-
-// Get all open requests (for suppliers to view)
-export const getOpenRequests = query({
-  args: { location: v.optional(v.string()) },
+  args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
-    let query = ctx.db.query("requests").filter((q) => q.eq(q.field("status"), "open"));
-    
-    if (args.location) {
-      query = query.filter((q) => q.eq(q.field("location"), args.location));
-    }
-
-    const requests = await query.order("desc").collect();
-
-    // Get vendor details for each request
-    const requestsWithVendor = await Promise.all(
-      requests.map(async (request) => {
-        const vendorDetails = await ctx.db.get(request.vendorId);
-        return {
-          ...request,
-          vendor: vendorDetails,
-        };
-      })
-    );
-
-    return requestsWithVendor;
-  },
-});
-
-// Get similar requests for AI suggestions
-export const getSimilarRequests = query({
-  args: { item: v.string(), location: v.optional(v.string()) },
-  handler: async (ctx, args) => {
-    let query = ctx.db
-      .query("requests")
-      .filter((q) => q.eq(q.field("itemName"), args.item))
-      .filter((q) => q.eq(q.field("status"), "open"));
-
-    if (args.location) {
-      query = query.filter((q) => q.eq(q.field("location"), args.location));
-    }
-
-    const requests = await query.take(3);
-
-    // Get vendor details for each request
-    const requestsWithVendor = await Promise.all(
-      requests.map(async (request) => {
-        const vendorDetails = await ctx.db.get(request.vendorId);
-        return {
-          ...request,
-          vendor: vendorDetails,
-        };
-      })
-    );
-
-    return requestsWithVendor;
-  },
-});
-
-// Respond to a request (for suppliers)
-export const respondToRequest = mutation({
-  args: { 
-    requestId: v.id("requests"), 
-    quote: v.optional(v.number()), 
-    message: v.optional(v.string()) 
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    // Get the supplier
+    const vendor = await ctx.db
+      .query("vendors")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .first();
+
+    if (!vendor) {
+      throw new Error("Vendor not found");
+    }
+
+    const requests = await ctx.db
+      .query("requests")
+      .withIndex("by_vendor", (q) => q.eq("vendorId", vendor._id))
+      .order("desc")
+      .collect();
+
+    return requests;
+  },
+});
+
+// Get all open demand requests (for suppliers to browse)
+export const getOpenRequests = query({
+  args: { userEmail: v.string() }, // User's email for authentication
+  handler: async (ctx, args) => {
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const requests = await ctx.db
+      .query("requests")
+      .withIndex("by_status", (q) => q.eq("status", "open"))
+      .order("desc")
+      .collect();
+
+    return requests;
+  },
+});
+
+// Respond to a demand request
+export const respondToRequest = mutation({
+  args: {
+    userEmail: v.string(), // User's email for authentication
+    requestId: v.id("requests"),
+    quote: v.optional(v.number()),
+    message: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
     const supplier = await ctx.db
       .query("suppliers")
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
       .first();
 
     if (!supplier) {
       throw new Error("Supplier not found");
     }
 
-    // Get the request
     const request = await ctx.db.get(args.requestId);
     if (!request) {
       throw new Error("Request not found");
     }
 
     if (request.status !== "open") {
-      throw new Error("Request is no longer open");
+      throw new Error("Request is no longer open for responses");
     }
 
-    // Add the response
-    const updatedResponses = [
-      ...request.responses,
-      {
-        supplierId: supplier._id,
-        quote: args.quote,
-        message: args.message,
-        respondedAt: Date.now(),
-      }
-    ];
+    // Add response to the request
+    const response = {
+      supplierId: supplier._id,
+      quote: args.quote,
+      message: args.message,
+      respondedAt: Date.now(),
+    };
 
-    // Update the request
     await ctx.db.patch(args.requestId, {
-      responses: updatedResponses,
-      status: updatedResponses.length > 0 ? "responded" : "open",
+      responses: [...request.responses, response],
     });
 
-    return request._id;
+    return true;
   },
 });
 
-// Close a request
+// Close a demand request
 export const closeRequest = mutation({
-  args: { requestId: v.id("requests") },
+  args: {
+    userEmail: v.string(), // User's email for authentication
+    requestId: v.id("requests"),
+  },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    // Get user identity using manual auth
+    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    // Get the vendor
-    const vendor = await ctx.db
-      .query("vendors")
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
-      .first();
-
-    if (!vendor) {
-      throw new Error("Vendor not found");
-    }
-
-    // Get the request
     const request = await ctx.db.get(args.requestId);
     if (!request) {
       throw new Error("Request not found");
     }
 
-    // Check if the vendor owns this request
-    if (request.vendorId !== vendor._id) {
+    const vendor = await ctx.db
+      .query("vendors")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .first();
+
+    if (!vendor || request.vendorId !== vendor._id) {
       throw new Error("Not authorized to close this request");
     }
 
-    // Close the request
     await ctx.db.patch(args.requestId, {
       status: "closed",
     });
 
-    return request._id;
-  },
-});
-
-// Fulfill a request (convert to order)
-export const fulfillRequest = mutation({
-  args: { 
-    requestId: v.id("requests"), 
-    supplierId: v.id("suppliers"),
-    items: v.array(
-      v.object({
-        itemName: v.string(),
-        quantity: v.number(),
-        unit: v.string(),
-        pricePerUnit: v.number(),
-        totalPrice: v.number(),
-      })
-    ),
-    totalCost: v.number(),
-    deliveryAddress: v.string(),
-    estimatedDelivery: v.number(),
-    paymentMethod: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-
-    // Get the vendor
-    const vendor = await ctx.db
-      .query("vendors")
-      .filter((q) => q.eq(q.field("userId"), identity.subject))
-      .first();
-
-    if (!vendor) {
-      throw new Error("Vendor not found");
-    }
-
-    // Get the request
-    const request = await ctx.db.get(args.requestId);
-    if (!request) {
-      throw new Error("Request not found");
-    }
-
-    // Check if the vendor owns this request
-    if (request.vendorId !== vendor._id) {
-      throw new Error("Not authorized to fulfill this request");
-    }
-
-    // Create the order
-    const orderId = await ctx.db.insert("orders", {
-      vendorId: vendor._id,
-      supplierId: args.supplierId,
-      items: args.items,
-      totalCost: args.totalCost,
-      status: "pending",
-      orderType: "individual",
-      deliveryAddress: args.deliveryAddress,
-      estimatedDelivery: args.estimatedDelivery,
-      actualDelivery: undefined,
-      paymentStatus: "pending",
-      paymentMethod: args.paymentMethod,
-      notes: undefined,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-
-    // Mark request as fulfilled
-    await ctx.db.patch(args.requestId, {
-      status: "fulfilled",
-    });
-
-    return orderId;
+    return true;
   },
 }); 

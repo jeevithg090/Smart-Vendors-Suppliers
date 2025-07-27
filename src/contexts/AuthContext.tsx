@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 export interface User {
   id: string;
@@ -6,6 +8,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   role: 'vendor' | 'supplier';
+  profileId?: string;
 }
 
 interface AuthContextType {
@@ -31,12 +34,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const authenticateUser = useMutation(api.auth.authenticateUser);
+
   // Check for existing session on app start
   useEffect(() => {
     const savedUser = localStorage.getItem('auth_user');
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
       } catch (error) {
         console.error('Error parsing saved user:', error);
         localStorage.removeItem('auth_user');
@@ -48,19 +54,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string, role: 'vendor' | 'supplier'): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call - in a real app, this would be an actual API request
     try {
-      // Simple validation for demo purposes
-      if (email && password.length >= 4) {
-        const newUser: User = {
-          id: `${role}_${Date.now()}`,
-          email,
-          firstName: email.split('@')[0],
-          role
+      const result = await authenticateUser({
+        email,
+        password,
+        role,
+        isSignup: false
+      });
+
+      if (result.success && result.user) {
+        const userData: User = {
+          id: result.user.id || '',
+          email: result.user.email || '',
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          role: result.user.role as 'vendor' | 'supplier',
+          profileId: result.user.profileId
         };
-        
-        setUser(newUser);
-        localStorage.setItem('auth_user', JSON.stringify(newUser));
+        setUser(userData);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
         setIsLoading(false);
         return true;
       }
@@ -83,19 +95,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call
     try {
-      if (email && password.length >= 4 && firstName) {
-        const newUser: User = {
-          id: `${role}_${Date.now()}`,
-          email,
-          firstName,
-          lastName,
-          role
+      const result = await authenticateUser({
+        email,
+        password,
+        role,
+        firstName,
+        lastName,
+        isSignup: true
+      });
+
+      if (result.success && result.user) {
+        const userData: User = {
+          id: result.user.id || '',
+          email: result.user.email || '',
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          role: result.user.role as 'vendor' | 'supplier',
+          profileId: result.user.profileId
         };
-        
-        setUser(newUser);
-        localStorage.setItem('auth_user', JSON.stringify(newUser));
+        setUser(userData);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
         setIsLoading(false);
         return true;
       }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { useAuth } from '../contexts/AuthContext';
 
 interface NotificationCenterProps {
   isOpen: boolean;
@@ -12,11 +13,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   isOpen,
   onClose
 }) => {
+  const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   
-  const notifications = useQuery(api.notifications.getNotifications, {
-    limit: 50,
-    unreadOnly: filter === 'unread'
+  const notifications = useQuery(api.notifications.getUserNotifications, {
+    userEmail: user?.email || ''
   });
   
   const markAsRead = useMutation(api.notifications.markNotificationAsRead);
@@ -25,7 +26,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   const handleMarkAsRead = async (notificationId: Id<'notifications'>) => {
     try {
-      await markAsRead({ notificationId });
+      await markAsRead({ userEmail: user?.email || '', notificationId });
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
@@ -33,7 +34,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllAsRead();
+      await markAllAsRead({ userEmail: user?.email || '' });
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
     }
@@ -41,7 +42,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   const handleDelete = async (notificationId: Id<'notifications'>) => {
     try {
-      await deleteNotification({ notificationId });
+      await deleteNotification({ userEmail: user?.email || '', notificationId });
     } catch (error) {
       console.error('Failed to delete notification:', error);
     }
@@ -211,7 +212,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
-                {notifications.map((notification) => (
+                {notifications.map((notification: any) => (
                   <div
                     key={notification._id}
                     className={`p-4 border-l-4 ${getPriorityColor(notification.priority)} ${
@@ -270,7 +271,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 export const NotificationBell: React.FC<{
   onClick: () => void;
 }> = ({ onClick }) => {
-  const unreadCount = useQuery(api.notifications.getUnreadNotificationCount);
+  const { user } = useAuth();
+  const unreadCount = useQuery(api.notifications.getUnreadCount, {
+    userEmail: user?.email || ''
+  });
 
   return (
     <button

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { useAuth } from '../contexts/AuthContext';
 
 interface MessagingInterfaceProps {
   otherUserId: string;
@@ -18,20 +19,24 @@ export const MessagingInterface: React.FC<MessagingInterfaceProps> = ({
   orderId,
   onClose
 }) => {
+  const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const messages = useQuery(api.messages.getConversation, { otherUserId });
+  const messages = useQuery(api.messages.getConversation, { 
+    userEmail: user?.email || '', 
+    otherUserId 
+  });
   const sendMessage = useMutation(api.messages.sendMessage);
   const markAsRead = useMutation(api.messages.markAsRead);
   const sendMessageNotification = useMutation(api.notifications.sendMessageNotification);
 
   useEffect(() => {
-    if (messages && messages.length > 0) {
-      markAsRead({ senderId: otherUserId });
+    if (messages && messages.length > 0 && user?.email) {
+      markAsRead({ userEmail: user.email, senderId: otherUserId });
     }
-  }, [messages, otherUserId, markAsRead]);
+  }, [messages, otherUserId, markAsRead, user?.email]);
 
   useEffect(() => {
     scrollToBottom();
@@ -48,6 +53,7 @@ export const MessagingInterface: React.FC<MessagingInterfaceProps> = ({
     setIsLoading(true);
     try {
       const messageId = await sendMessage({
+        userEmail: user?.email || '',
         receiverId: otherUserId,
         receiverType: otherUserType,
         content: message.trim(),
@@ -176,7 +182,10 @@ export const MessagingInterface: React.FC<MessagingInterfaceProps> = ({
 export const ConversationsList: React.FC<{
   onSelectConversation: (userId: string, userName: string, userType: 'vendor' | 'supplier') => void;
 }> = ({ onSelectConversation }) => {
-  const conversations = useQuery(api.messages.getConversations);
+  const { user } = useAuth();
+  const conversations = useQuery(api.messages.getConversations, { 
+    userEmail: user?.email || '' 
+  });
 
   if (!conversations) {
     return (

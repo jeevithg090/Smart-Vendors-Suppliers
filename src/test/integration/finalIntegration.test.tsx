@@ -1,8 +1,8 @@
+import React from 'react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { ConvexProvider } from 'convex/react'
-import { ClerkProvider } from '@clerk/clerk-react'
 import { ConvexReactClient } from 'convex/react'
 import App from '../../App'
 import WorkflowIntegration from '../../components/WorkflowIntegration'
@@ -10,17 +10,6 @@ import { SECURITY_CONFIG } from '../../config/security'
 
 // Mock Convex client
 const mockConvexClient = new ConvexReactClient('https://test.convex.cloud')
-
-// Mock Clerk
-vi.mock('@clerk/clerk-react', () => ({
-  ClerkProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  useAuth: () => ({ isSignedIn: true, userId: 'test-user' }),
-  useUser: () => ({ 
-    user: { id: 'test-user', emailAddresses: [{ emailAddress: 'test@example.com' }] },
-    isSignedIn: true,
-    isLoaded: true
-  })
-}))
 
 // Mock Convex queries
 vi.mock('convex/react', async () => {
@@ -59,13 +48,11 @@ vi.mock('convex/react', async () => {
 })
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <ClerkProvider publishableKey="test-key">
-    <ConvexProvider client={mockConvexClient}>
-      <BrowserRouter>
-        {children}
-      </BrowserRouter>
-    </ConvexProvider>
-  </ClerkProvider>
+  <ConvexProvider client={mockConvexClient}>
+    <BrowserRouter>
+      {children}
+    </BrowserRouter>
+  </ConvexProvider>
 )
 
 describe('Final Integration Tests', () => {
