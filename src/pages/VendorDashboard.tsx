@@ -15,6 +15,7 @@ import MarketIntelligence from '../components/MarketIntelligence';
 import SimpleOrderTracking from '../components/SimpleOrderTracking';
 import TrackingStatusBanner from '../components/TrackingStatusBanner';
 import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
@@ -85,9 +86,9 @@ export default function VendorDashboard() {
   }
 
   const PageLayout = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b dark:bg-gray-900 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -99,6 +100,7 @@ export default function VendorDashboard() {
                 Welcome, {user?.firstName || 'User'}!
               </span>
               <VoiceQuery userRole="vendor" className="mr-4" />
+              <ThemeToggle />
               <button
                 onClick={logout}
                 className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"
@@ -650,7 +652,7 @@ export default function VendorDashboard() {
                 className="p-4 bg-white border-2 border-yellow-200 rounded-lg hover:border-yellow-400 transition-colors text-center"
                 aria-label="Recipe Costing Calculator"
               >
-                <div className="text-2xl mb-2">����</div>
+                <div className="text-2xl mb-2">🍳</div>
                 <div className="font-medium text-gray-800">Recipe Costing</div>
                 <div className="text-sm text-gray-600">Calculate dish costs</div>
               </button>
