@@ -304,7 +304,7 @@ html {
 
   /* Mobile-optimized card styles */
   .card {
-    @apply bg-white rounded-lg shadow-sm border p-4 md:p-6;
+    @apply bg-white rounded-lg shadow-sm border p-4 md:p-6 dark:bg-gray-800 dark:border-gray-700;
   }
 
   /* Responsive grid utilities */

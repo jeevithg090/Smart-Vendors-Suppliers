@@ -15,6 +15,7 @@ import SupplierLoyalty from '../components/SupplierLoyalty';
 import SimpleOrderTracking from '../components/SimpleOrderTracking';
 import TrackingStatusBanner from '../components/TrackingStatusBanner';
 import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
+import ThemeToggle from '../components/ThemeToggle'
 
 interface InventoryItem {
   _id: string;
@@ -266,7 +267,7 @@ export default function SupplierDashboard() {
 
   if (isProfileSetup) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
         <header className="bg-gradient-to-r from-green-600 to-green-700 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
@@ -276,6 +277,7 @@ export default function SupplierDashboard() {
               </div>
               <div className="flex items-center space-x-4">
                 <VoiceQuery userRole="supplier" className="mr-4" />
+                <ThemeToggle />
                 <button
                   onClick={logout}
                   className="text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-md transition-colors"
@@ -402,7 +404,7 @@ export default function SupplierDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
       {/* Header */}
       <header className="bg-gradient-to-r from-green-600 to-green-700 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -425,6 +427,7 @@ export default function SupplierDashboard() {
                 </div>
               </div>
               <VoiceQuery userRole="supplier" className="mr-4" />
+              <ThemeToggle />
               <NotificationBell onClick={() => setNotificationOpen(true)} />
               <button
                 onClick={logout}
@@ -503,7 +506,7 @@ export default function SupplierDashboard() {
                 onClick={() => setShowAddProduct(true)}
                 className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
               >
-                <div className="text-3xl mb-3">��</div>
+                <div className="text-3xl mb-3">➕</div>
                 <div className="font-semibold text-lg">Add New Product</div>
                 <div className="text-sm opacity-90">Upload items to your catalog</div>
               </button>
@@ -562,7 +565,7 @@ export default function SupplierDashboard() {
                     <div className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</div>
                     <div className="text-sm text-gray-600">Total Earnings</div>
                   </div>
-                  <div className="text-3xl text-purple-500">����</div>
+                  <div className="text-3xl text-purple-500">💵</div>
                 </div>
               </div>
             </div>
