@@ -51,7 +51,7 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 - **CRUD operations** with optimistic updates
 
 ### Authentication
-- **Clerk** for secure user authentication
+- **Convex-backed email/password auth** with role selection
 - **Role-based access control** (Vendor/Supplier)
 - **Session management** and protected routes
 
@@ -84,8 +84,8 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd smart-street
+   git clone https://github.com/jeevithg090/Smart-Vendors-Suppliers.git
+   cd Smart-Vendors-Suppliers
    ```
 
 2. **Install dependencies**
@@ -93,25 +93,24 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
    npm install
    ```
 
-3. **Set up environment variables**
-   
-   Create a `.env.local` file in the root directory:
+3. **Set up frontend environment variables**
+
+   Create a `.env.local` file in the root directory (or copy from `.env.example`):
    ```env
-   # Authentication
-   VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-   
    # Database
    VITE_CONVEX_URL=your_convex_deployment_url
    
    # AI Services
-   OPENROUTER_API_KEY=your_openrouter_api_key
-   SARVAM_API_KEY=your_sarvam_api_key
-   
-   # OCR Service
-   OCR_SPACE_API_KEY=your_ocr_space_api_key
+   VITE_SARVAM_API_KEY=your_sarvam_api_key
+   VITE_OPENROUTER_API_KEY=your_openrouter_api_key
    
    # Optional
-   GOOGLE_TRANSLATE_API_KEY=your_google_translate_key
+   VITE_GOOGLE_TRANSLATE_API_KEY=your_google_translate_key
+   VITE_VISION_API_KEY=your_vision_api_key
+   VITE_CLARIFAI_API_KEY=your_clarifai_api_key
+   VITE_AZURE_VISION_API_KEY=your_azure_vision_api_key
+   VITE_AZURE_VISION_ENDPOINT=your_azure_vision_endpoint
+   VITE_TTS_API_KEY=your_tts_api_key
    ```
 
 4. **Set up Convex backend**
@@ -124,6 +123,10 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
    
    # Deploy backend functions
    npx convex deploy
+
+   # Backend secrets used by Convex functions
+   npx convex env set OCR_SPACE_API_KEY your_ocr_space_api_key
+   npx convex env set OPENROUTER_API_KEY your_openrouter_api_key
    ```
 
 5. **Start development server**
@@ -206,6 +209,11 @@ npm run test:e2e:ui     # Interactive mode
 npm run test:e2e:debug  # Debug mode
 ```
 
+### API smoke tests
+```bash
+npm run test:api        # Convex API smoke checks
+```
+
 ### Type checking
 ```bash
 npm run typecheck
@@ -273,7 +281,7 @@ npm run typecheck
 
 ## 🔒 Security Features
 
-- **Authentication**: Secure JWT-based auth with Clerk
+- **Authentication**: Convex-backed email/password auth with role checks
 - **Role-based Access**: Vendor and supplier permissions
 - **Data Encryption**: All data encrypted in transit and at rest
 - **API Security**: Rate limiting and input validation
@@ -353,8 +361,8 @@ await api.fssaiVerification.verifyFSSAICertificate({
    - Verify environment variables
 
 3. **Authentication issues**
-   - Check Clerk configuration
-   - Verify API keys
+   - Verify `VITE_CONVEX_URL` and Convex deployment status
+   - Check `npx convex deploy` output for auth function errors
    - Clear browser cache
 
 4. **Voice queries not working**
@@ -420,7 +428,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 - Built for Tutedude Web Development Hackathon 1.0
 - Special thanks to the Indian street food vendors who inspired this project
-- Powered by Convex, Clerk, and OpenRouter
+- Powered by Convex and OpenRouter
 - Icons by React Icons and Heroicons
 
 ---
