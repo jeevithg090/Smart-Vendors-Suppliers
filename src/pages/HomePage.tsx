@@ -2,10 +2,10 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 const PLATFORM_STATS = [
-  { label: 'Active Vendors', value: '18,400+', tone: 'text-orange-600' },
-  { label: 'Trusted Suppliers', value: '2,900+', tone: 'text-emerald-600' },
-  { label: 'Monthly Orders', value: '96K+', tone: 'text-sky-600' },
-  { label: 'Average Savings', value: '22%', tone: 'text-fuchsia-600' },
+  { label: 'Active Vendors', value: '18,400+', tone: 'text-slate-900' },
+  { label: 'Trusted Suppliers', value: '2,900+', tone: 'text-slate-900' },
+  { label: 'Monthly Orders', value: '96K+', tone: 'text-slate-900' },
+  { label: 'Average Savings', value: '22%', tone: 'text-slate-900' },
 ];
 
 const OPERATING_HIGHLIGHTS = [
@@ -147,31 +147,27 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#fff5ec] via-[#f3fbff] to-[#eefaf2]">
-        <div className="pointer-events-none absolute -left-24 top-6 h-64 w-64 rounded-full bg-orange-300/30 blur-3xl"></div>
-        <div className="pointer-events-none absolute right-[-8rem] top-16 h-72 w-72 rounded-full bg-cyan-300/25 blur-3xl"></div>
-        <div className="pointer-events-none absolute bottom-[-8rem] left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-300/30 blur-3xl"></div>
+    <div className="min-h-screen bg-white text-slate-900">
+      <div className="relative overflow-hidden">
+        {/* Subtle background accent - single refined element */}
+        <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-gradient-to-br from-slate-100/40 via-slate-50/20 to-transparent blur-3xl"></div>
 
-        <nav className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-xl">
+        {/* Navigation */}
+        <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3">
-              <span className="rounded-xl bg-orange-100 px-2 py-1 text-lg">🏪</span>
-              <div>
-                <div className="text-base font-black tracking-tight text-slate-900 sm:text-lg">Smart Street</div>
-                <div className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Food Supply OS</div>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-slate-900">SmartStreet</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 to="/auth"
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition-all duration-300 hover:text-slate-900"
               >
                 Sign In
               </Link>
               <Link
                 to="/auth"
-                className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800"
+                className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-slate-800 active:scale-95"
               >
                 Launch App
               </Link>
@@ -179,308 +175,444 @@ export default function HomePage() {
           </div>
         </nav>
 
-        <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-2 lg:items-center lg:pb-24 lg:pt-20 lg:px-8">
-          <div className="animate-fadeIn">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-orange-700">
-              Built for India&apos;s street food economy
-            </div>
-            <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              Source Better.
-              <br />
-              <span className="bg-gradient-to-r from-orange-600 via-rose-600 to-emerald-600 bg-clip-text text-transparent">
-                Sell Faster.
-              </span>
-              <br />
-              Grow Smarter.
-            </h1>
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
-              Smart Street connects vendors and suppliers on a single intelligence layer for discovery, pricing, trust, ordering, and forecasting.
-              Reduce sourcing chaos and make daily procurement decisions with confidence.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/auth"
-                className="inline-flex items-center justify-center rounded-xl bg-orange-600 px-6 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-orange-500 hover:shadow-lg hover:shadow-orange-300/40"
-              >
-                Start Free
-              </Link>
-              <Link
-                to="/auth"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:-translate-y-1 hover:border-slate-400"
-              >
-                Explore Vendor Tools
-              </Link>
-            </div>
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {PLATFORM_STATS.map((stat, index) => (
-                <div
-                  key={stat.label}
-                  className="animate-scaleIn rounded-2xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur"
-                  style={{ animationDelay: `${index * 90}ms` }}
-                >
-                  <div className={`text-xl font-black ${stat.tone}`}>{stat.value}</div>
-                  <div className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="animate-slideInRight">
-            <div className="rounded-3xl border border-white/80 bg-white/75 p-5 shadow-2xl shadow-slate-300/30 backdrop-blur-xl sm:p-6">
-              <div className="mb-5 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Control Center</div>
-                  <div className="text-xl font-bold text-slate-900">Live Procurement Pulse</div>
-                </div>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Online</span>
+        {/* Hero Section */}
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            {/* Left Content */}
+            <div className="space-y-8 animate-fadeIn">
+              <div className="space-y-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                  Connecting Vendors & Suppliers
+                </p>
+                <h1 className="text-5xl font-bold leading-tight tracking-tight text-slate-900 sm:text-6xl">
+                  Smart Supply
+                  <br />
+                  <span className="text-slate-600">Made Simple</span>
+                </h1>
+                <p className="text-lg leading-relaxed text-slate-600 max-w-xl">
+                  Real-time pricing, verified suppliers, group buying power, and AI-driven insights for daily procurement decisions that reduce costs and chaos.
+                </p>
               </div>
-              <div className="space-y-3">
-                {OPERATING_HIGHLIGHTS.map((item, index) => (
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  to="/auth"
+                  className="group relative inline-flex items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-base font-semibold text-white transition-all duration-300 hover:bg-slate-800 active:scale-95 overflow-hidden"
+                >
+                  <span className="relative z-10">Start Free</span>
+                  <div className="absolute inset-0 bg-slate-800 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"></div>
+                </Link>
+                <Link
+                  to="/auth"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300 px-8 py-3 text-base font-semibold text-slate-900 transition-all duration-300 hover:border-slate-400 hover:bg-slate-50 active:scale-95"
+                >
+                  Explore Features
+                </Link>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4 pt-4 max-w-md">
+                {PLATFORM_STATS.map((stat, index) => (
                   <div
-                    key={item.title}
-                    className="group rounded-2xl border border-slate-200 bg-white/90 p-4 transition-all duration-500 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
-                    style={{ animationDelay: `${index * 120}ms` }}
+                    key={stat.label}
+                    className="group animate-scaleIn rounded-lg border border-slate-200 bg-white p-4 transition-all duration-300 hover:border-slate-300 hover:shadow-md cursor-default"
+                    style={{ animationDelay: `${index * 80}ms` }}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
-                      </div>
-                      <span className={`rounded-full bg-gradient-to-r px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white ${item.color}`}>
-                        {item.badge}
-                      </span>
-                    </div>
+                    <div className="text-2xl font-black text-slate-900">{stat.value}</div>
+                    <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{stat.label}</div>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 rounded-2xl bg-slate-900 p-4 text-white">
-                <div className="text-xs uppercase tracking-[0.12em] text-slate-300">Today&apos;s signal</div>
-                <p className="mt-2 text-sm text-slate-100">
-                  Tomato demand trending +18% in your zone. Suggested action: lock supplier rates before 9:00 AM.
-                </p>
+            </div>
+
+            {/* Right Content - Feature Card */}
+            <div className="animate-slideInRight lg:mt-0">
+              <div className="group relative rounded-2xl border border-slate-200 bg-white p-8 shadow-lg transition-all duration-500 hover:shadow-2xl hover:border-slate-300">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                
+                <div className="relative z-10 space-y-6">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Platform Highlights</p>
+                    <h2 className="text-2xl font-bold text-slate-900">Live Features</h2>
+                  </div>
+
+                  <div className="space-y-3">
+                    {OPERATING_HIGHLIGHTS.map((item, index) => (
+                      <div
+                        key={item.title}
+                        className="group/item rounded-lg border border-slate-100 bg-slate-50/50 p-4 transition-all duration-300 hover:bg-slate-100 hover:border-slate-200 cursor-default"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-600">{item.description}</p>
+                          </div>
+                          <span className="rounded-full bg-slate-200 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 whitespace-nowrap">
+                            {item.badge}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Status Indicator */}
+                  <div className="mt-6 rounded-lg bg-slate-900 p-4 text-white">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-300 mb-2">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-200"></span>
+                      </span>
+                      Market Signal
+                    </div>
+                    <p className="text-sm leading-relaxed text-slate-100">
+                      High demand for seasonal vegetables. Lock supplier rates for optimal margins.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
       </div>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">How Smart Street Works</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">From Chaos to Repeatable Procurement</h2>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {PROCESS_STEPS.map((item, index) => (
-            <div
-              key={item.step}
-              className="group rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-500 hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="text-sm font-black text-orange-600">{item.step}</div>
-              <h3 className="mt-3 text-lg font-bold text-slate-900">{item.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">{item.description}</p>
+      {/* How It Works Section */}
+      <section className="border-t border-slate-200 bg-slate-50/50">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="space-y-12">
+            <div className="text-center space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Simple Four-Step Process</p>
+              <h2 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+                From Chaos to Smart Operations
+              </h2>
             </div>
-          ))}
-        </div>
-      </section>
 
-      <section className="border-y border-slate-200 bg-white py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Choose Your Path</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Built for Both Sides of the Market</h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="group rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl">
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-2xl">🍽️</div>
-              <h3 className="text-2xl font-black text-slate-900">I&apos;m a Vendor</h3>
-              <p className="mt-4 text-slate-700">
-                Discover reliable suppliers, compare prices instantly, run voice-based searches, and optimize daily sourcing costs.
-              </p>
-              <ul className="mt-6 space-y-2 text-sm text-slate-700">
-                <li>• Smart supplier ranking by trust + price</li>
-                <li>• Group order participation for better rates</li>
-                <li>• Spend and margin analytics</li>
-              </ul>
-              <Link
-                to="/auth"
-                className="mt-7 inline-flex rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-orange-500"
-              >
-                Start as Vendor
-              </Link>
-            </div>
-            <div className="group rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl">
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-2xl">🚚</div>
-              <h3 className="text-2xl font-black text-slate-900">I&apos;m a Supplier</h3>
-              <p className="mt-4 text-slate-700">
-                Reach verified demand, manage inventory intelligently, and respond to market trends with AI-supported forecasting.
-              </p>
-              <ul className="mt-6 space-y-2 text-sm text-slate-700">
-                <li>• Supplier storefront with trust signals</li>
-                <li>• Inventory automation and stock alerts</li>
-                <li>• Forecasting and loyalty insights</li>
-              </ul>
-              <Link
-                to="/auth"
-                className="mt-7 inline-flex rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-emerald-500"
-              >
-                Start as Supplier
-              </Link>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {PROCESS_STEPS.map((item, index) => (
+                <div
+                  key={item.step}
+                  className="group relative animate-fadeIn rounded-xl border border-slate-200 bg-white p-6 transition-all duration-500 hover:shadow-lg hover:border-slate-300 hover:-translate-y-1"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  
+                  <div className="relative z-10 space-y-4">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-slate-900 text-lg font-bold text-white">
+                      {item.step}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Connector line - hidden on mobile */}
+                  {index < PROCESS_STEPS.length - 1 && (
+                    <div className="hidden lg:block absolute -right-3 top-1/2 h-0.5 w-6 bg-gradient-to-r from-slate-200 to-slate-100"></div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Capabilities</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Everything Needed for Daily Supply Operations</h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {VALUE_PILLARS.map((feature, index) => (
-            <article
-              key={feature.title}
-              className="rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-500 hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl"
-              style={{ animationDelay: `${index * 80}ms` }}
-            >
-              <div className="text-2xl">{feature.icon}</div>
-              <h3 className="mt-3 text-lg font-bold text-slate-900">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{feature.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {/* Role Selection Section */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="space-y-12">
+            <div className="text-center space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Choose Your Role</p>
+              <h2 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+                Designed for Both Sides
+              </h2>
+            </div>
 
-      <section className="bg-slate-950 py-16 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Where It Performs Best</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Designed for Real Market Conditions</h2>
-          </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            {USE_CASES.map((caseItem, index) => (
-              <div
-                key={caseItem.title}
-                className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-slate-700 hover:bg-slate-900"
-                style={{ animationDelay: `${index * 120}ms` }}
-              >
-                <h3 className="text-lg font-bold">{caseItem.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-300">{caseItem.text}</p>
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Vendor Card */}
+              <div className="group relative rounded-2xl border border-slate-200 bg-white p-8 transition-all duration-500 hover:shadow-2xl hover:border-slate-300 hover:-translate-y-1 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                
+                <div className="relative z-10 space-y-6">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-slate-100 text-3xl group-hover:scale-110 transition-transform duration-300">🍽️</div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-slate-900">For Vendors</h3>
+                    <p className="mt-3 text-lg leading-relaxed text-slate-600">
+                      Find trusted suppliers, compare prices instantly, and optimize sourcing costs with AI-powered insights.
+                    </p>
+                  </div>
+
+                  <ul className="space-y-3">
+                    {[
+                      'Smart supplier ranking',
+                      'Group buying power',
+                      'Spend analytics'
+                    ].map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600">✓</span>
+                        <span className="text-slate-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    to="/auth"
+                    className="mt-2 inline-flex rounded-full bg-slate-900 px-6 py-3 text-base font-semibold text-white transition-all duration-300 hover:bg-slate-800 active:scale-95"
+                  >
+                    Start as Vendor
+                  </Link>
+                </div>
               </div>
-            ))}
+
+              {/* Supplier Card */}
+              <div className="group relative rounded-2xl border border-slate-200 bg-white p-8 transition-all duration-500 hover:shadow-2xl hover:border-slate-300 hover:-translate-y-1 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                
+                <div className="relative z-10 space-y-6">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-slate-100 text-3xl group-hover:scale-110 transition-transform duration-300">🚚</div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-slate-900">For Suppliers</h3>
+                    <p className="mt-3 text-lg leading-relaxed text-slate-600">
+                      Reach verified demand, manage inventory intelligently, and forecast market trends with AI support.
+                    </p>
+                  </div>
+
+                  <ul className="space-y-3">
+                    {[
+                      'Supplier storefront',
+                      'Inventory automation',
+                      'Forecasting insights'
+                    ].map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600">✓</span>
+                        <span className="text-slate-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    to="/auth"
+                    className="mt-2 inline-flex rounded-full bg-slate-900 px-6 py-3 text-base font-semibold text-white transition-all duration-300 hover:bg-slate-800 active:scale-95"
+                  >
+                    Start as Supplier
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Customer Voice</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Teams Seeing Real Operational Impact</h2>
-        </div>
-        <div className="grid gap-5 md:grid-cols-3">
-          {TESTIMONIALS.map((item, index) => (
-            <blockquote
-              key={item.name}
-              className="rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <p className="text-sm leading-relaxed text-slate-700">&ldquo;{item.quote}&rdquo;</p>
-              <footer className="mt-5 border-t border-slate-200 pt-4">
-                <div className="text-sm font-bold text-slate-900">{item.name}</div>
-                <div className="text-xs uppercase tracking-wide text-slate-500">{item.role}</div>
-              </footer>
-            </blockquote>
-          ))}
-        </div>
-      </section>
+      {/* Features Section */}
+      <section className="border-t border-slate-200 bg-slate-50/50">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="space-y-12">
+            <div className="text-center space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Core Capabilities</p>
+              <h2 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+                Everything You Need
+              </h2>
+            </div>
 
-      <section className="border-y border-slate-200 bg-white py-16">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">FAQ</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-              Questions Before You Start
-            </h2>
-            <p className="mt-4 text-slate-600">
-              Clear answers for procurement teams, vendors, and suppliers evaluating Smart Street.
-            </p>
-          </div>
-          <div className="space-y-3">
-            {FAQ_ITEMS.map((item) => (
-              <details key={item.question} className="group rounded-xl border border-slate-200 p-4 open:border-slate-300 open:bg-slate-50">
-                <summary className="cursor-pointer list-none pr-6 text-sm font-bold text-slate-900 marker:content-none">
-                  {item.question}
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">{item.answer}</p>
-              </details>
-            ))}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {VALUE_PILLARS.map((feature, index) => (
+                <article
+                  key={feature.title}
+                  className="group relative animate-fadeIn rounded-xl border border-slate-200 bg-white p-6 transition-all duration-500 hover:shadow-lg hover:border-slate-300 hover:-translate-y-1"
+                  style={{ animationDelay: `${index * 80}ms` }}
+                >
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  
+                  <div className="relative z-10 space-y-3">
+                    <div className="text-3xl">{feature.icon}</div>
+                    <h3 className="text-lg font-bold text-slate-900">{feature.title}</h3>
+                    <p className="text-sm leading-relaxed text-slate-600">{feature.text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-gradient-to-r from-orange-600 via-rose-600 to-emerald-600 py-16">
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
-            Upgrade Your Sourcing Workflow This Week
+      {/* Use Cases Section */}
+      <section className="bg-slate-900">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="space-y-12">
+            <div className="text-center space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Real-World Applications</p>
+              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                Built for Market Realities
+              </h2>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {USE_CASES.map((caseItem, index) => (
+                <div
+                  key={caseItem.title}
+                  className="group relative animate-fadeIn rounded-xl border border-slate-700 bg-slate-800/50 backdrop-blur-sm p-6 transition-all duration-500 hover:shadow-2xl hover:border-slate-600 hover:-translate-y-1 overflow-hidden"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-700/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
+                  
+                  <div className="relative z-10 space-y-3">
+                    <h3 className="text-lg font-bold text-white">{caseItem.title}</h3>
+                    <p className="text-sm leading-relaxed text-slate-300">{caseItem.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="space-y-12">
+            <div className="text-center space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Customer Stories</p>
+              <h2 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+                Real Impact, Real Results
+              </h2>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {TESTIMONIALS.map((item, index) => (
+                <blockquote
+                  key={item.name}
+                  className="group relative animate-fadeIn rounded-xl border border-slate-200 bg-white p-8 transition-all duration-500 hover:shadow-lg hover:border-slate-300 hover:-translate-y-1 overflow-hidden"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  
+                  <div className="relative z-10 space-y-4">
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className="text-lg">⭐</span>
+                      ))}
+                    </div>
+                    <p className="text-base leading-relaxed text-slate-700 italic">&ldquo;{item.quote}&rdquo;</p>
+                    <footer className="space-y-1 pt-4 border-t border-slate-200">
+                      <div className="text-sm font-bold text-slate-900">{item.name}</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{item.role}</div>
+                    </footer>
+                  </div>
+                </blockquote>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-white border-t border-slate-200">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2">
+            <div className="space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">FAQ</p>
+              <h2 className="text-4xl font-bold tracking-tight text-slate-900">
+                Common Questions
+              </h2>
+              <p className="text-lg text-slate-600">
+                Everything you need to know about Smart Street and getting started.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {FAQ_ITEMS.map((item, index) => (
+                <details 
+                  key={item.question} 
+                  className="group animate-fadeIn rounded-lg border border-slate-200 transition-all duration-300 open:border-slate-300 open:bg-slate-50 open:shadow-md overflow-hidden"
+                  style={{ animationDelay: `${index * 75}ms` }}
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between px-6 py-4 text-sm font-bold text-slate-900 marker:content-none hover:bg-slate-50 transition-colors duration-200">
+                    <span>{item.question}</span>
+                    <span className="transition-transform duration-300 group-open:rotate-180">
+                      <svg className="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <p className="px-6 pb-4 text-sm leading-relaxed text-slate-600">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="bg-slate-900">
+        <div className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            Ready to Transform Your Supply Chain?
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/90 sm:text-base">
-            Join vendors and suppliers building healthier margins, stronger fulfillment reliability, and faster daily decisions.
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
+            Join vendors and suppliers making smarter procurement decisions. Start free, no credit card required.
           </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               to="/auth"
-              className="rounded-xl bg-white px-6 py-3 text-sm font-black text-slate-900 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-100"
+              className="group relative inline-flex items-center justify-center rounded-full bg-white px-8 py-4 text-base font-bold text-slate-900 transition-all duration-300 hover:shadow-lg hover:shadow-white/20 active:scale-95 overflow-hidden"
             >
-              Create Your Account
+              <span className="relative z-10">Start Your Free Account</span>
+              <div className="absolute inset-0 bg-slate-50 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"></div>
             </Link>
             <Link
               to="/auth"
-              className="rounded-xl border border-white/60 px-6 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white/10"
+              className="inline-flex items-center justify-center rounded-full border-2 border-white px-8 py-4 text-base font-bold text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
             >
-              See Supplier Dashboard
+              Explore Demo
             </Link>
           </div>
         </div>
       </section>
 
-      <footer className="bg-slate-950 py-12 text-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
-          <div>
-            <div className="text-xl font-black">🏪 Smart Street</div>
-            <p className="mt-3 text-sm text-slate-400">
-              A sourcing operating system for India&apos;s street food and small-format food businesses.
+      {/* Footer */}
+      <footer className="bg-slate-900 text-white border-t border-slate-800">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4 mb-12">
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold">SmartStreet</h2>
+              <p className="text-sm text-slate-400">
+                Intelligent procurement for India's street food and small-format food businesses.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-200">For Vendors</h3>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Supplier Discovery</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Group Orders</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Price Insights</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Order Tracking</li>
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-200">For Suppliers</h3>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Inventory Tools</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Demand Forecast</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Order Management</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Loyalty Insights</li>
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-200">Company</h3>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Trust &amp; Safety</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Support</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Privacy</li>
+                <li className="hover:text-slate-200 transition-colors cursor-pointer">Terms</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-slate-800 pt-8 text-center">
+            <p className="text-xs text-slate-500">
+              &copy; 2026 SmartStreet. Purpose-built for reliable food supply coordination.
             </p>
           </div>
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Vendors</h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-400">
-              <li>Supplier Discovery</li>
-              <li>Group Orders</li>
-              <li>Price Insights</li>
-              <li>Tracking</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Suppliers</h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-400">
-              <li>Inventory Management</li>
-              <li>Demand Forecast</li>
-              <li>Order Operations</li>
-              <li>Loyalty Insights</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Platform</h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-400">
-              <li>Trust &amp; Safety</li>
-              <li>Multilingual UX</li>
-              <li>Support Center</li>
-              <li>Privacy &amp; Terms</li>
-            </ul>
-          </div>
-        </div>
-        <div className="mx-auto mt-10 max-w-7xl border-t border-slate-800 px-4 pt-6 text-center text-xs text-slate-500 sm:px-6 lg:px-8">
-          &copy; 2026 Smart Street. Purpose-built for reliable food supply coordination.
         </div>
       </footer>
     </div>
