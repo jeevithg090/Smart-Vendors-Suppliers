@@ -21,7 +21,14 @@ export function useFormValidation<T extends Record<string, any>>(
   } = options;
 
   const [data, setData] = useState<T>(initialData);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>(() => {
+    if (!showErrorsImmediately) return {};
+    const result = FormValidator.validate(initialData, schema);
+    return result.errors.reduce((acc, error) => {
+      acc[error.field] = error.message;
+      return acc;
+    }, {} as Record<string, string>);
+  });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleValidationError } = useErrorHandler({ showNotification: false });
@@ -109,11 +116,20 @@ export function useFormValidation<T extends Record<string, any>>(
 
   // Reset form
   const reset = useCallback((newData?: Partial<T>) => {
-    setData(prev => ({ ...prev, ...newData } as T));
-    setErrors({});
+    const resetData = { ...initialData, ...newData } as T;
+    setData(resetData);
+    if (showErrorsImmediately) {
+      const result = FormValidator.validate(resetData, schema);
+      setErrors(result.errors.reduce((acc, error) => {
+        acc[error.field] = error.message;
+        return acc;
+      }, {} as Record<string, string>));
+    } else {
+      setErrors({});
+    }
     setTouched({});
     setIsSubmitting(false);
-  }, []);
+  }, [initialData, schema, showErrorsImmediately]);
 
   // Get field props for easy integration with form inputs
   const getFieldProps = useCallback((field: string) => ({

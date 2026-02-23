@@ -11,6 +11,7 @@ interface ErrorHandlingOptions {
   enablePerformanceTracking?: boolean;
   maxRetries?: number;
   retryDelay?: number;
+  throwOnError?: boolean;
 }
 
 interface ErrorHandlingState {
@@ -26,7 +27,8 @@ export function useComprehensiveErrorHandling(options: ErrorHandlingOptions = {}
     enableBusinessValidation = true,
     enablePerformanceTracking = true,
     maxRetries = 3,
-    retryDelay = 1000
+    retryDelay = 1000,
+    throwOnError = false
   } = options;
 
   const [state, setState] = useState<ErrorHandlingState>({
@@ -144,14 +146,19 @@ export function useComprehensiveErrorHandling(options: ErrorHandlingOptions = {}
         { ...context, operationName },
         getRecoveryActions(error as Error, operationName)
       );
-      
-      throw error;
+
+      if (throwOnError) {
+        throw error;
+      }
+
+      return undefined as T;
     }
   }, [
     executeWithRetry,
     enableRetry,
     maxRetries,
     retryDelay,
+    throwOnError,
     enablePerformanceTracking,
     handleErrorWithContext
   ]);

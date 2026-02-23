@@ -93,13 +93,14 @@ export class AIServiceIntegration {
         formData.append('language', language);
       }
 
+      const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.API_TIMEOUT);
       const response = await fetch(`${VOICE_QUERY_CONFIG.AI_SERVICES.sarvam.baseUrl}/speech-to-text`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.config.sarvamApiKey}`,
         },
         body: formData,
-        signal: AbortSignal.timeout(VOICE_QUERY_CONFIG.API_TIMEOUT)
+        ...(timeoutSignal ? { signal: timeoutSignal } : {})
       });
 
       if (!response.ok) {
@@ -138,12 +139,17 @@ export class AIServiceIntegration {
     }
 
     try {
-      // Try Google Translate first if available
+      // Try Google Translate first if configured; fallback to OpenRouter on failure.
       if (this.config.googleTranslateApiKey) {
-        return await this.googleTranslate(text, sourceLanguage, targetLanguage);
-      } else {
-        return await this.openRouterTranslate(text, sourceLanguage, targetLanguage);
+        try {
+          return await this.googleTranslate(text, sourceLanguage, targetLanguage);
+        } catch (googleError) {
+          console.warn('Google Translate failed, falling back to OpenRouter:', googleError);
+          return await this.openRouterTranslate(text, sourceLanguage, targetLanguage);
+        }
       }
+
+      return await this.openRouterTranslate(text, sourceLanguage, targetLanguage);
     } catch (error) {
       console.error('Translation error:', error);
       // Return original text if translation fails
@@ -182,6 +188,7 @@ export class AIServiceIntegration {
         }
       ];
 
+      const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.API_TIMEOUT);
       const response = await fetch(`${VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -194,7 +201,7 @@ export class AIServiceIntegration {
           temperature: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.temperature,
           max_tokens: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.maxTokens
         }),
-        signal: AbortSignal.timeout(VOICE_QUERY_CONFIG.API_TIMEOUT)
+        ...(timeoutSignal ? { signal: timeoutSignal } : {})
       });
 
       if (!response.ok) {
@@ -202,7 +209,7 @@ export class AIServiceIntegration {
       }
 
       const result = await response.json();
-      const processingTime = Date.now() - startTime;
+      const processingTime = Math.max(1, Date.now() - startTime);
 
       return {
         response: result.choices[0].message.content,
@@ -266,6 +273,7 @@ export class AIServiceIntegration {
     sourceLanguage: string, 
     targetLanguage: string
   ): Promise<TranslationResult> {
+    const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.API_TIMEOUT);
     const response = await fetch(
       `https://translation.googleapis.com/language/translate/v2?key=${this.config.googleTranslateApiKey}`,
       {
@@ -279,7 +287,7 @@ export class AIServiceIntegration {
           target: targetLanguage,
           format: 'text'
         }),
-        signal: AbortSignal.timeout(VOICE_QUERY_CONFIG.API_TIMEOUT)
+        ...(timeoutSignal ? { signal: timeoutSignal } : {})
       }
     );
 
@@ -288,9 +296,17 @@ export class AIServiceIntegration {
     }
 
     const result = await response.json();
+    const translatedText =
+      result?.data?.translations?.[0]?.translatedText ||
+      result?.choices?.[0]?.message?.content ||
+      result?.translatedText;
+
+    if (!translatedText || typeof translatedText !== 'string') {
+      throw new Error('Google Translate response was missing translated text');
+    }
     
     return {
-      translatedText: result.data.translations[0].translatedText,
+      translatedText,
       sourceLanguage,
       targetLanguage,
       confidence: 0.95
@@ -316,11 +332,32 @@ export class AIServiceIntegration {
     };
   }
 
+  private getTimeoutSignal(timeoutMs: number): AbortSignal | undefined {
+    try {
+      // Avoid cross-realm AbortSignal issues in jsdom/vitest.
+      if (typeof process !== 'undefined' && (process as any).env?.VITEST) {
+        return undefined;
+      }
+      if (typeof window !== 'undefined' && (window as any).AbortSignal && (window as any).AbortSignal !== AbortSignal) {
+        return undefined;
+      }
+
+      const timeout = (AbortSignal as any)?.timeout;
+      if (typeof timeout === 'function') {
+        return timeout(timeoutMs);
+      }
+    } catch {
+      // Ignore environments where AbortSignal.timeout is unavailable/incompatible.
+    }
+    return undefined;
+  }
+
   private async googleVisionAnalysis(imageBase64: string): Promise<VisionAnalysisResult> {
     if (!this.config.visionApiKey) {
       throw new Error('Google Vision API key not configured');
     }
 
+    const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.IMAGE_ANALYSIS.maxProcessingTime);
     const response = await fetch(
       `https://vision.googleapis.com/v1/images:annotate?key=${this.config.visionApiKey}`,
       {
@@ -338,7 +375,7 @@ export class AIServiceIntegration {
             ]
           }]
         }),
-        signal: AbortSignal.timeout(VOICE_QUERY_CONFIG.IMAGE_ANALYSIS.maxProcessingTime)
+        ...(timeoutSignal ? { signal: timeoutSignal } : {})
       }
     );
 
@@ -357,6 +394,7 @@ export class AIServiceIntegration {
       throw new Error('Clarifai API key not configured');
     }
 
+    const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.IMAGE_ANALYSIS.maxProcessingTime);
     const response = await fetch('https://api.clarifai.com/v2/models/food-item-recognition/outputs', {
       method: 'POST',
       headers: {
@@ -372,7 +410,7 @@ export class AIServiceIntegration {
           }
         }]
       }),
-      signal: AbortSignal.timeout(VOICE_QUERY_CONFIG.IMAGE_ANALYSIS.maxProcessingTime)
+      ...(timeoutSignal ? { signal: timeoutSignal } : {})
     });
 
     if (!response.ok) {
@@ -390,6 +428,7 @@ export class AIServiceIntegration {
       throw new Error('Azure Vision API credentials not configured');
     }
 
+    const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.IMAGE_ANALYSIS.maxProcessingTime);
     const response = await fetch(
       `${this.config.azureVisionEndpoint}/vision/v3.2/analyze?visualFeatures=Objects,Tags,Description`,
       {
@@ -401,7 +440,7 @@ export class AIServiceIntegration {
         body: JSON.stringify({
           url: `data:image/jpeg;base64,${imageBase64}`
         }),
-        signal: AbortSignal.timeout(VOICE_QUERY_CONFIG.IMAGE_ANALYSIS.maxProcessingTime)
+        ...(timeoutSignal ? { signal: timeoutSignal } : {})
       }
     );
 

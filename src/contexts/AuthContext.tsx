@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { withTimeout } from '../utils/timeout';
 
@@ -23,13 +23,47 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const fallbackAuthContext: AuthContextType = {
+  user: null,
+  isLoading: false,
+  login: async () => false,
+  signup: async () => false,
+  logout: () => {},
+  isAuthenticated: false,
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
+      console.warn('useAuth used outside AuthProvider, falling back to guest auth context.');
+    }
+    return fallbackAuthContext;
   }
   return context;
 };
+
+const CONNECTIVITY_ERROR_PATTERNS = [
+  'failed to fetch',
+  'network',
+  'err_failed',
+  'timeout',
+  'timed out',
+  'socket',
+  'could not connect',
+  'unable to reach',
+  'temporary',
+  'invaliddeploymentname',
+  'public function',
+  'does not exist',
+  'connection',
+];
+
+function isConnectivityFailure(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  const normalized = message.toLowerCase();
+  return CONNECTIVITY_ERROR_PATTERNS.some((pattern) => normalized.includes(pattern));
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -85,6 +119,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     } catch (error) {
       console.error('Login error:', error);
+
+      if (!isConnectivityFailure(error)) {
+        setIsLoading(false);
+        return false;
+      }
 
       // Enhanced fallback for development mode when Convex is not connected
       console.warn('Convex connection failed, using development mode authentication');
@@ -148,6 +187,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     } catch (error) {
       console.error('Signup error:', error);
+
+      if (!isConnectivityFailure(error)) {
+        setIsLoading(false);
+        return false;
+      }
 
       // Enhanced fallback for development mode when Convex is not connected
       console.warn('Convex connection failed, using development mode authentication');

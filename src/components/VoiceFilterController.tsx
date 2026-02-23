@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { useMutation, useQuery } from 'convex/react';
+import { useConvex, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { voiceProcessor } from '../utils/enhancedVoiceProcessor';
 import { VOICE_QUERY_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/voiceQuery';
+import { useAuth } from '../contexts/AuthContext';
 
 interface VoiceFilterControllerProps {
   currentFilters: SearchFilters;
@@ -36,6 +37,49 @@ interface FilterPreset {
   voiceShortcut: string;
 }
 
+const LOCAL_PRESET_STORAGE_KEY = 'voice_filter_presets_v1';
+
+const DEFAULT_FILTER_PRESETS: FilterPreset[] = [
+  {
+    name: 'nearby-certified',
+    filters: {
+      location: 'within 5km',
+      fssaiRequired: true,
+    },
+    voiceShortcut: 'Apply nearby-certified filters',
+  },
+];
+
+function mapPresetRecordToList(filterPresets: Record<string, VoiceFilters>): FilterPreset[] {
+  return Object.entries(filterPresets).map(([name, filters]) => ({
+    name,
+    filters,
+    voiceShortcut: `Apply ${name} filters`,
+  }));
+}
+
+function loadLocalPresets(): FilterPreset[] {
+  if (typeof window === 'undefined') return DEFAULT_FILTER_PRESETS;
+  try {
+    const raw = window.localStorage.getItem(LOCAL_PRESET_STORAGE_KEY);
+    if (!raw) return DEFAULT_FILTER_PRESETS;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return DEFAULT_FILTER_PRESETS;
+    return parsed.filter((item) => item && typeof item.name === 'string' && item.filters);
+  } catch {
+    return DEFAULT_FILTER_PRESETS;
+  }
+}
+
+function persistLocalPresets(presets: FilterPreset[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(LOCAL_PRESET_STORAGE_KEY, JSON.stringify(presets));
+  } catch {
+    // Ignore local persistence failures and keep in-memory behavior.
+  }
+}
+
 export default function VoiceFilterController({
   currentFilters,
   onFiltersChanged,
@@ -43,6 +87,7 @@ export default function VoiceFilterController({
   userRole,
   className = ''
 }: VoiceFilterControllerProps) {
+  const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +102,7 @@ export default function VoiceFilterController({
   const [selectedLanguage, setSelectedLanguage] = useState('auto');
   const [isListening, setIsListening] = useState(false);
 
+  const convex = useConvex();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -65,22 +111,51 @@ export default function VoiceFilterController({
   const animationFrameRef = useRef<number | null>(null);
 
   const processVoiceFilter = useMutation(api.voiceQuery.processEnhancedVoiceQuery);
-  const voicePreferences = useQuery(api.voiceQuery.getVoicePreferences, { 
-    userId: 'demo-user' // In real app, get from auth
-  });
   const updateVoicePreferences = useMutation(api.voiceQuery.updateVoicePreferences);
+  const currentUserId = user?.id || `anonymous_${userRole}`;
 
-  // Load filter presets from voice preferences
+  // Load local presets first, then attempt cloud sync with fallback.
   useEffect(() => {
-    if (voicePreferences?.filterPresets) {
-      const presets = Object.entries(voicePreferences.filterPresets).map(([name, filters]) => ({
-        name,
-        filters: filters as VoiceFilters,
-        voiceShortcut: `Apply ${name} filters`
-      }));
-      setFilterPresets(presets);
+    let isCancelled = false;
+
+    const localPresets = loadLocalPresets();
+    setFilterPresets(localPresets);
+
+    const syncCloudPreferences = async () => {
+      try {
+        const voicePreferences = await convex.query(api.voiceQuery.getVoicePreferences, {
+          userId: currentUserId,
+        });
+
+        if (isCancelled) return;
+
+        const cloudPresets = voicePreferences?.filterPresets
+          ? mapPresetRecordToList(voicePreferences.filterPresets as Record<string, VoiceFilters>)
+          : [];
+
+        if (cloudPresets.length > 0) {
+          setFilterPresets(cloudPresets);
+          persistLocalPresets(cloudPresets);
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('Voice preferences sync unavailable, using local presets:', error);
+        }
+      }
+    };
+
+    void syncCloudPreferences();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [convex, currentUserId]);
+
+  useEffect(() => {
+    if (filterPresets.length > 0) {
+      persistLocalPresets(filterPresets);
     }
-  }, [voicePreferences]);
+  }, [filterPresets]);
 
   const startRecording = async () => {
     try {
@@ -163,7 +238,14 @@ export default function VoiceFilterController({
 
     } catch (err) {
       console.error('Error starting recording:', err);
-      const errorMessage = err instanceof Error && err.name === 'NotAllowedError' 
+      const errorName = typeof err === 'object' && err && 'name' in err
+        ? String((err as any).name)
+        : '';
+      const rawMessage = err instanceof Error ? err.message : String(err ?? '');
+      const isPermissionError =
+        errorName === 'NotAllowedError' ||
+        /notallowed|permission|denied/i.test(rawMessage);
+      const errorMessage = isPermissionError
         ? ERROR_MESSAGES.MICROPHONE_ACCESS_DENIED
         : ERROR_MESSAGES.RECORDING_FAILED;
       setError(errorMessage);
@@ -234,20 +316,25 @@ export default function VoiceFilterController({
       setSuccess(SUCCESS_MESSAGES.VOICE_RECOGNIZED);
 
       // Store the voice query
-      await processVoiceFilter({
-        userId: 'demo-user',
-        userRole,
-        queryType: 'filter',
-        queryText: voiceResult.transcription,
-        language: voiceResult.language,
-        englishText: searchQuery.translatedText,
-        confidence: voiceResult.confidence,
-        appliedFilters: extractedFilters,
-        response: `Parsed filters: ${JSON.stringify(extractedFilters)}`,
-        responseLanguage: 'en',
-        processingTime: voiceResult.processingTime,
-        audioDuration: recordingTime
-      });
+      try {
+        await processVoiceFilter({
+          userId: currentUserId,
+          userRole,
+          queryType: 'filter',
+          queryText: voiceResult.transcription,
+          language: voiceResult.language,
+          englishText: searchQuery.translatedText,
+          confidence: voiceResult.confidence,
+          appliedFilters: extractedFilters,
+          response: `Parsed filters: ${JSON.stringify(extractedFilters)}`,
+          responseLanguage: 'en',
+          processingTime: voiceResult.processingTime,
+          audioDuration: recordingTime
+        });
+      } catch (voiceLogError) {
+        // Do not block the UX when telemetry persistence fails.
+        console.warn('Failed to store voice filter query:', voiceLogError);
+      }
 
     } catch (err) {
       console.error('Error processing filter recording:', err);
@@ -311,10 +398,15 @@ export default function VoiceFilterController({
       return acc;
     }, {} as Record<string, VoiceFilters>);
 
-    await updateVoicePreferences({
-      userId: 'demo-user',
-      filterPresets: presetMap
-    });
+    try {
+      await updateVoicePreferences({
+        userId: currentUserId,
+        filterPresets: presetMap
+      });
+    } catch (saveError) {
+      // Keep local success and continue in offline/degraded mode.
+      console.warn('Failed to sync preset to cloud preferences:', saveError);
+    }
 
     setSuccess(`Saved "${presetName}" as filter preset`);
     setTimeout(() => setSuccess(null), 3000);

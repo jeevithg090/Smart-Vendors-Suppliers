@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { RetryManager, ConvexRetryManager, OfflineOperationQueue, CircuitBreaker } from '../../utils/retry';
 
 describe('RetryManager', () => {
@@ -194,7 +194,12 @@ describe('CircuitBreaker', () => {
   let circuitBreaker: CircuitBreaker;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     circuitBreaker = new CircuitBreaker(2, 1000); // threshold: 2, timeout: 1s
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should execute operation when circuit is closed', async () => {

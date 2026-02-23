@@ -14,7 +14,9 @@ import QualityAssurance from '../components/QualityAssurance';
 import SupplierLoyalty from '../components/SupplierLoyalty';
 import SimpleOrderTracking from '../components/SimpleOrderTracking';
 import TrackingStatusBanner from '../components/TrackingStatusBanner';
-import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
+import { MARKETPLACE_CATEGORIES, BUSINESS_DAYS } from '../config/marketplace';
+import RoleOnboardingWizard from '../components/RoleOnboardingWizard';
+import SupplierProfileMedia from '../components/SupplierProfileMedia';
 
 interface InventoryItem {
   _id: string;
@@ -52,7 +54,31 @@ interface SupplierProfile {
   isVerified: boolean;
   deliveryRadius: number;
   minimumOrder: number;
+  location?: {
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+  businessHours?: {
+    open: string;
+    close: string;
+    days: string[];
+  };
 }
+
+const PRODUCT_CATEGORY_OPTIONS = [
+  { value: 'Vegetables', label: 'Vegetables' },
+  { value: 'Fruits', label: 'Fruits' },
+  { value: 'Grains', label: 'Grains & Cereals' },
+  { value: 'Dairy', label: 'Dairy Products' },
+  { value: 'Spices', label: 'Spices & Herbs' },
+  { value: 'Meat', label: 'Meat & Poultry' },
+  { value: 'Seafood', label: 'Seafood' },
+  { value: 'Oil', label: 'Oil & Ghee' },
+  { value: 'Pulses', label: 'Pulses & Lentils' },
+  { value: 'Snacks', label: 'Snacks & Beverages' },
+] as const;
 
 export default function SupplierDashboard() {
   const { user, logout } = useAuth()
@@ -61,35 +87,47 @@ export default function SupplierDashboard() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null);
   const [showOrderTracking, setShowOrderTracking] = useState<Id<'orders'> | null>(null);
-  const [showTrackingDemo, setShowTrackingDemo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [localSupplierFallback, setLocalSupplierFallback] = useState<SupplierProfile | null>(null);
+  const [localInventory, setLocalInventory] = useState<InventoryItem[]>([]);
   const [editingProduct, setEditingProduct] = useState<InventoryItem | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
   const [editProfileForm, setEditProfileForm] = useState({
     businessName: '',
     deliveryRadius: 0,
     minimumOrder: 0,
-    categories: [] as string[]
+    categories: [] as string[],
+    businessHoursOpen: '09:00',
+    businessHoursClose: '18:00',
+    businessDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as string[],
   });
 
   // Get supplier profile by user ID
-  const supplierProfile = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' })
+  const supplierQuery = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' })
+  const supplierProfile = supplierQuery ?? localSupplierFallback;
+  const hasBackendSupplier = Boolean(supplierQuery?._id);
   
   // Get supplier inventory if profile exists
-  const inventory = useQuery(api.inventory.getInventoryBySupplier, 
-    supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
+  const inventoryQuery = useQuery(api.inventory.getInventoryBySupplier, 
+    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip'
   )
   
   // Get orders for this supplier
-  const orders = useQuery(api.orders.getOrdersBySupplier,
-    supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
+  const ordersQuery = useQuery(api.orders.getOrdersBySupplier,
+    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip'
   )
 
   // Get supplier forecasts
-  const forecasts = useQuery(api.suppliers.getSupplierForecasts, 
-    supplierProfile?._id ? { supplierId: supplierProfile._id } : 'skip'
+  const forecastsQuery = useQuery(api.suppliers.getSupplierForecasts, 
+    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip'
   )
+
+  const inventory =
+    inventoryQuery && inventoryQuery.length > 0 ? inventoryQuery : localInventory;
+  const orders = ordersQuery ?? [];
+  const forecasts = forecastsQuery ?? [];
+  const ordersLoading = hasBackendSupplier && ordersQuery === undefined;
 
   // Create supplier profile mutation
   const createSupplier = useMutation(api.suppliers.create)
@@ -99,9 +137,50 @@ export default function SupplierDashboard() {
   const updateSupplierProfile = useMutation(api.suppliers.update);
   const [updatingOrderId, setUpdatingOrderId] = useState<Id<'orders'> | null>(null);
 
+  useEffect(() => {
+    if (!user) {
+      setLocalSupplierFallback(null);
+      setLocalInventory([]);
+      return;
+    }
+
+    if (supplierQuery) {
+      setLocalSupplierFallback(null);
+      return;
+    }
+
+    if (supplierQuery === null) {
+      return;
+    }
+
+    setLocalSupplierFallback((existingFallback) => {
+      if (existingFallback) return existingFallback;
+      return {
+        _id: `local_supplier_${user.id}`,
+        businessName: `${user.firstName || 'Demo'} Supplier Store`,
+        trustScore: 3.6,
+        categories: ['Vegetables', 'Fruits', 'Grains'],
+        isVerified: false,
+        deliveryRadius: 10,
+        minimumOrder: 500,
+        location: {
+          coordinates: {
+            lat: 19.076,
+            lng: 72.8777,
+          },
+        },
+        businessHours: {
+          open: '09:00',
+          close: '18:00',
+          days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        },
+      };
+    });
+  }, [user, supplierQuery]);
+
   // Check if supplier profile exists, if not show setup
   useEffect(() => {
-    if (supplierProfile === null) {
+    if (supplierQuery === null && !localSupplierFallback) {
       setIsProfileSetup(true)
     } else if (supplierProfile) {
       setIsProfileSetup(false)
@@ -110,19 +189,24 @@ export default function SupplierDashboard() {
         businessName: supplierProfile.businessName || '',
         deliveryRadius: supplierProfile.deliveryRadius || 10,
         minimumOrder: supplierProfile.minimumOrder || 500,
-        categories: supplierProfile.categories || []
+        categories: supplierProfile.categories || [],
+        businessHoursOpen: supplierProfile.businessHours?.open || '09:00',
+        businessHoursClose: supplierProfile.businessHours?.close || '18:00',
+        businessDays: supplierProfile.businessHours?.days?.length
+          ? supplierProfile.businessHours.days
+          : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
       })
     }
-  }, [supplierProfile])
+  }, [localSupplierFallback, supplierProfile, supplierQuery])
 
   // Calculate stats
   const stats = {
-    activeOrders: orders?.filter((order: Order) => order.status === 'confirmed' || order.status === 'processing').length || 0,
-    totalOrders: orders?.length || 0,
-    availableProducts: inventory?.filter((item: InventoryItem) => item.isAvailable).length || 0,
-    totalProducts: inventory?.length || 0,
-    lowStockItems: inventory?.filter((item: InventoryItem) => item.currentStock < 10).length || 0,
-    totalRevenue: orders?.reduce((sum: number, order: Order) => sum + order.totalAmount, 0) || 0
+    activeOrders: orders.filter((order: Order) => order.status === 'confirmed' || order.status === 'processing').length,
+    totalOrders: orders.length,
+    availableProducts: inventory.filter((item: InventoryItem) => item.isAvailable).length,
+    totalProducts: inventory.length,
+    lowStockItems: inventory.filter((item: InventoryItem) => item.currentStock < 10).length,
+    totalRevenue: orders.reduce((sum: number, order: Order) => sum + order.totalAmount, 0)
   }
 
   // Onboarding effect for first-time users
@@ -145,7 +229,12 @@ export default function SupplierDashboard() {
     fssaiCertified: false,
     fssaiLicense: '',
     deliveryRadius: 10,
-    minimumOrder: 500
+    minimumOrder: 500,
+    latitude: 19.076,
+    longitude: 72.8777,
+    businessHoursOpen: '09:00',
+    businessHoursClose: '18:00',
+    businessDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as string[],
   })
 
   // Product form state
@@ -161,6 +250,35 @@ export default function SupplierDashboard() {
     expiryDate: ''
   })
 
+  const resetProductForm = () => {
+    setProductForm({
+      itemName: '',
+      category: '',
+      currentStock: 0,
+      unit: '',
+      pricePerUnit: 0,
+      minimumOrder: 1,
+      quality: 'good',
+      description: '',
+      expiryDate: ''
+    });
+  };
+
+  const createLocalInventoryItem = (): InventoryItem => ({
+    _id: `local_item_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+    itemName: productForm.itemName,
+    category: productForm.category,
+    currentStock: productForm.currentStock,
+    unit: productForm.unit,
+    pricePerUnit: productForm.pricePerUnit,
+    minimumOrder: productForm.minimumOrder,
+    quality: productForm.quality,
+    isAvailable: productForm.currentStock > 0,
+    supplierId: supplierProfile?._id || `local_supplier_${user?.id || 'guest'}`,
+    lastUpdated: Date.now(),
+    expiryDate: productForm.expiryDate ? new Date(productForm.expiryDate).getTime() : undefined,
+  });
+
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user?.id) return
@@ -172,20 +290,27 @@ export default function SupplierDashboard() {
         ownerName: profileForm.ownerName,
         email: user.email,
         phone: profileForm.phone,
-        location: {
-          address: profileForm.address,
-          city: profileForm.city,
-          state: profileForm.state,
-          pincode: profileForm.pincode,
-          coordinates: { lat: 0, lng: 0 } // Would use geocoding in real app
-        },
-        categories: profileForm.categories,
+          location: {
+            address: profileForm.address,
+            city: profileForm.city,
+            state: profileForm.state,
+            pincode: profileForm.pincode,
+            coordinates: {
+              lat: profileForm.latitude,
+              lng: profileForm.longitude,
+            }
+          },
+        categories: profileForm.categories.length > 0
+          ? profileForm.categories
+          : ['Vegetables'],
         fssaiCertified: profileForm.fssaiCertified,
         fssaiLicense: profileForm.fssaiLicense,
         businessHours: {
-          open: "09:00",
-          close: "18:00",
-          days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+          open: profileForm.businessHoursOpen,
+          close: profileForm.businessHoursClose,
+          days: profileForm.businessDays.length > 0
+            ? profileForm.businessDays
+            : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         },
         deliveryRadius: profileForm.deliveryRadius,
         minimumOrder: profileForm.minimumOrder
@@ -193,16 +318,50 @@ export default function SupplierDashboard() {
       setIsProfileSetup(false)
     } catch (error) {
       console.error('Error creating supplier profile:', error)
+      setLocalSupplierFallback({
+        _id: `local_supplier_${user.id}`,
+        businessName: profileForm.businessName || `${user.firstName || 'Demo'} Supplier Store`,
+        trustScore: 3.6,
+        categories: profileForm.categories.length > 0 ? profileForm.categories : ['Vegetables', 'Fruits'],
+        isVerified: false,
+        deliveryRadius: profileForm.deliveryRadius || 10,
+        minimumOrder: profileForm.minimumOrder || 500,
+        location: {
+          coordinates: {
+            lat: profileForm.latitude,
+            lng: profileForm.longitude,
+          },
+        },
+        businessHours: {
+          open: profileForm.businessHoursOpen,
+          close: profileForm.businessHoursClose,
+          days: profileForm.businessDays.length > 0
+            ? profileForm.businessDays
+            : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        },
+      });
+      setIsProfileSetup(false);
     }
   }
 
-  const handleAddProduct = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!supplierProfile?._id) return
+  const handleAddProduct = async (e?: React.FormEvent) => {
+    e?.preventDefault()
+
+    const localItem = createLocalInventoryItem();
+    const persistLocalItem = () => {
+      setLocalInventory((previous) => [localItem, ...previous]);
+      resetProductForm();
+      setShowAddProduct(false);
+    };
+
+    if (!hasBackendSupplier) {
+      persistLocalItem();
+      return;
+    }
 
     try {
       await addInventoryItem({
-        supplierId: supplierProfile._id,
+        supplierId: supplierProfile._id as Id<'suppliers'>,
         itemName: productForm.itemName,
         category: productForm.category,
         currentStock: productForm.currentStock,
@@ -212,28 +371,28 @@ export default function SupplierDashboard() {
         quality: productForm.quality,
         expiryDate: productForm.expiryDate ? new Date(productForm.expiryDate).getTime() : undefined
       })
-      setProductForm({
-        itemName: '',
-        category: '',
-        currentStock: 0,
-        unit: '',
-        pricePerUnit: 0,
-        minimumOrder: 1,
-        quality: 'good',
-        description: '',
-        expiryDate: ''
-      })
-      setShowAddProduct(false)
+      persistLocalItem();
     } catch (error) {
       console.error('Error adding product:', error)
+      persistLocalItem();
     }
   }
 
   const handleToggleAvailability = async (itemId: string, isAvailable: boolean) => {
+    if (itemId.startsWith('local_') || !hasBackendSupplier) {
+      setLocalInventory((previous) =>
+        previous.map((item) => item._id === itemId ? { ...item, isAvailable } : item)
+      );
+      return;
+    }
+
     try {
       await updateInventoryItem({ id: itemId as Id<'inventory'>, isAvailable })
     } catch (error) {
       console.error('Error updating product availability:', error)
+      setLocalInventory((previous) =>
+        previous.map((item) => item._id === itemId ? { ...item, isAvailable } : item)
+      );
     }
   }
 
@@ -241,13 +400,43 @@ export default function SupplierDashboard() {
     e.preventDefault()
     if (!supplierProfile?._id) return
 
+    if (!hasBackendSupplier) {
+      setLocalSupplierFallback((previous) =>
+        previous
+          ? {
+              ...previous,
+              businessName: editProfileForm.businessName,
+              deliveryRadius: editProfileForm.deliveryRadius,
+              minimumOrder: editProfileForm.minimumOrder,
+              categories: editProfileForm.categories,
+              businessHours: {
+                open: editProfileForm.businessHoursOpen,
+                close: editProfileForm.businessHoursClose,
+                days: editProfileForm.businessDays.length > 0
+                  ? editProfileForm.businessDays
+                  : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+              },
+            }
+          : previous
+      );
+      setEditingProfile(false);
+      return;
+    }
+
     try {
       await updateSupplierProfile({
-        id: supplierProfile._id,
+        id: supplierProfile._id as Id<'suppliers'>,
         businessName: editProfileForm.businessName,
         deliveryRadius: editProfileForm.deliveryRadius,
         minimumOrder: editProfileForm.minimumOrder,
-        categories: editProfileForm.categories
+        categories: editProfileForm.categories,
+        businessHours: {
+          open: editProfileForm.businessHoursOpen,
+          close: editProfileForm.businessHoursClose,
+          days: editProfileForm.businessDays.length > 0
+            ? editProfileForm.businessDays
+            : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        },
       })
       setEditingProfile(false)
     } catch (error) {
@@ -263,6 +452,37 @@ export default function SupplierDashboard() {
         : [...prev.categories, category]
     }))
   }
+
+  const handleProfileCategoryToggle = (category: string) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter((currentCategory) => currentCategory !== category)
+        : [...prev.categories, category],
+    }));
+  };
+
+  const handleBusinessDayToggle = (
+    day: string,
+    target: 'profile' | 'edit'
+  ) => {
+    if (target === 'profile') {
+      setProfileForm((prev) => ({
+        ...prev,
+        businessDays: prev.businessDays.includes(day)
+          ? prev.businessDays.filter((currentDay) => currentDay !== day)
+          : [...prev.businessDays, day],
+      }));
+      return;
+    }
+
+    setEditProfileForm((prev) => ({
+      ...prev,
+      businessDays: prev.businessDays.includes(day)
+        ? prev.businessDays.filter((currentDay) => currentDay !== day)
+        : [...prev.businessDays, day],
+    }));
+  };
 
   if (isProfileSetup) {
     return (
@@ -299,7 +519,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.businessName}
-                    onChange={(e) => setProfileForm({...profileForm, businessName: e.target.value})}
+                    onChange={(e) => setProfileForm((prev) => ({...prev, businessName: e.target.value}))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -309,7 +529,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.ownerName}
-                    onChange={(e) => setProfileForm({...profileForm, ownerName: e.target.value})}
+                    onChange={(e) => setProfileForm((prev) => ({...prev, ownerName: e.target.value}))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -319,7 +539,7 @@ export default function SupplierDashboard() {
                     type="tel"
                     required
                     value={profileForm.phone}
-                    onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
+                    onChange={(e) => setProfileForm((prev) => ({...prev, phone: e.target.value}))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -329,7 +549,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.city}
-                    onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
+                    onChange={(e) => setProfileForm((prev) => ({...prev, city: e.target.value}))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -340,7 +560,7 @@ export default function SupplierDashboard() {
                 <textarea
                   required
                   value={profileForm.address}
-                  onChange={(e) => setProfileForm({...profileForm, address: e.target.value})}
+                  onChange={(e) => setProfileForm((prev) => ({...prev, address: e.target.value}))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   rows={3}
                 />
@@ -353,7 +573,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.state}
-                    onChange={(e) => setProfileForm({...profileForm, state: e.target.value})}
+                    onChange={(e) => setProfileForm((prev) => ({...prev, state: e.target.value}))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -363,7 +583,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.pincode}
-                    onChange={(e) => setProfileForm({...profileForm, pincode: e.target.value})}
+                    onChange={(e) => setProfileForm((prev) => ({...prev, pincode: e.target.value}))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -372,9 +592,91 @@ export default function SupplierDashboard() {
                   <input
                     type="number"
                     value={profileForm.deliveryRadius}
-                    onChange={(e) => setProfileForm({...profileForm, deliveryRadius: Number(e.target.value)})}
+                    onChange={(e) => setProfileForm((prev) => ({...prev, deliveryRadius: Number(e.target.value)}))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Latitude *</label>
+                  <input
+                    type="number"
+                    required
+                    step="0.000001"
+                    value={profileForm.latitude}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, latitude: Number(e.target.value) }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Longitude *</label>
+                  <input
+                    type="number"
+                    required
+                    step="0.000001"
+                    value={profileForm.longitude}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, longitude: Number(e.target.value) }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Open Time *</label>
+                  <input
+                    type="time"
+                    required
+                    value={profileForm.businessHoursOpen}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, businessHoursOpen: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Close Time *</label>
+                  <input
+                    type="time"
+                    required
+                    value={profileForm.businessHoursClose}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, businessHoursClose: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Business Days *</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {BUSINESS_DAYS.map((day) => (
+                    <label key={day} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={profileForm.businessDays.includes(day)}
+                        onChange={() => handleBusinessDayToggle(day, 'profile')}
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <span className="text-sm text-gray-700">{day}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Business Categories</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {MARKETPLACE_CATEGORIES.map((category) => (
+                    <label key={category} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={profileForm.categories.includes(category)}
+                        onChange={() => handleProfileCategoryToggle(category)}
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <span className="text-sm text-gray-700">{category}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -382,7 +684,7 @@ export default function SupplierDashboard() {
                 <input
                   type="checkbox"
                   checked={profileForm.fssaiCertified}
-                  onChange={(e) => setProfileForm({...profileForm, fssaiCertified: e.target.checked})}
+                  onChange={(e) => setProfileForm((prev) => ({...prev, fssaiCertified: e.target.checked}))}
                   className="mr-2"
                 />
                 <label className="text-sm text-gray-700">FSSAI Certified</label>
@@ -497,13 +799,14 @@ export default function SupplierDashboard() {
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
+            <RoleOnboardingWizard role="supplier" userId={user?.id} />
             {/* Quick Actions */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <button 
                 onClick={() => setShowAddProduct(true)}
                 className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
               >
-                <div className="text-3xl mb-3">��</div>
+                <div className="text-3xl mb-3">➕</div>
                 <div className="font-semibold text-lg">Add New Product</div>
                 <div className="text-sm opacity-90">Upload items to your catalog</div>
               </button>
@@ -562,13 +865,13 @@ export default function SupplierDashboard() {
                     <div className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</div>
                     <div className="text-sm text-gray-600">Total Earnings</div>
                   </div>
-                  <div className="text-3xl text-purple-500">����</div>
+                  <div className="text-3xl text-purple-500">💰</div>
                 </div>
               </div>
             </div>
 
             {/* AI Forecast Summary */}
-            {forecasts && forecasts.length > 0 && (
+            {forecasts.length > 0 && (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-800">AI Forecast Summary</h3>
@@ -611,7 +914,7 @@ export default function SupplierDashboard() {
             {/* Recent Orders */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-medium text-gray-800 mb-4">Recent Orders</h3>
-              {orders && orders.length > 0 ? (
+              {orders.length > 0 ? (
                 <div className="space-y-3">
                   {orders.slice(0, 5).map((order: Order) => (
                     <div key={order._id} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
@@ -661,7 +964,7 @@ export default function SupplierDashboard() {
             </div>
 
             {/* Product Grid */}
-            {inventory && inventory.length > 0 ? (
+            {inventory.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {inventory.map((item: InventoryItem) => (
                   <div key={item._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
@@ -750,11 +1053,11 @@ export default function SupplierDashboard() {
               <p className="opacity-90">Process and fulfill vendor orders efficiently</p>
             </div>
             
-            <TrackingStatusBanner onDemoClick={() => setShowTrackingDemo(true)} />
+            <TrackingStatusBanner />
 
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-6">Vendor Orders</h3>
-              {orders === undefined ? (
+              {ordersLoading ? (
                 <div className="flex justify-center items-center p-8 animate-fade-in">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
@@ -893,46 +1196,86 @@ export default function SupplierDashboard() {
               <h2 className="text-2xl font-bold mb-2">Business Analytics</h2>
               <p className="opacity-90">Track your performance and grow your business</p>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <SupplierAnalytics supplierId={supplierProfile._id} />
-            </div>
-            
-            {/* AI Forecast Section */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-800">AI Demand Forecast</h3>
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">AI-Powered</span>
+
+            {hasBackendSupplier ? (
+              <>
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <SupplierAnalytics supplierId={supplierProfile._id as Id<'suppliers'>} />
+                </div>
+                
+                {/* AI Forecast Section */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-gray-800">AI Demand Forecast</h3>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">AI-Powered</span>
+                  </div>
+                  <InventoryForecast supplierId={supplierProfile._id as Id<'suppliers'>} />
+                </div>
+              </>
+            ) : (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-3">Supplier Analytics</h2>
+                <p className="text-gray-600">
+                  Live analytics will appear when backend connectivity is restored. Your dashboard remains available in local mode.
+                </p>
               </div>
-              <InventoryForecast supplierId={supplierProfile._id} />
-            </div>
+            )}
           </div>
         )}
 
         {/* Smart Pricing Tab */}
         {activeTab === 'pricing' && supplierProfile && (
           <div className="space-y-6">
-            <SmartPricingEngine supplierId={supplierProfile._id} />
+            {hasBackendSupplier ? (
+              <SmartPricingEngine supplierId={supplierProfile._id as Id<'suppliers'>} />
+            ) : (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800">Smart Pricing Engine</h2>
+                <p className="text-gray-600 mt-2">Pricing insights are temporarily unavailable without live inventory data.</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Automation Tab */}
         {activeTab === 'automation' && supplierProfile && (
           <div className="space-y-6">
-            <InventoryAutomation supplierId={supplierProfile._id} />
+            {hasBackendSupplier ? (
+              <InventoryAutomation supplierId={supplierProfile._id as Id<'suppliers'>} />
+            ) : (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800">Inventory Automation</h2>
+                <p className="text-gray-600 mt-2">Automation rules will activate once backend data sync is available.</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Quality Control Tab */}
         {activeTab === 'quality' && supplierProfile && (
           <div className="space-y-6">
-            <QualityAssurance supplierId={supplierProfile._id} />
+            {hasBackendSupplier ? (
+              <QualityAssurance supplierId={supplierProfile._id as Id<'suppliers'>} />
+            ) : (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800">Quality Assurance</h2>
+                <p className="text-gray-600 mt-2">Quality metrics need live order and inventory feeds to compute accurately.</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Loyalty Program Tab */}
         {activeTab === 'loyalty' && supplierProfile && (
           <div className="space-y-6">
-            <SupplierLoyalty supplierId={supplierProfile._id} />
+            {hasBackendSupplier ? (
+              <SupplierLoyalty supplierId={supplierProfile._id as Id<'suppliers'>} />
+            ) : (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800">Vendor Loyalty Program</h2>
+                <p className="text-gray-600 mt-2">Loyalty insights will load after reconnecting to backend order history.</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -968,7 +1311,7 @@ export default function SupplierDashboard() {
                         type="text"
                         required
                         value={editProfileForm.businessName}
-                        onChange={(e) => setEditProfileForm({...editProfileForm, businessName: e.target.value})}
+                        onChange={(e) => setEditProfileForm((prev) => ({...prev, businessName: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -980,7 +1323,7 @@ export default function SupplierDashboard() {
                         min="1"
                         max="100"
                         value={editProfileForm.deliveryRadius}
-                        onChange={(e) => setEditProfileForm({...editProfileForm, deliveryRadius: Number(e.target.value)})}
+                        onChange={(e) => setEditProfileForm((prev) => ({...prev, deliveryRadius: Number(e.target.value)}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -991,7 +1334,7 @@ export default function SupplierDashboard() {
                         required
                         min="0"
                         value={editProfileForm.minimumOrder}
-                        onChange={(e) => setEditProfileForm({...editProfileForm, minimumOrder: Number(e.target.value)})}
+                        onChange={(e) => setEditProfileForm((prev) => ({...prev, minimumOrder: Number(e.target.value)}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -1000,7 +1343,7 @@ export default function SupplierDashboard() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">Business Categories</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {['Vegetables', 'Fruits', 'Grains', 'Dairy', 'Spices', 'Meat', 'Seafood', 'Oil', 'Pulses', 'Snacks'].map((category) => (
+                      {MARKETPLACE_CATEGORIES.map((category) => (
                         <label key={category} className="flex items-center space-x-2 cursor-pointer">
                           <input
                             type="checkbox"
@@ -1009,6 +1352,50 @@ export default function SupplierDashboard() {
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           />
                           <span className="text-sm text-gray-700">{category}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Open Time *</label>
+                      <input
+                        type="time"
+                        required
+                        value={editProfileForm.businessHoursOpen}
+                        onChange={(e) =>
+                          setEditProfileForm((prev) => ({ ...prev, businessHoursOpen: e.target.value }))
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Close Time *</label>
+                      <input
+                        type="time"
+                        required
+                        value={editProfileForm.businessHoursClose}
+                        onChange={(e) =>
+                          setEditProfileForm((prev) => ({ ...prev, businessHoursClose: e.target.value }))
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Business Days *</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {BUSINESS_DAYS.map((day) => (
+                        <label key={day} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editProfileForm.businessDays.includes(day)}
+                            onChange={() => handleBusinessDayToggle(day, 'edit')}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-gray-700">{day}</span>
                         </label>
                       ))}
                     </div>
@@ -1071,9 +1458,30 @@ export default function SupplierDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
                     <div className="text-lg font-semibold text-gray-900">₹{supplierProfile.minimumOrder}</div>
                   </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {supplierProfile.businessHours?.open || '09:00'} - {supplierProfile.businessHours?.close || '18:00'}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {(supplierProfile.businessHours?.days || []).join(', ') || 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday'}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Coordinates</label>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {supplierProfile.location?.coordinates?.lat?.toFixed?.(6) ?? 'N/A'}, {supplierProfile.location?.coordinates?.lng?.toFixed?.(6) ?? 'N/A'}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
+
+            {/* FSSAI Verification Component */}
+            <SupplierProfileMedia
+              supplierId={String(supplierProfile._id)}
+              businessName={supplierProfile.businessName}
+            />
 
             {/* FSSAI Verification Component */}
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -1081,15 +1489,21 @@ export default function SupplierDashboard() {
                 <h3 className="text-lg font-semibold">FSSAI Verification</h3>
                 <p className="text-sm opacity-90">Verify your food license to increase customer trust</p>
               </div>
-              <div className="p-6">
-                <FSSAIVerification 
-                  supplierId={supplierProfile._id as any}
-                  onVerificationComplete={(status) => {
-                    // Refresh the page to update verification status
-                    window.location.reload();
-                  }}
-                />
-              </div>
+              {hasBackendSupplier ? (
+                <div className="p-6">
+                  <FSSAIVerification 
+                    supplierId={supplierProfile._id as any}
+                    onVerificationComplete={() => {
+                      // Refresh the page to update verification status
+                      window.location.reload();
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="p-6 text-sm text-gray-600">
+                  Verification workflows need backend connectivity. You can continue updating your store profile in local mode.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1109,60 +1523,59 @@ export default function SupplierDashboard() {
                   </button>
                 </div>
                 
-                <form onSubmit={handleAddProduct} className="space-y-6">
+                <form onSubmit={(event) => { void handleAddProduct(event); }} noValidate className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                      <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
                       <input
+                        id="product-name"
                         type="text"
                         required
                         value={productForm.itemName}
-                        onChange={(e) => setProductForm({...productForm, itemName: e.target.value})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, itemName: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="e.g., Fresh Tomatoes"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                      <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                       <select
+                        id="product-category"
                         required
                         value={productForm.category}
-                        onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, category: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="">Select Category</option>
-                        <option value="Vegetables">Vegetables</option>
-                        <option value="Fruits">Fruits</option>
-                        <option value="Grains">Grains & Cereals</option>
-                        <option value="Dairy">Dairy Products</option>
-                        <option value="Spices">Spices & Herbs</option>
-                        <option value="Meat">Meat & Poultry</option>
-                        <option value="Seafood">Seafood</option>
-                        <option value="Oil">Oil & Ghee</option>
-                        <option value="Pulses">Pulses & Lentils</option>
-                        <option value="Snacks">Snacks & Beverages</option>
+                        {PRODUCT_CATEGORY_OPTIONS.map((categoryOption) => (
+                          <option key={categoryOption.value} value={categoryOption.value}>
+                            {categoryOption.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
                   
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Current Stock *</label>
+                      <label htmlFor="product-stock" className="block text-sm font-medium text-gray-700 mb-2">Current Stock *</label>
                       <input
+                        id="product-stock"
                         type="number"
                         required
                         min="0"
                         value={productForm.currentStock}
-                        onChange={(e) => setProductForm({...productForm, currentStock: Number(e.target.value)})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, currentStock: Number(e.target.value)}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Unit *</label>
+                      <label htmlFor="product-unit" className="block text-sm font-medium text-gray-700 mb-2">Unit *</label>
                       <select
+                        id="product-unit"
                         required
                         value={productForm.unit}
-                        onChange={(e) => setProductForm({...productForm, unit: e.target.value})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, unit: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="">Select Unit</option>
@@ -1177,14 +1590,15 @@ export default function SupplierDashboard() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Price per Unit *</label>
+                      <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-2">Price per Unit *</label>
                       <input
+                        id="product-price"
                         type="number"
                         required
                         min="0"
                         step="0.01"
                         value={productForm.pricePerUnit}
-                        onChange={(e) => setProductForm({...productForm, pricePerUnit: Number(e.target.value)})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, pricePerUnit: Number(e.target.value)}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="₹"
                       />
@@ -1193,22 +1607,24 @@ export default function SupplierDashboard() {
                   
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order *</label>
+                      <label htmlFor="product-minimum-order" className="block text-sm font-medium text-gray-700 mb-2">Minimum Order *</label>
                       <input
+                        id="product-minimum-order"
                         type="number"
                         required
                         min="1"
                         value={productForm.minimumOrder}
-                        onChange={(e) => setProductForm({...productForm, minimumOrder: Number(e.target.value)})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, minimumOrder: Number(e.target.value)}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Quality Grade *</label>
+                      <label htmlFor="product-quality" className="block text-sm font-medium text-gray-700 mb-2">Quality Grade *</label>
                       <select
+                        id="product-quality"
                         required
                         value={productForm.quality}
-                        onChange={(e) => setProductForm({...productForm, quality: e.target.value})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, quality: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="premium">Premium</option>
@@ -1218,11 +1634,12 @@ export default function SupplierDashboard() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date (Optional)</label>
+                      <label htmlFor="product-expiry-date" className="block text-sm font-medium text-gray-700 mb-2">Expiry Date (Optional)</label>
                       <input
+                        id="product-expiry-date"
                         type="date"
                         value={productForm.expiryDate}
-                        onChange={(e) => setProductForm({...productForm, expiryDate: e.target.value})}
+                        onChange={(e) => setProductForm((prev) => ({...prev, expiryDate: e.target.value}))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
@@ -1237,7 +1654,8 @@ export default function SupplierDashboard() {
                       Cancel
                     </button>
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={() => { void handleAddProduct(); }}
                       className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors"
                     >
                       Add Product
@@ -1268,10 +1686,6 @@ export default function SupplierDashboard() {
         </div>
       )}
 
-      {/* Tracking Feature Demo Modal */}
-      {showTrackingDemo && (
-        <TrackingFeatureDemo onClose={() => setShowTrackingDemo(false)} />
-      )}
     </div>
   )
 }

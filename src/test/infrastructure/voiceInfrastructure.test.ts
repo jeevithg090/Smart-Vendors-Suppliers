@@ -49,7 +49,14 @@ vi.mock('../../config/voiceQuery', () => ({
     VEGETABLES: ['tomato', 'onion', 'potato'],
     FRUITS: ['apple', 'banana', 'orange'],
     GRAINS: ['rice', 'wheat', 'barley'],
-    SPICES: ['turmeric', 'chili', 'coriander']
+    SPICES: ['turmeric', 'chili', 'coriander'],
+    PULSES: ['lentils', 'chickpeas'],
+    DAIRY: ['milk', 'cheese']
+  },
+  INGREDIENT_ALTERNATIVES: {
+    tomato: ['tamatar'],
+    onion: ['pyaz'],
+    potato: ['aloo']
   },
   ERROR_MESSAGES: {
     SARVAM_API_ERROR: 'Speech recognition service is unavailable',
@@ -64,6 +71,7 @@ global.fetch = vi.fn();
 describe('Enhanced Voice Processing Infrastructure', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = vi.fn();
     // Mock successful API responses
     (global.fetch as any).mockResolvedValue({
       ok: true,

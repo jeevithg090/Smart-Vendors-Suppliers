@@ -216,10 +216,17 @@ class PerformanceMonitoringService {
       const result = operation();
       
       if (result instanceof Promise) {
-        return result.finally(() => {
-          const duration = performance.now() - startTime;
-          this.recordMetric(`Custom ${name}`, duration);
-        });
+        return result
+          .then((value) => {
+            const duration = performance.now() - startTime;
+            this.recordMetric(`Custom ${name}`, duration);
+            return value;
+          })
+          .catch((error) => {
+            const duration = performance.now() - startTime;
+            this.recordMetric(`Custom ${name} (Error)`, duration, { error: (error as Error).message });
+            throw error;
+          });
       } else {
         const duration = performance.now() - startTime;
         this.recordMetric(`Custom ${name}`, duration);
@@ -230,6 +237,10 @@ class PerformanceMonitoringService {
       this.recordMetric(`Custom ${name} (Error)`, duration, { error: (error as Error).message });
       throw error;
     }
+  }
+
+  clearMetrics(): void {
+    this.metrics = [];
   }
 
   // Get performance summary

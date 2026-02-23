@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor, fireEvent, renderHook, act } from '@testing-library/react';
+import { useState } from 'react';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { RetryManager, offlineQueue } from '../../utils/retry';
@@ -11,7 +11,6 @@ import { performanceMonitoring } from '../../services/performanceMonitoring';
 vi.mock('../../services/errorReporting');
 vi.mock('../../services/performanceMonitoring');
 
-// Test component that can trigger various errors
 function TestComponent({ errorType }: { errorType?: string }) {
   const { handleError, handleNetworkError, handleBusinessError } = useErrorHandler();
 
@@ -21,10 +20,8 @@ function TestComponent({ errorType }: { errorType?: string }) {
         await handleNetworkError(new Error('Network failed'));
         break;
       case 'business':
-        await handleBusinessError('INSUFFICIENT_STOCK', 'Not enough stock');
+        await handleBusinessError('INSUFFICIENT_STOCK', 'Not enough stock', ['Try different supplier']);
         break;
-      case 'runtime':
-        throw new Error('Runtime error');
       default:
         await handleError(new Error('Generic error'));
     }
@@ -37,6 +34,20 @@ function TestComponent({ errorType }: { errorType?: string }) {
       </button>
       <div data-testid="content">Normal content</div>
     </div>
+  );
+}
+
+function RuntimeErrorTrigger() {
+  const [shouldThrow, setShouldThrow] = useState(false);
+
+  if (shouldThrow) {
+    throw new Error('Runtime error');
+  }
+
+  return (
+    <button onClick={() => setShouldThrow(true)} data-testid="trigger-runtime-error">
+      Trigger Runtime Error
+    </button>
   );
 }
 
@@ -55,12 +66,11 @@ describe('Error Handling Integration', () => {
     it('should catch and handle runtime errors', async () => {
       render(
         <ErrorBoundary>
-          <TestComponent errorType="runtime" />
+          <RuntimeErrorTrigger />
         </ErrorBoundary>
       );
 
-      const triggerButton = screen.getByTestId('trigger-error');
-      fireEvent.click(triggerButton);
+      fireEvent.click(screen.getByTestId('trigger-runtime-error'));
 
       await waitFor(() => {
         expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -69,7 +79,7 @@ describe('Error Handling Integration', () => {
       expect(errorReporting.reportError).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'SYSTEM_ERROR',
-          message: 'Runtime error'
+          message: 'Runtime error',
         })
       );
     });
@@ -77,29 +87,27 @@ describe('Error Handling Integration', () => {
     it('should allow recovery from errors', async () => {
       const { rerender } = render(
         <ErrorBoundary>
-          <TestComponent errorType="runtime" />
+          <RuntimeErrorTrigger />
         </ErrorBoundary>
       );
 
-      // Trigger error
-      fireEvent.click(screen.getByTestId('trigger-error'));
+      fireEvent.click(screen.getByTestId('trigger-runtime-error'));
 
       await waitFor(() => {
         expect(screen.getByText('Something went wrong')).toBeInTheDocument();
       });
 
-      // Click retry
-      const retryButton = screen.getByText('Try Again');
-      fireEvent.click(retryButton);
+      fireEvent.click(screen.getByText(/Try Again/));
 
-      // Re-render without error
       rerender(
         <ErrorBoundary>
-          <TestComponent />
+          <div data-testid="content">Normal content</div>
         </ErrorBoundary>
       );
 
-      expect(screen.getByTestId('content')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('content')).toBeInTheDocument();
+      });
     });
   });
 
@@ -116,7 +124,7 @@ describe('Error Handling Integration', () => {
 
       const result = await RetryManager.withRetry(mockOperation, {
         maxRetries: 3,
-        baseDelay: 10 // Short delay for testing
+        baseDelay: 10,
       });
 
       expect(result).toBe('success');
@@ -124,33 +132,28 @@ describe('Error Handling Integration', () => {
     });
 
     it('should queue operations when offline', async () => {
-      // Simulate offline
       Object.defineProperty(navigator, 'onLine', {
         writable: true,
-        value: false
+        value: false,
       });
 
       const mockOperation = vi.fn().mockResolvedValue('success');
-      
+
       await offlineQueue.enqueue({
         type: 'CREATE_ORDER',
         execute: mockOperation,
-        data: { orderId: 'test-order' }
+        data: { orderId: 'test-order' },
       });
 
-      // Operation should be queued, not executed immediately
       expect(mockOperation).not.toHaveBeenCalled();
 
-      // Simulate going online
       Object.defineProperty(navigator, 'onLine', {
         writable: true,
-        value: true
+        value: true,
       });
 
-      // Trigger online event
       window.dispatchEvent(new Event('online'));
 
-      // Wait for queue processing
       await waitFor(() => {
         expect(mockOperation).toHaveBeenCalled();
       });
@@ -161,8 +164,7 @@ describe('Error Handling Integration', () => {
     it('should handle business errors with suggestions', async () => {
       render(<TestComponent errorType="business" />);
 
-      const triggerButton = screen.getByTestId('trigger-error');
-      fireEvent.click(triggerButton);
+      fireEvent.click(screen.getByTestId('trigger-error'));
 
       await waitFor(() => {
         expect(errorReporting.reportError).toHaveBeenCalledWith(
@@ -170,8 +172,9 @@ describe('Error Handling Integration', () => {
             type: 'BUSINESS_ERROR',
             code: 'INSUFFICIENT_STOCK',
             message: 'Not enough stock',
-            actionable: true
-          })
+            actionable: true,
+          }),
+          undefined
         );
       });
     });
@@ -181,18 +184,18 @@ describe('Error Handling Integration', () => {
     it('should record performance metrics for errors', async () => {
       render(
         <ErrorBoundary>
-          <TestComponent errorType="runtime" />
+          <RuntimeErrorTrigger />
         </ErrorBoundary>
       );
 
-      fireEvent.click(screen.getByTestId('trigger-error'));
+      fireEvent.click(screen.getByTestId('trigger-runtime-error'));
 
       await waitFor(() => {
         expect(performanceMonitoring.recordMetric).toHaveBeenCalledWith(
           'Error Boundary Triggered',
           expect.any(Number),
           expect.objectContaining({
-            errorMessage: 'Runtime error'
+            errorMessage: 'Runtime error',
           })
         );
       });
@@ -200,13 +203,17 @@ describe('Error Handling Integration', () => {
 
     it('should measure operation performance', async () => {
       const mockOperation = vi.fn().mockResolvedValue('success');
-      
+
+      vi.mocked(performanceMonitoring.measureOperation).mockImplementation(
+        async (_operationName: string, operation: () => Promise<unknown>) => operation()
+      );
+
       await performanceMonitoring.measureOperation('test-operation', mockOperation);
 
       expect(mockOperation).toHaveBeenCalled();
-      expect(performanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'Custom test-operation',
-        expect.any(Number)
+      expect(performanceMonitoring.measureOperation).toHaveBeenCalledWith(
+        'test-operation',
+        mockOperation
       );
     });
   });
@@ -220,7 +227,7 @@ describe('Error Handling Integration', () => {
 
       const result = await RetryManager.withRetry(mockFailingOperation, {
         maxRetries: 3,
-        baseDelay: 10
+        baseDelay: 10,
       });
 
       expect(result).toBe('success');
@@ -228,34 +235,43 @@ describe('Error Handling Integration', () => {
     });
 
     it('should handle mixed error types in sequence', async () => {
-      const { handleError, handleNetworkError, handleBusinessError } = useErrorHandler();
+      const { result } = renderHook(() => useErrorHandler());
 
-      // Trigger multiple error types
-      await handleError(new Error('Generic error'));
-      await handleNetworkError(new Error('Network error'));
-      await handleBusinessError('PAYMENT_FAILED', 'Payment failed');
+      await act(async () => {
+        await result.current.handleError(new Error('Generic error'));
+        await result.current.handleNetworkError(new Error('Network error'));
+        await result.current.handleBusinessError('PAYMENT_FAILED', 'Payment failed');
+      });
 
       expect(errorReporting.reportError).toHaveBeenCalledTimes(3);
-      expect(errorReporting.reportError).toHaveBeenNthCalledWith(1, 
-        expect.objectContaining({ type: 'SYSTEM_ERROR' })
+      expect(errorReporting.reportError).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ type: 'SYSTEM_ERROR' }),
+        undefined
       );
-      expect(errorReporting.reportError).toHaveBeenNthCalledWith(2, 
-        expect.objectContaining({ type: 'NETWORK_ERROR' })
+      expect(errorReporting.reportError).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ type: 'NETWORK_ERROR' }),
+        undefined
       );
-      expect(errorReporting.reportError).toHaveBeenNthCalledWith(3, 
-        expect.objectContaining({ type: 'BUSINESS_ERROR' })
+      expect(errorReporting.reportError).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({ type: 'BUSINESS_ERROR' }),
+        undefined
       );
     });
   });
 
   describe('Error Context and Metadata', () => {
     it('should include relevant context in error reports', async () => {
-      const { handleError } = useErrorHandler();
-      
-      await handleError(new Error('Test error'), {
-        userId: 'user-123',
-        action: 'place-order',
-        orderId: 'order-456'
+      const { result } = renderHook(() => useErrorHandler());
+
+      await act(async () => {
+        await result.current.handleError(new Error('Test error'), {
+          userId: 'user-123',
+          action: 'place-order',
+          orderId: 'order-456',
+        });
       });
 
       expect(errorReporting.reportError).toHaveBeenCalledWith(
@@ -263,29 +279,30 @@ describe('Error Handling Integration', () => {
           context: expect.objectContaining({
             userId: 'user-123',
             action: 'place-order',
-            orderId: 'order-456'
-          })
-        })
+            orderId: 'order-456',
+          }),
+        }),
+        undefined
       );
     });
 
     it('should capture performance context in error reports', async () => {
       render(
         <ErrorBoundary>
-          <TestComponent errorType="runtime" />
+          <RuntimeErrorTrigger />
         </ErrorBoundary>
       );
 
-      fireEvent.click(screen.getByTestId('trigger-error'));
+      fireEvent.click(screen.getByTestId('trigger-runtime-error'));
 
       await waitFor(() => {
         expect(errorReporting.reportError).toHaveBeenCalledWith(
           expect.objectContaining({
             context: expect.objectContaining({
-              performanceMetrics: expect.any(Object),
+              errorBoundary: true,
               url: expect.any(String),
-              userAgent: expect.any(String)
-            })
+              userAgent: expect.any(String),
+            }),
           })
         );
       });

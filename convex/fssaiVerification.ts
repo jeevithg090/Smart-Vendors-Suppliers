@@ -138,7 +138,11 @@ async function extractTextFromImage(imageUrl: string, imageData?: string): Promi
       formData.append('url', imageUrl);
     }
 
-    formData.append('apikey', 'K85010851588957');
+    const ocrApiKey = process.env.OCR_SPACE_API_KEY;
+    if (!ocrApiKey) {
+      throw new Error("OCR API key not configured");
+    }
+    formData.append('apikey', ocrApiKey);
     formData.append('language', 'eng');
     formData.append('isOverlayRequired', 'false');
     formData.append('filetype', 'jpg');
@@ -231,10 +235,14 @@ If any information is unclear or missing, set confidence to a lower value (0.3-0
 
   for (const model of models) {
     try {
+      const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+      if (!openRouterApiKey) {
+        throw new Error("OpenRouter API key not configured");
+      }
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer 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`,
+          'Authorization': `Bearer ${openRouterApiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://smart-vendors-suppliers.vercel.app',
           'X-Title': 'Smart Vendors Suppliers'

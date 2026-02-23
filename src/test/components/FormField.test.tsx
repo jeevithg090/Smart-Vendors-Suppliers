@@ -80,9 +80,9 @@ describe('FormField', () => {
     const select = screen.getByRole('combobox');
     await user.selectOptions(select, 'option1');
     
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
-      target: expect.objectContaining({ value: 'option1' })
-    }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const event = onChange.mock.calls[0][0] as any;
+    expect(event.target.name).toBe('testField');
   });
 
   it('should apply error styling when error is present', () => {

@@ -48,7 +48,7 @@ export class OpenRouterFilterService {
   private model: string;
 
   constructor() {
-    this.apiKey = process.env.VITE_OPENROUTER_API_KEY || '';
+    this.apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
     this.baseUrl = VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.baseUrl;
     this.model = VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.model;
   }
@@ -58,6 +58,10 @@ export class OpenRouterFilterService {
    */
   async parseFilters(request: FilterParsingRequest): Promise<FilterParsingResponse> {
     try {
+      if (!this.apiKey) {
+        return this.fallbackParsing('', request.text);
+      }
+
       const systemPrompt = this.buildSystemPrompt(request.userContext);
       const userPrompt = this.buildUserPrompt(request);
 
@@ -88,6 +92,10 @@ export class OpenRouterFilterService {
     userContext?: any
   ): Promise<string> {
     try {
+      if (!this.apiKey) {
+        return 'Filters applied successfully.';
+      }
+
       const systemPrompt = `You are a helpful assistant for a street food vendor sourcing platform. 
       Generate a brief, friendly response in ${language} confirming the applied filters.
       Keep it conversational and under 50 words.`;
@@ -121,6 +129,10 @@ export class OpenRouterFilterService {
     userContext?: any
   ): Promise<string[]> {
     try {
+      if (!this.apiKey) {
+        return [];
+      }
+
       const systemPrompt = `You are an expert in helping street food vendors find suppliers. 
       Suggest 2-3 additional filter criteria that might help narrow down the search based on the user's query.
       Focus on practical, commonly used filters like location, price, quality, delivery time, or certification.`;
@@ -252,6 +264,10 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
   }
 
   private async callOpenRouter(payload: any): Promise<OpenRouterResponse> {
+    if (!this.apiKey) {
+      throw new Error('OpenRouter API key is not configured');
+    }
+
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -334,6 +350,10 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
    * Validate API key and connection
    */
   async validateConnection(): Promise<boolean> {
+    if (!this.apiKey) {
+      return false;
+    }
+
     try {
       const response = await this.callOpenRouter({
         model: this.model,

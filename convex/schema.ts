@@ -320,6 +320,100 @@ export default defineSchema({
     .index("by_location", ["location"])
     .index("by_urgency", ["urgency"]),
 
+  // Recipes table
+  recipes: defineTable({
+    vendorId: v.id("vendors"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    servings: v.number(),
+    ingredients: v.array(v.object({
+      name: v.string(),
+      quantity: v.number(),
+      unit: v.string(),
+      pricePerUnit: v.number(),
+      category: v.string(),
+      supplierId: v.optional(v.id("suppliers")),
+      supplierName: v.optional(v.string()),
+    })),
+    totalCost: v.number(),
+    costPerServing: v.number(),
+    suggestedSellingPrice: v.number(),
+    profitMargin: v.number(),
+    category: v.string(),
+    preparationTime: v.number(),
+    difficulty: v.string(),
+    tags: v.array(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_vendor", ["vendorId"])
+    .index("by_category", ["category"])
+    .index("by_created", ["createdAt"]),
+
+  // Supplier negotiations table
+  negotiations: defineTable({
+    vendorId: v.id("vendors"),
+    supplierId: v.id("suppliers"),
+    itemName: v.string(),
+    currentPrice: v.number(),
+    requestedPrice: v.number(),
+    quantity: v.number(),
+    unit: v.string(),
+    justification: v.string(),
+    status: v.string(), // "pending", "accepted", "rejected", "counter"
+    counterOffer: v.optional(v.number()),
+    counterMessage: v.optional(v.string()),
+    vendorNote: v.optional(v.string()),
+    supplierResponse: v.optional(v.string()),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_vendor", ["vendorId"])
+    .index("by_supplier", ["supplierId"])
+    .index("by_status", ["status"])
+    .index("by_created", ["createdAt"]),
+
+  // Competitor insights (vendor-entered) table
+  competitorInsights: defineTable({
+    vendorId: v.id("vendors"),
+    competitorName: v.string(),
+    businessType: v.string(),
+    location: v.string(),
+    popularItems: v.array(v.string()),
+    priceStrategy: v.string(),
+    estimatedRevenue: v.optional(v.string()),
+    uniqueSellingPoints: v.array(v.string()),
+    strengths: v.array(v.string()),
+    opportunities: v.array(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_vendor", ["vendorId"])
+    .index("by_created", ["createdAt"]),
+
+  // Seasonal insights (vendor-entered) table
+  seasonalInsights: defineTable({
+    vendorId: v.id("vendors"),
+    period: v.string(),
+    peakItems: v.array(v.string()),
+    priceIncrease: v.number(),
+    demandIncrease: v.number(),
+    preparation: v.array(v.string()),
+    opportunity: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_vendor", ["vendorId"])
+    .index("by_created", ["createdAt"]),
+
+  // Market reports table
+  marketReports: defineTable({
+    vendorId: v.id("vendors"),
+    title: v.string(),
+    type: v.string(),
+    content: v.string(),
+    generatedAt: v.number(),
+    createdAt: v.number(),
+  }).index("by_vendor", ["vendorId"])
+    .index("by_created", ["createdAt"]),
+
   // Notifications table
   notifications: defineTable({
     userId: v.string(), // Clerk user ID

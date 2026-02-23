@@ -29,6 +29,7 @@ export default function VendorProfileManagement() {
   );
 
   const updateVendor = useMutation(api.vendors.update);
+  const createVendor = useMutation(api.vendors.create);
 
   const categories = [
     'Vegetables', 'Fruits', 'Grains & Cereals', 'Spices & Condiments',
@@ -63,6 +64,9 @@ export default function VendorProfileManagement() {
         qualityPreference: vendor.preferences?.qualityPreference || 'High',
         deliveryTimePreference: vendor.preferences?.deliveryTimePreference || 'Same Day'
       });
+      setIsEditing(false);
+    } else if (vendor === null) {
+      setIsEditing(true);
     }
   }, [vendor]);
 
@@ -84,41 +88,85 @@ export default function VendorProfileManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!vendor) return;
+    if (!user) return;
+
+    const requiredFields = [
+      formData.businessName,
+      formData.ownerName,
+      formData.phone,
+      formData.address,
+      formData.city,
+      formData.state,
+      formData.pincode,
+      formData.businessType
+    ];
+    if (requiredFields.some(field => !String(field).trim())) {
+      console.error('Missing required fields');
+      return;
+    }
 
     try {
-      await updateVendor({
-        id: vendor._id,
-        businessName: formData.businessName,
-        ownerName: formData.ownerName,
-        phone: formData.phone,
-        location: {
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode,
-          coordinates: vendor.location.coordinates // Keep existing coordinates
-        },
-        businessType: formData.businessType,
-        fssaiLicense: formData.fssaiLicense || undefined,
-        preferences: {
-          maxDeliveryDistance: formData.maxDeliveryDistance,
-          preferredCategories: formData.preferredCategories,
-          budgetRange: {
-            min: formData.budgetMin,
-            max: formData.budgetMax
+      if (vendor) {
+        await updateVendor({
+          id: vendor._id,
+          businessName: formData.businessName,
+          ownerName: formData.ownerName,
+          phone: formData.phone,
+          location: {
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+            coordinates: vendor.location.coordinates
           },
-          qualityPreference: formData.qualityPreference,
-          deliveryTimePreference: formData.deliveryTimePreference
-        }
-      });
+          businessType: formData.businessType,
+          fssaiLicense: formData.fssaiLicense || undefined,
+          preferences: {
+            maxDeliveryDistance: formData.maxDeliveryDistance,
+            preferredCategories: formData.preferredCategories,
+            budgetRange: {
+              min: formData.budgetMin,
+              max: formData.budgetMax
+            },
+            qualityPreference: formData.qualityPreference,
+            deliveryTimePreference: formData.deliveryTimePreference
+          }
+        });
+      } else {
+        await createVendor({
+          userId: user.id,
+          businessName: formData.businessName,
+          ownerName: formData.ownerName,
+          email: user.email,
+          phone: formData.phone,
+          location: {
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.pincode,
+            coordinates: { lat: 0, lng: 0 }
+          },
+          businessType: formData.businessType,
+          fssaiLicense: formData.fssaiLicense || undefined,
+          preferences: {
+            maxDeliveryDistance: formData.maxDeliveryDistance,
+            preferredCategories: formData.preferredCategories,
+            budgetRange: {
+              min: formData.budgetMin,
+              max: formData.budgetMax
+            },
+            qualityPreference: formData.qualityPreference,
+            deliveryTimePreference: formData.deliveryTimePreference
+          }
+        });
+      }
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating vendor profile:', error);
     }
   };
 
-  if (!vendor) {
+  if (!vendor && vendor !== null) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
@@ -156,7 +204,7 @@ export default function VendorProfileManagement() {
                   : 'bg-orange-500 text-white hover:bg-orange-600'
               }`}
             >
-              {isEditing ? 'Cancel' : 'Edit Profile'}
+              {isEditing ? 'Cancel' : vendor ? 'Edit Profile' : 'Create Profile'}
             </button>
           </div>
 

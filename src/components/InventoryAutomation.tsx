@@ -184,7 +184,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6">
             {[
-              { id: 'alerts', label: 'Active Alerts', icon: '��', count: alerts.length },
+              { id: 'alerts', label: 'Active Alerts', icon: '🚨', count: alerts.length },
               { id: 'rules', label: 'Automation Rules', icon: '⚙️', count: automationRules.filter(r => r.isActive).length },
               { id: 'insights', label: 'Smart Insights', icon: '💡' }
             ].map(tab => (

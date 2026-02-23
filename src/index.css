@@ -275,6 +275,112 @@ html {
   }
 }
 
+/* Google Translate widget placement + cleanup */
+.translate-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  padding: 0.45rem 0.75rem;
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.translate-toolbar__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.translate-toolbar__control {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.translate-toolbar__icon {
+  font-size: 0.9rem;
+}
+
+.translate-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+#google_translate_element .goog-te-gadget {
+  font-size: 0;
+  line-height: 1;
+}
+
+#google_translate_element .goog-te-gadget > span,
+#google_translate_element .goog-logo-link {
+  display: none !important;
+}
+
+#google_translate_element .goog-te-combo {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  margin: 0;
+  min-width: 120px;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.2;
+  padding: 0.32rem 1.6rem 0.32rem 0.7rem;
+  outline: none;
+  box-shadow: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+#google_translate_element .goog-te-combo:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+}
+
+.translate-select-arrow {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 0.78rem;
+  pointer-events: none;
+}
+
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .translate-toolbar {
+    right: 0.5rem;
+    top: 0.5rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .translate-toolbar__label {
+    display: none;
+  }
+
+  #google_translate_element .goog-te-combo {
+    min-width: 108px;
+    font-size: 0.78rem;
+  }
+}
+
 @layer components {
   .btn-primary {
     @apply bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg;

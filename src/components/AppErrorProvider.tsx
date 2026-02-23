@@ -2,7 +2,6 @@ import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { ErrorBoundary } from './ErrorBoundary';
 import { OfflineManager } from './OfflineManager';
-import { ErrorReportingDashboard } from './ErrorReportingDashboard';
 import { useComprehensiveErrorHandling } from '../hooks/useComprehensiveErrorHandling';
 
 interface AppErrorContextType {
@@ -43,7 +42,7 @@ export function AppErrorProvider({ children }: AppErrorProviderProps) {
     enableBusinessValidation: true,
     enablePerformanceTracking: true,
     maxRetries: 3,
-    retryDelay: 1000
+    retryDelay: 100
   });
 
   return (
@@ -51,7 +50,6 @@ export function AppErrorProvider({ children }: AppErrorProviderProps) {
       <ErrorBoundary>
         <OfflineManager>
           {children}
-          <ErrorReportingDashboard />
         </OfflineManager>
       </ErrorBoundary>
     </AppErrorContext.Provider>

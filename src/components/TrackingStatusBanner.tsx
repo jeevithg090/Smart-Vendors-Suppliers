@@ -1,10 +1,6 @@
 import { useState } from 'react';
 
-interface TrackingStatusBannerProps {
-  onDemoClick?: () => void;
-}
-
-export default function TrackingStatusBanner({ onDemoClick }: TrackingStatusBannerProps) {
+export default function TrackingStatusBanner() {
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
@@ -20,24 +16,11 @@ export default function TrackingStatusBanner({ onDemoClick }: TrackingStatusBann
             Enhanced Order Tracking Available
           </h3>
           <p className="mt-1 text-sm text-blue-700">
-            New tracking features have been implemented including third-party logistics support, 
-            real-time status updates, and detailed tracking timelines. 
-            {onDemoClick && (
-              <>
-                {' '}
-                <button 
-                  onClick={onDemoClick}
-                  className="font-medium underline hover:text-blue-800"
-                >
-                  View feature demo
-                </button>
-                {' '}or use the{' '}
-              </>
-            )}
-            Use the "Manage Tracking" buttons on orders to access basic tracking functionality.
+            Real-time order tracking is available for your orders, including timelines and
+            carrier updates when provided by suppliers.
           </p>
           <div className="mt-2 text-xs text-blue-600">
-            💡 Full enhanced features will be available once the backend is deployed.
+            Use the "Manage Tracking" buttons on orders to update tracking details.
           </div>
         </div>
         <div className="ml-auto">

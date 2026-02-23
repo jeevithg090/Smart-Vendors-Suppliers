@@ -1,7 +1,8 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import AuthFlow from './components/AuthFlow'
+import LanguageTranslator from './components/LanguageTranslator'
 
 // Lazy load components for better performance
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -47,12 +48,19 @@ const ProtectedRoute = ({ children, requiredRole }: {
 function App() {
   const { isAuthenticated, user, isLoading } = useAuth()
 
+  useEffect(() => {
+    if (typeof performance !== 'undefined' && typeof performance.mark === 'function') {
+      performance.mark('app-mounted');
+    }
+  }, []);
+
   if (isLoading) {
     return <LoadingSpinner />
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <LanguageTranslator />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           {/* Public routes */}

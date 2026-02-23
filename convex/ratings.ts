@@ -45,6 +45,42 @@ export const addRating = mutation({
   },
 });
 
+// Compatibility alias used by rating UI.
+export const submitRating = addRating;
+
+// Check whether a vendor can rate a given order.
+export const canRateOrder = query({
+  args: {
+    vendorId: v.id("vendors"),
+    orderId: v.id("orders"),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      return { canRate: false, reason: "Order not found" };
+    }
+
+    if (order.vendorId !== args.vendorId) {
+      return { canRate: false, reason: "You can only rate your own orders" };
+    }
+
+    if (order.status !== "delivered") {
+      return { canRate: false, reason: "Order must be delivered before rating" };
+    }
+
+    const existingRating = await ctx.db
+      .query("ratings")
+      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
+      .first();
+
+    if (existingRating) {
+      return { canRate: false, reason: "This order has already been rated" };
+    }
+
+    return { canRate: true, reason: "You can rate this order" };
+  },
+});
+
 // Get ratings for a supplier
 export const getSupplierRatings = query({
   args: { 

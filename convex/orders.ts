@@ -144,6 +144,9 @@ export const createOrder = mutation({
   }
 });
 
+// Compatibility alias used by older frontend components.
+export const create = createOrder;
+
 // Update order status
 export const updateOrderStatus = mutation({
   args: {

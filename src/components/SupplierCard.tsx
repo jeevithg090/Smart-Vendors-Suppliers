@@ -32,9 +32,19 @@ interface SupplierCardProps {
   };
   onClick: () => void;
   showDistance?: boolean;
+  isSelectedForComparison?: boolean;
+  onToggleComparison?: () => void;
+  comparisonDisabled?: boolean;
 }
 
-export default function SupplierCard({ supplier, onClick, showDistance = false }: SupplierCardProps) {
+export default function SupplierCard({
+  supplier,
+  onClick,
+  showDistance = false,
+  isSelectedForComparison = false,
+  onToggleComparison,
+  comparisonDisabled = false,
+}: SupplierCardProps) {
   const isCurrentlyOpen = useMemo(() => {
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
@@ -159,8 +169,31 @@ export default function SupplierCard({ supplier, onClick, showDistance = false }
       </div>
 
       {/* Business Hours Tooltip */}
-      <div className="mt-2 text-xs text-gray-500">
-        {supplier.businessHours.open} - {supplier.businessHours.close} • {supplier.businessHours.days.join(', ')}
+      <div className="mt-2 flex flex-col gap-2 text-xs text-gray-500">
+        <span>
+          {supplier.businessHours.open} - {supplier.businessHours.close} • {supplier.businessHours.days.join(', ')}
+        </span>
+        {onToggleComparison && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleComparison();
+            }}
+            disabled={comparisonDisabled && !isSelectedForComparison}
+            className={`self-start rounded-full border px-3 py-1 font-medium transition-colors ${
+              isSelectedForComparison
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
+            } ${
+              comparisonDisabled && !isSelectedForComparison
+                ? 'cursor-not-allowed opacity-60'
+                : ''
+            }`}
+          >
+            {isSelectedForComparison ? 'Selected for compare' : 'Add to compare'}
+          </button>
+        )}
       </div>
     </div>
   );

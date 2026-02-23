@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DemandRequestModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const URGENCY_OPTIONS = [
 ];
 
 export default function DemandRequestModal({ isOpen, onClose, onSuccess }: DemandRequestModalProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     itemName: '',
     quantity: 1,
@@ -102,6 +104,7 @@ export default function DemandRequestModal({ isOpen, onClose, onSuccess }: Deman
 
     try {
       await createRequest({
+        userEmail: user?.email,
         itemName: formData.itemName.trim(),
         quantity: formData.quantity,
         unit: formData.unit,

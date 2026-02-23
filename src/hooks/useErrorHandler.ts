@@ -42,7 +42,7 @@ export function useErrorHandler(options: UseErrorHandlerOptions = {}) {
     // Report to error service if enabled
     if (reportToService) {
       try {
-        await errorReporting.reportError(appError);
+        await errorReporting.reportError(appError, undefined);
       } catch (reportingError) {
         console.warn('Failed to report error:', reportingError);
       }
@@ -108,12 +108,26 @@ function showErrorNotification(error: AppError) {
   const message = getUserFriendlyMessage(error);
   
   // You could integrate with a toast library here
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('Error', { body: message });
-  } else {
-    // Fallback to console or custom notification component
+  if (typeof window === 'undefined') {
     console.warn('User notification:', message);
+    return;
   }
+
+  const hasNotificationApi = 'Notification' in window;
+  const isConstructable = typeof Notification === 'function';
+  const permissionGranted = hasNotificationApi && (Notification as typeof globalThis.Notification).permission === 'granted';
+
+  if (hasNotificationApi && isConstructable && permissionGranted) {
+    try {
+      new Notification('Error', { body: message });
+      return;
+    } catch (notificationError) {
+      console.warn('Failed to display browser notification:', notificationError);
+    }
+  }
+
+  // Fallback to console or custom notification component
+  console.warn('User notification:', message);
 }
 
 function getUserFriendlyMessage(error: AppError): string {

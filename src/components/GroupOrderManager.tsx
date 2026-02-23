@@ -19,6 +19,7 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('list');
   const [selectedGroupOrderId, setSelectedGroupOrderId] = useState<Id<"groupOrders"> | null>(null);
+  const [pendingJoinQuantity, setPendingJoinQuantity] = useState<number>(1);
   const [successMessage, setSuccessMessage] = useState<string>('');
 
   // Get vendor's group orders
@@ -28,6 +29,7 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
 
   const handleJoinOrder = (_groupOrderId: Id<"groupOrders">, _quantity: number) => {
     setSelectedGroupOrderId(_groupOrderId);
+    setPendingJoinQuantity(_quantity > 0 ? _quantity : 1);
     setCurrentView('participate');
   };
 
@@ -41,12 +43,14 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
     setSuccessMessage('Successfully joined the group order!');
     setCurrentView('list');
     setSelectedGroupOrderId(null);
+    setPendingJoinQuantity(1);
     setTimeout(() => setSuccessMessage(''), 5000);
   };
 
   const handleCancel = () => {
     setCurrentView('list');
     setSelectedGroupOrderId(null);
+    setPendingJoinQuantity(1);
   };
 
   const renderCurrentView = () => {
@@ -66,6 +70,8 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
           <GroupOrderParticipation
             groupOrderId={selectedGroupOrderId}
             vendorId={vendorId}
+            vendorLocation={vendorLocation}
+            initialQuantity={pendingJoinQuantity}
             onSuccess={handleParticipationSuccess}
             onCancel={handleCancel}
           />

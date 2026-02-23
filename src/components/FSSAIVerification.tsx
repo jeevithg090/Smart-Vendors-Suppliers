@@ -10,11 +10,12 @@ interface FSSAIVerificationProps {
 
 export default function FSSAIVerification({ supplierId, onVerificationComplete }: FSSAIVerificationProps) {
   const [licenseNumber, setLicenseNumber] = useState('');
+  const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const [error, setError] = useState('');
 
-  const verifyFSSAI = useMutation(api.suppliers.verifyFSSAILicense);
+  const verifyFSSAI = useMutation(api.fssaiVerification.verifyFSSAICertificate);
 
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,42 +24,35 @@ export default function FSSAIVerification({ supplierId, onVerificationComplete }
       setError('Please enter a valid 14-digit FSSAI license number');
       return;
     }
+    if (!certificateFile) {
+      setError('Please upload your FSSAI certificate image');
+      return;
+    }
 
     setIsVerifying(true);
     setError('');
     setVerificationResult(null);
 
     try {
-      // For demo purposes, we'll simulate FSSAI verification
-      // In a real implementation, this would call the actual FSSAI API
-      
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
-      
-      // Mock verification result
-      const mockResult = {
-        isValid: licenseNumber.startsWith('1') || licenseNumber.startsWith('2'), // Simple validation for demo
-        licenseNumber,
-        businessName: 'Demo Business Name',
-        ownerName: 'Demo Owner',
-        address: 'Demo Address, City, State',
-        validityDate: '2025-12-31',
-        category: 'Food Business Operator',
-        confidence: 0.95
-      };
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error('Failed to read certificate image'));
+        reader.readAsDataURL(certificateFile);
+      });
 
-      if (mockResult.isValid) {
-        // Update supplier with FSSAI verification
-        await verifyFSSAI({
-          supplierId,
-          licenseNumber,
-          verificationData: mockResult
-        });
-        
-        setVerificationResult(mockResult);
-        onVerificationComplete?.('verified');
+      const result = await verifyFSSAI({
+        supplierId,
+        imageUrl: '',
+        imageData: base64,
+      });
+
+      if (result?.success) {
+        setVerificationResult(result.certificateData);
+        onVerificationComplete?.(result.status || 'verified');
       } else {
-        setError('Invalid FSSAI license number. Please check and try again.');
-        onVerificationComplete?.('invalid');
+        setError(result?.error || 'Verification failed. Please try again later.');
+        onVerificationComplete?.(result?.status || 'error');
       }
     } catch (err) {
       console.error('FSSAI verification error:', err);
@@ -101,6 +95,21 @@ export default function FSSAIVerification({ supplierId, onVerificationComplete }
             />
             <p className="text-xs text-gray-500 mt-1">
               Example: 12345678901234 (14 digits)
+            </p>
+          </div>
+          <div>
+            <label htmlFor="certificateUpload" className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Certificate Image
+            </label>
+            <input
+              id="certificateUpload"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setCertificateFile(e.target.files?.[0] || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Upload a clear image of your FSSAI certificate.
             </p>
           </div>
 

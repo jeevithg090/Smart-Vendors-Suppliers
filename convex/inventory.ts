@@ -43,6 +43,27 @@ export const getInventoryBySupplier = query({
   },
 });
 
+// Get supplier inventory (compatibility alias used by frontend order placement)
+export const getSupplierInventory = query({
+  args: {
+    supplierId: v.id("suppliers"),
+    availableOnly: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const inventory = await ctx.db
+      .query("inventory")
+      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .order("desc")
+      .collect();
+
+    if (args.availableOnly === false) {
+      return inventory;
+    }
+
+    return inventory.filter((item) => item.isAvailable && item.currentStock > 0);
+  },
+});
+
 // Update inventory item
 export const updateInventoryItem = mutation({
   args: {
@@ -153,6 +174,199 @@ export const getInventoryByCategory = query({
       .withIndex("by_category", (q) => q.eq("category", args.category))
       .filter((q) => q.eq(q.field("isAvailable"), true))
       .collect();
+  },
+});
+
+// Get inventory by item name (compatibility query used by inventory tracker)
+export const getInventoryByItem = query({
+  args: {
+    itemName: v.string(),
+    availableOnly: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const itemName = args.itemName.trim().toLowerCase();
+    const inventory = await ctx.db.query("inventory").collect();
+    const filtered = inventory.filter((item) =>
+      item.itemName.toLowerCase().includes(itemName)
+    );
+
+    if (args.availableOnly === false) {
+      return filtered;
+    }
+
+    return filtered.filter((item) => item.isAvailable && item.currentStock > 0);
+  },
+});
+
+// Get currently available marketplace inventory (compatibility query used by workflow/inventory views)
+export const getAvailableInventory = query({
+  args: {
+    supplierId: v.optional(v.id("suppliers")),
+    category: v.optional(v.string()),
+    itemName: v.optional(v.string()),
+    includeUnavailable: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    let inventory = await ctx.db.query("inventory").collect();
+
+    if (args.supplierId) {
+      inventory = inventory.filter((item) => item.supplierId === args.supplierId);
+    }
+
+    if (args.category) {
+      const category = args.category.trim().toLowerCase();
+      inventory = inventory.filter(
+        (item) => item.category.toLowerCase() === category
+      );
+    }
+
+    if (args.itemName) {
+      const itemName = args.itemName.trim().toLowerCase();
+      inventory = inventory.filter((item) =>
+        item.itemName.toLowerCase().includes(itemName)
+      );
+    }
+
+    if (!args.includeUnavailable) {
+      inventory = inventory.filter((item) => item.isAvailable && item.currentStock > 0);
+    }
+
+    return inventory.sort((a, b) => b.lastUpdated - a.lastUpdated);
+  },
+});
+
+// Historical price points derived from orders and latest inventory snapshots
+export const getPriceHistory = query({
+  args: {
+    itemName: v.string(),
+    supplierId: v.optional(v.id("suppliers")),
+    days: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const days = Math.max(1, Math.min(args.days || 30, 365));
+    const since = Date.now() - days * 24 * 60 * 60 * 1000;
+    const itemName = args.itemName.trim().toLowerCase();
+
+    const allInventory = await ctx.db.query("inventory").collect();
+    const matchingInventory = allInventory.filter((item) =>
+      item.itemName.toLowerCase().includes(itemName)
+    );
+    const filteredInventory = args.supplierId
+      ? matchingInventory.filter((item) => item.supplierId === args.supplierId)
+      : matchingInventory;
+
+    const stockBySupplier = new Map(
+      filteredInventory.map((item) => [item.supplierId, item.currentStock])
+    );
+    const availableBySupplier = new Map(
+      filteredInventory.map((item) => [item.supplierId, item.isAvailable])
+    );
+
+    const orders = args.supplierId
+      ? await ctx.db
+          .query("orders")
+          .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId!))
+          .collect()
+      : await ctx.db.query("orders").collect();
+
+    const pricePoints = orders
+      .filter((order) => order.createdAt >= since)
+      .flatMap((order) =>
+        order.items
+          .filter((item) => item.itemName.toLowerCase().includes(itemName))
+          .map((item) => ({
+            supplierId: order.supplierId,
+            price: item.pricePerUnit,
+            stock: stockBySupplier.get(order.supplierId) || 0,
+            timestamp: order.createdAt,
+            isAvailable: availableBySupplier.get(order.supplierId) || false,
+          }))
+      );
+
+    // Include latest inventory snapshot so charts show current known prices even without recent orders.
+    const snapshotPoints = filteredInventory.map((item) => ({
+      supplierId: item.supplierId,
+      price: item.pricePerUnit,
+      stock: item.currentStock,
+      timestamp: item.lastUpdated,
+      isAvailable: item.isAvailable,
+    }));
+
+    return [...pricePoints, ...snapshotPoints]
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .slice(-500);
+  },
+});
+
+// Get price trends for multiple items (average price change over time)
+export const getBulkPriceTrends = query({
+  args: {
+    itemNames: v.array(v.string()),
+    days: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const days = Math.max(1, Math.min(args.days || 30, 365));
+    const since = Date.now() - days * 24 * 60 * 60 * 1000;
+    const normalizedItems = args.itemNames.map((item) => item.trim().toLowerCase());
+
+    const inventory = await ctx.db.query("inventory").collect();
+    const orders = await ctx.db.query("orders").collect();
+
+    const trends = normalizedItems.map((itemName) => {
+      const matchingInventory = inventory.filter((item) =>
+        item.itemName.toLowerCase().includes(itemName)
+      );
+
+      const orderPoints = orders
+        .filter((order) => order.createdAt >= since)
+        .flatMap((order) =>
+          order.items
+            .filter((item) => item.itemName.toLowerCase().includes(itemName))
+            .map((item) => ({
+              price: item.pricePerUnit,
+              timestamp: order.createdAt,
+            }))
+        );
+
+      const snapshotPoints = matchingInventory.map((item) => ({
+        price: item.pricePerUnit,
+        timestamp: item.lastUpdated,
+      }));
+
+      const points = [...orderPoints, ...snapshotPoints]
+        .filter((p) => p.price > 0)
+        .sort((a, b) => a.timestamp - b.timestamp);
+
+      if (points.length < 2) {
+        const latest = points[points.length - 1]?.price || 0;
+        return {
+          itemName,
+          currentPrice: latest,
+          change: 0,
+          changePercent: 0,
+          trend: "stable",
+          dataPoints: points.length,
+        };
+      }
+
+      const first = points[0].price;
+      const last = points[points.length - 1].price;
+      const change = last - first;
+      const changePercent = first > 0 ? (change / first) * 100 : 0;
+      const trend =
+        Math.abs(changePercent) < 5 ? "stable" : changePercent > 0 ? "up" : "down";
+
+      return {
+        itemName,
+        currentPrice: last,
+        change,
+        changePercent,
+        trend,
+        dataPoints: points.length,
+      };
+    });
+
+    return trends;
   },
 });
 

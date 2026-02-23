@@ -15,12 +15,14 @@ interface OrderManagerProps {
   initialView?: ViewMode;
   supplierId?: Id<"suppliers">;
   orderId?: Id<"orders">;
+  vendorId?: Id<"vendors">;
 }
 
 export const OrderManager: React.FC<OrderManagerProps> = ({
   initialView = 'history',
   supplierId,
-  orderId
+  orderId,
+  vendorId
 }) => {
   const { user } = useAuth();
   const [currentView, setCurrentView] = useState<ViewMode>(initialView);
@@ -32,6 +34,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     api.vendors.getByUserId,
     user ? { userId: user.id } : "skip"
   );
+  const effectiveVendorId = vendorId ?? vendor?._id;
 
   if (!user) {
     return (
@@ -44,7 +47,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     );
   }
 
-  if (!vendor) {
+  if (!effectiveVendorId) {
     return (
       <div className="flex justify-center items-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -101,7 +104,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
         return (
           <OrderPlacement
             supplierId={selectedSupplierId}
-            vendorId={vendor._id}
+            vendorId={effectiveVendorId}
             onOrderPlaced={handleOrderPlaced}
             onCancel={handleBackToHistory}
           />
@@ -168,7 +171,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
             </div>
             <TrackingStatusBanner />
             <OrderHistory
-              vendorId={vendor._id}
+              vendorId={effectiveVendorId}
               onViewOrder={handleViewOrder}
             />
           </div>

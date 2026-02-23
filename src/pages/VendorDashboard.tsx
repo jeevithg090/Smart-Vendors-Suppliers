@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 import WorkflowIntegration from '../components/WorkflowIntegration';
@@ -8,81 +8,38 @@ import VendorProfileManagement from '../components/VendorProfileManagement';
 import SupplierSearch from '../components/SupplierSearch';
 import VoiceQuery from '../components/VoiceQuery';
 import { OrderManager } from '../components/OrderManager';
+import GroupOrderManager from '../components/GroupOrderManager';
 import FinancialAnalytics from '../components/FinancialAnalytics';
 import RecipeCostingCalculator from '../components/RecipeCostingCalculator';
 import SupplierNegotiationHub from '../components/SupplierNegotiationHub';
 import MarketIntelligence from '../components/MarketIntelligence';
+import SmartProcurementPlanner from '../components/SmartProcurementPlanner';
 import SimpleOrderTracking from '../components/SimpleOrderTracking';
-import TrackingStatusBanner from '../components/TrackingStatusBanner';
-import TrackingFeatureDemo from '../components/TrackingFeatureDemo';
+import VendorGrowthSuite from '../components/VendorGrowthSuite';
+import RoleOnboardingWizard from '../components/RoleOnboardingWizard';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics' | 'recipes' | 'negotiations' | 'market'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics' | 'recipes' | 'negotiations' | 'market' | 'planner' | 'growth'>('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<string | null>(null);
-  const [showTrackingDemo, setShowTrackingDemo] = useState(false);
 
   // Get vendor data or create if doesn't exist
-  const vendor = useQuery(api.vendors.getByUserId, 
+  const vendorQuery = useQuery(api.vendors.getByUserId,
     user ? { userId: user.id } : "skip"
   );
+  const vendor = vendorQuery;
 
   const vendorStats = useQuery(api.vendors.getVendorStats,
-    vendor ? { vendorId: vendor._id } : "skip"
+    vendorQuery ? { vendorId: vendorQuery._id } : "skip"
   );
-
-  // Create vendor mutation
-  const createVendor = useMutation(api.vendors.create);
-
-  // Auto-create vendor if user exists but no vendor profile
-  useEffect(() => {
-    if (user && vendor === null) {
-      // Create vendor profile automatically
-      createVendor({
-        userId: user.id,
-        businessName: `${user.firstName || 'New'}'s Food Business`,
-        ownerName: user.firstName || 'New Vendor',
-        email: user.email,
-        phone: '+91 98765 43210',
-        location: {
-          address: '123 Business Street',
-          city: 'Mumbai',
-          state: 'Maharashtra',
-          pincode: '400001',
-          coordinates: { lat: 19.0760, lng: 72.8777 }
-        },
-        businessType: 'Restaurant',
-        fssaiLicense: undefined,
-        preferences: {
-          maxDeliveryDistance: 25,
-          preferredCategories: ['Vegetables', 'Fruits', 'Grains'],
-          budgetRange: { min: 1000, max: 50000 },
-          qualityPreference: 'High',
-          deliveryTimePreference: 'Same Day'
-        }
-      }).catch(console.error);
-    }
-  }, [user, vendor]);
 
   // Onboarding effect for first-time users
   useEffect(() => {
-    if (vendor && vendorStats?.totalOrders === 0) {
+    if (vendor && (vendorStats?.totalOrders ?? 0) === 0) {
       setShowOnboarding(true);
     }
   }, [vendor, vendorStats]);
-
-  // Loading state
-  if (!vendor) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto animate-fade-in"></div>
-          <p className="mt-4 text-gray-600">Setting up your vendor profile...</p>
-        </div>
-      </div>
-    );
-  }
 
   const PageLayout = ({ children }: { children: React.ReactNode }) => (
     <div className="min-h-screen bg-gray-50">
@@ -112,6 +69,33 @@ export default function VendorDashboard() {
       {children}
     </div>
   );
+
+  // Loading state
+  if (!vendor && vendorQuery === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto animate-fade-in"></div>
+          <p className="mt-4 text-gray-600">Setting up your vendor profile...</p>
+        </div>
+      </div>
+    );
+  }
+  if (!vendor && vendorQuery === null) {
+    return (
+      <PageLayout>
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-blue-800 font-medium">Complete your vendor profile</h3>
+            <p className="text-blue-700 text-sm mt-1">
+              Add your business details to unlock your dashboard features.
+            </p>
+          </div>
+          <VendorProfileManagement />
+        </div>
+      </PageLayout>
+    );
+  }
 
   // Profile Management Tab
   if (activeTab === 'profile') {
@@ -201,133 +185,10 @@ export default function VendorDashboard() {
               Back to Dashboard
             </button>
           </div>
-          <div className="bg-white rounded-lg shadow-lg">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Group Orders</h2>
-              <p className="text-gray-600">
-                Join bulk purchasing initiatives with other vendors in your area
-              </p>
-            </div>
-            
-            <div className="p-6">
-              {/* Navigation Tabs */}
-              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6">
-                <button className="flex-1 py-2 px-4 text-sm font-medium bg-white text-gray-900 rounded-md shadow-sm">
-                  Available Orders
-                </button>
-                <button className="flex-1 py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700">
-                  My Orders
-                </button>
-                <button className="flex-1 py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700">
-                  Create Order
-                </button>
-              </div>
-
-              {/* Sample Active Group Orders */}
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                        <span className="text-orange-600 font-semibold">🥕</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Fresh Vegetables Bulk Order</h3>
-                        <p className="text-sm text-gray-500">Organized by Green Valley Suppliers - {vendor.location.city}</p>
-                      </div>
-                    </div>
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                      Active
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500">Minimum Order</p>
-                      <p className="font-semibold">₹10,000</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Current Total</p>
-                      <p className="font-semibold">₹7,500</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Participants</p>
-                      <p className="font-semibold">5 vendors</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Deadline</p>
-                      <p className="font-semibold">3 days</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">Delivery:</span> {vendor.location.city}
-                    </div>
-                    <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-sm">
-                      Join Order
-                    </button>
-                  </div>
-                </div>
-
-                <div className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 font-semibold">🌾</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Rice & Grains Wholesale</h3>
-                        <p className="text-sm text-gray-500">Organized by Metro Supplies - {vendor.location.city}</p>
-                      </div>
-                    </div>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                      Filling
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500">Minimum Order</p>
-                      <p className="font-semibold">₹25,000</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Current Total</p>
-                      <p className="font-semibold">₹18,500</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Participants</p>
-                      <p className="font-semibold">8 vendors</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Deadline</p>
-                      <p className="font-semibold">5 days</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">Delivery:</span> {vendor.location.city}
-                    </div>
-                    <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-sm">
-                      Join Order
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                <div className="text-4xl mb-4">👥</div>
-                <h3 className="text-lg font-medium text-gray-700 mb-2">Start Your Own Group Order</h3>
-                <p className="text-gray-500 mb-4">
-                  Create a bulk order and invite other vendors to join for better prices
-                </p>
-                <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors">
-                  Create Group Order
-                </button>
-              </div>
-            </div>
-          </div>
+          <GroupOrderManager
+            vendorId={vendor._id}
+            vendorLocation={vendor.location.city}
+          />
         </div>
       </PageLayout>
     );
@@ -349,7 +210,7 @@ export default function VendorDashboard() {
               Back to Dashboard
             </button>
           </div>
-          <OrderManager />
+          <OrderManager vendorId={vendor._id as any} />
         </div>
       </PageLayout>
     );
@@ -415,7 +276,7 @@ export default function VendorDashboard() {
               Back to Dashboard
             </button>
           </div>
-          {vendor && <SupplierNegotiationHub vendorId={vendor._id} />}
+          {vendor && <SupplierNegotiationHub vendorId={vendor._id} vendorCity={vendor.location.city} />}
         </div>
       </PageLayout>
     );
@@ -438,6 +299,55 @@ export default function VendorDashboard() {
             </button>
           </div>
           {vendor && <MarketIntelligence vendorId={vendor._id} location={vendor.location} />}
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Smart Procurement Planner Tab
+  if (activeTab === 'planner') {
+    return (
+      <PageLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </div>
+          <SmartProcurementPlanner
+            vendorId={vendor._id}
+            vendorCity={vendor.location.city}
+            preferredCategories={vendor.preferences.preferredCategories}
+            initialBudget={vendor.preferences.budgetRange.max}
+          />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Growth Suite Tab (feature hub)
+  if (activeTab === 'growth') {
+    return (
+      <PageLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="flex items-center text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+          </div>
+          <VendorGrowthSuite vendorId={vendor._id} vendorCity={vendor.location.city} userId={user?.id} />
         </div>
       </PageLayout>
     );
@@ -480,6 +390,8 @@ export default function VendorDashboard() {
             </div>
           </div>
         </div>
+
+        <RoleOnboardingWizard role="vendor" userId={user?.id} />
 
         <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in">
           <div className="mb-8">
@@ -644,13 +556,13 @@ export default function VendorDashboard() {
             </div>
 
             {/* Enhanced Features Row */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-4">
               <button
                 onClick={() => setActiveTab('recipes')}
                 className="p-4 bg-white border-2 border-yellow-200 rounded-lg hover:border-yellow-400 transition-colors text-center"
                 aria-label="Recipe Costing Calculator"
               >
-                <div className="text-2xl mb-2">����</div>
+                <div className="text-2xl mb-2">🍲</div>
                 <div className="font-medium text-gray-800">Recipe Costing</div>
                 <div className="text-sm text-gray-600">Calculate dish costs</div>
               </button>
@@ -683,6 +595,26 @@ export default function VendorDashboard() {
                 <div className="text-2xl mb-2">📈</div>
                 <div className="font-medium text-gray-800">Analytics</div>
                 <div className="text-sm text-gray-600">Financial insights</div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('planner')}
+                className="p-4 bg-white border-2 border-orange-200 rounded-lg hover:border-orange-400 transition-colors text-center"
+                aria-label="Smart Procurement Planner"
+              >
+                <div className="text-2xl mb-2">🧠</div>
+                <div className="font-medium text-gray-800">AI Planner</div>
+                <div className="text-sm text-gray-600">Budgeted sourcing plan</div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('growth')}
+                className="p-4 bg-white border-2 border-indigo-200 rounded-lg hover:border-indigo-400 transition-colors text-center"
+                aria-label="Growth and Operations Hub"
+              >
+                <div className="text-2xl mb-2">🧩</div>
+                <div className="font-medium text-gray-800">Growth Hub</div>
+                <div className="text-sm text-gray-600">10 enhanced features</div>
               </button>
             </div>
           </div>
@@ -760,10 +692,6 @@ export default function VendorDashboard() {
         </div>
       )}
 
-      {/* Tracking Feature Demo Modal */}
-      {showTrackingDemo && (
-        <TrackingFeatureDemo onClose={() => setShowTrackingDemo(false)} />
-      )}
     </PageLayout>
   );
 }

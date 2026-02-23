@@ -13,18 +13,24 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as authHelpers from "../authHelpers.js";
 import type * as crons from "../crons.js";
 import type * as financialAnalytics from "../financialAnalytics.js";
 import type * as fssaiVerification from "../fssaiVerification.js";
 import type * as groupOrders from "../groupOrders.js";
+import type * as imageAnalysis from "../imageAnalysis.js";
 import type * as inventory from "../inventory.js";
+import type * as marketIntelligence from "../marketIntelligence.js";
 import type * as messages from "../messages.js";
+import type * as negotiations from "../negotiations.js";
 import type * as notifications from "../notifications.js";
+import type * as orderTracking from "../orderTracking.js";
 import type * as orders from "../orders.js";
 import type * as priceAlerts from "../priceAlerts.js";
 import type * as ratings from "../ratings.js";
+import type * as recipes from "../recipes.js";
 import type * as recommendations from "../recommendations.js";
 import type * as requests from "../requests.js";
 import type * as sampleData from "../sampleData.js";
@@ -44,18 +50,24 @@ import type * as voiceQuery from "../voiceQuery.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
   auth: typeof auth;
   authHelpers: typeof authHelpers;
   crons: typeof crons;
   financialAnalytics: typeof financialAnalytics;
   fssaiVerification: typeof fssaiVerification;
   groupOrders: typeof groupOrders;
+  imageAnalysis: typeof imageAnalysis;
   inventory: typeof inventory;
+  marketIntelligence: typeof marketIntelligence;
   messages: typeof messages;
+  negotiations: typeof negotiations;
   notifications: typeof notifications;
+  orderTracking: typeof orderTracking;
   orders: typeof orders;
   priceAlerts: typeof priceAlerts;
   ratings: typeof ratings;
+  recipes: typeof recipes;
   recommendations: typeof recommendations;
   requests: typeof requests;
   sampleData: typeof sampleData;

@@ -31,7 +31,8 @@ describe('useErrorHandler', () => {
         type: 'SYSTEM_ERROR',
         code: 'UNKNOWN',
         message: 'Test error'
-      })
+      }),
+      undefined
     );
   });
 
@@ -49,7 +50,8 @@ describe('useErrorHandler', () => {
         type: 'NETWORK_ERROR',
         code: 'CONNECTION_FAILED',
         retryable: true
-      })
+      }),
+      undefined
     );
   });
 
@@ -67,7 +69,8 @@ describe('useErrorHandler', () => {
         value: 'invalid-email',
         message: 'Invalid email format',
         constraints: ['pattern']
-      })
+      }),
+      undefined
     );
   });
 
@@ -85,7 +88,8 @@ describe('useErrorHandler', () => {
         message: 'Not enough stock',
         suggestions: ['Try different supplier'],
         actionable: true
-      })
+      }),
+      undefined
     );
   });
 

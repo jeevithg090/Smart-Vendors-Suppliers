@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -15,7 +15,7 @@ interface RecipeIngredient {
 }
 
 interface Recipe {
-  id: string;
+  recipeId?: Id<'recipes'>;
   name: string;
   description: string;
   servings: number;
@@ -28,6 +28,12 @@ interface Recipe {
   preparationTime: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   tags: string[];
+}
+
+interface SavedRecipe extends Recipe {
+  _id: Id<'recipes'>;
+  createdAt: number;
+  updatedAt: number;
 }
 
 interface CostAnalysis {
@@ -44,10 +50,25 @@ interface Props {
   vendorId: Id<'vendors'>;
 }
 
+interface SupplierRecord {
+  _id: Id<'suppliers'>;
+  businessName: string;
+}
+
+interface InventoryRecord {
+  _id: Id<'inventory'>;
+  supplierId: Id<'suppliers'>;
+  itemName: string;
+  category: string;
+  unit: string;
+  pricePerUnit: number;
+  currentStock: number;
+}
+
 export default function RecipeCostingCalculator({ vendorId }: Props) {
   const [activeTab, setActiveTab] = useState<'calculator' | 'recipes' | 'analysis' | 'trends'>('calculator');
   const [currentRecipe, setCurrentRecipe] = useState<Recipe>({
-    id: '',
+    recipeId: undefined,
     name: '',
     description: '',
     servings: 1,
@@ -62,49 +83,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     tags: []
   });
 
-  const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([
-    {
-      id: '1',
-      name: 'Butter Chicken',
-      description: 'Creamy tomato-based chicken curry',
-      servings: 4,
-      ingredients: [
-        { id: '1', name: 'Chicken', quantity: 500, unit: 'g', pricePerUnit: 280, category: 'Meat', supplierName: 'Fresh Meat Co' },
-        { id: '2', name: 'Tomatoes', quantity: 300, unit: 'g', pricePerUnit: 40, category: 'Vegetables', supplierName: 'Green Valley' },
-        { id: '3', name: 'Cream', quantity: 200, unit: 'ml', pricePerUnit: 60, category: 'Dairy', supplierName: 'Dairy Fresh' },
-        { id: '4', name: 'Onions', quantity: 150, unit: 'g', pricePerUnit: 30, category: 'Vegetables', supplierName: 'Green Valley' },
-        { id: '5', name: 'Spices Mix', quantity: 50, unit: 'g', pricePerUnit: 200, category: 'Spices', supplierName: 'Spice House' }
-      ],
-      totalCost: 175.5,
-      costPerServing: 43.88,
-      suggestedSellingPrice: 120,
-      profitMargin: 63,
-      category: 'Main Course',
-      preparationTime: 45,
-      difficulty: 'Medium',
-      tags: ['Popular', 'Spicy', 'Chicken']
-    },
-    {
-      id: '2',
-      name: 'Masala Dosa',
-      description: 'South Indian fermented crepe with spiced potato filling',
-      servings: 2,
-      ingredients: [
-        { id: '1', name: 'Rice', quantity: 200, unit: 'g', pricePerUnit: 60, category: 'Grains', supplierName: 'Grain Mart' },
-        { id: '2', name: 'Urad Dal', quantity: 50, unit: 'g', pricePerUnit: 120, category: 'Pulses', supplierName: 'Pulse Plus' },
-        { id: '3', name: 'Potatoes', quantity: 300, unit: 'g', pricePerUnit: 25, category: 'Vegetables', supplierName: 'Green Valley' },
-        { id: '4', name: 'Oil', quantity: 30, unit: 'ml', pricePerUnit: 140, category: 'Oil', supplierName: 'Oil Express' }
-      ],
-      totalCost: 25.7,
-      costPerServing: 12.85,
-      suggestedSellingPrice: 45,
-      profitMargin: 71,
-      category: 'Breakfast',
-      preparationTime: 20,
-      difficulty: 'Easy',
-      tags: ['South Indian', 'Vegetarian', 'Healthy']
-    }
-  ]);
+  const savedRecipes = useQuery(api.recipes.getRecipesByVendor, { vendorId }) as SavedRecipe[] | undefined;
+  const createRecipe = useMutation(api.recipes.createRecipe);
+  const updateRecipe = useMutation(api.recipes.updateRecipe);
 
   const [newIngredient, setNewIngredient] = useState<Partial<RecipeIngredient>>({
     name: '',
@@ -113,22 +94,35 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     pricePerUnit: 0,
     category: 'Vegetables'
   });
+  const [selectedInventoryId, setSelectedInventoryId] = useState('');
+  const [uiMessage, setUiMessage] = useState('');
 
-  // Get available suppliers and their inventory for ingredient suggestions
-  // TODO: Re-enable when Convex is properly configured
-  // const suppliers = useQuery(api.suppliers.listAllSuppliers);
-  // const allInventory = useQuery(api.inventory.searchInventory, {});
+  const suppliers = useQuery(api.suppliers.listAllSuppliers, {}) as SupplierRecord[] | undefined;
+  const allInventory = useQuery(api.inventory.getAvailableInventory, {}) as InventoryRecord[] | undefined;
+  const isLoading = suppliers === undefined || allInventory === undefined || savedRecipes === undefined;
 
-  // Temporary fallback until Convex is configured
-  const suppliers = [];
-  const allInventory = [];
+  const recipesList: Recipe[] = useMemo(
+    () =>
+      (savedRecipes ?? []).map((recipe) => ({
+        ...recipe,
+        recipeId: recipe._id,
+      })),
+    [savedRecipes]
+  );
 
-  // Handle loading states and errors gracefully
-  const isLoading = false; // suppliers === undefined || allInventory === undefined;
+  const normalizeQuantityForPricing = (quantity: number, unit: string) => {
+    if (unit === 'g' || unit === 'ml') return quantity / 1000;
+    if (unit === 'kg' || unit === 'l' || unit === 'pieces' || unit === 'cups') return quantity;
+    return quantity;
+  };
+
+  const calculateIngredientLineCost = (ingredient: Pick<RecipeIngredient, 'quantity' | 'unit' | 'pricePerUnit'>) => {
+    return normalizeQuantityForPricing(ingredient.quantity, ingredient.unit) * ingredient.pricePerUnit;
+  };
 
   const calculateRecipeCost = () => {
     const ingredientCost = currentRecipe.ingredients.reduce((total, ingredient) => {
-      return total + (ingredient.quantity * ingredient.pricePerUnit / 1000); // Convert to per kg/liter pricing
+      return total + calculateIngredientLineCost(ingredient);
     }, 0);
 
     const laborCost = (currentRecipe.preparationTime / 60) * 50; // ₹50 per hour labor
@@ -151,13 +145,16 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
   const addIngredient = () => {
     if (newIngredient.name && newIngredient.quantity && newIngredient.pricePerUnit) {
+      const supplierName = suppliers?.find(sup => String(sup._id) === newIngredient.supplierId)?.businessName;
       const ingredient: RecipeIngredient = {
         id: Date.now().toString(),
         name: newIngredient.name,
         quantity: newIngredient.quantity || 0,
         unit: newIngredient.unit || 'g',
         pricePerUnit: newIngredient.pricePerUnit || 0,
-        category: newIngredient.category || 'Vegetables'
+        category: newIngredient.category || 'Vegetables',
+        supplierId: newIngredient.supplierId,
+        supplierName
       };
 
       setCurrentRecipe(prev => ({
@@ -172,7 +169,24 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
         pricePerUnit: 0,
         category: 'Vegetables'
       });
+      setSelectedInventoryId('');
     }
+  };
+
+  const selectInventorySuggestion = (inventoryId: string) => {
+    setSelectedInventoryId(inventoryId);
+    const inventoryItem = allInventory?.find(item => String(item._id) === inventoryId);
+    if (!inventoryItem) return;
+
+    setNewIngredient(prev => ({
+      ...prev,
+      name: inventoryItem.itemName,
+      category: inventoryItem.category,
+      unit: inventoryItem.unit,
+      pricePerUnit: inventoryItem.pricePerUnit,
+      supplierId: String(inventoryItem.supplierId)
+    }));
+    setUiMessage(`Loaded live pricing for ${inventoryItem.itemName}.`);
   };
 
   const removeIngredient = (ingredientId: string) => {
@@ -182,21 +196,76 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     }));
   };
 
-  const saveRecipe = () => {
+  const saveRecipe = async () => {
     const costs = calculateRecipeCost();
     const recipeToSave: Recipe = {
       ...currentRecipe,
-      id: Date.now().toString(),
       totalCost: costs.totalCost,
       costPerServing: costs.costPerServing,
       suggestedSellingPrice: costs.suggestedSellingPrice
     };
 
-    setSavedRecipes(prev => [...prev, recipeToSave]);
+    try {
+      if (currentRecipe.recipeId) {
+        await updateRecipe({
+          recipeId: currentRecipe.recipeId,
+          name: recipeToSave.name,
+          description: recipeToSave.description,
+          servings: recipeToSave.servings,
+          ingredients: recipeToSave.ingredients.map((ingredient) => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            pricePerUnit: ingredient.pricePerUnit,
+            category: ingredient.category,
+            supplierId: ingredient.supplierId as Id<'suppliers'> | undefined,
+            supplierName: ingredient.supplierName,
+          })),
+          totalCost: recipeToSave.totalCost,
+          costPerServing: recipeToSave.costPerServing,
+          suggestedSellingPrice: recipeToSave.suggestedSellingPrice,
+          profitMargin: recipeToSave.profitMargin,
+          category: recipeToSave.category,
+          preparationTime: recipeToSave.preparationTime,
+          difficulty: recipeToSave.difficulty,
+          tags: recipeToSave.tags,
+        });
+        setUiMessage(`Updated recipe: ${recipeToSave.name || 'Untitled Recipe'}.`);
+      } else {
+        await createRecipe({
+          vendorId,
+          name: recipeToSave.name,
+          description: recipeToSave.description,
+          servings: recipeToSave.servings,
+          ingredients: recipeToSave.ingredients.map((ingredient) => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            pricePerUnit: ingredient.pricePerUnit,
+            category: ingredient.category,
+            supplierId: ingredient.supplierId as Id<'suppliers'> | undefined,
+            supplierName: ingredient.supplierName,
+          })),
+          totalCost: recipeToSave.totalCost,
+          costPerServing: recipeToSave.costPerServing,
+          suggestedSellingPrice: recipeToSave.suggestedSellingPrice,
+          profitMargin: recipeToSave.profitMargin,
+          category: recipeToSave.category,
+          preparationTime: recipeToSave.preparationTime,
+          difficulty: recipeToSave.difficulty,
+          tags: recipeToSave.tags,
+        });
+        setUiMessage(`Saved recipe: ${recipeToSave.name || 'Untitled Recipe'}.`);
+      }
+    } catch (error) {
+      console.error('Failed to save recipe:', error);
+      setUiMessage('Failed to save recipe. Please try again.');
+      return;
+    }
     
     // Reset form
     setCurrentRecipe({
-      id: '',
+      recipeId: undefined,
       name: '',
       description: '',
       servings: 1,
@@ -217,10 +286,47 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     setActiveTab('calculator');
   };
 
+  const duplicateRecipe = async (recipe: Recipe) => {
+    const duplicatedRecipe: Recipe = {
+      ...recipe,
+      recipeId: undefined,
+      name: `${recipe.name} (Copy)`,
+    };
+    try {
+      await createRecipe({
+        vendorId,
+        name: duplicatedRecipe.name,
+        description: duplicatedRecipe.description,
+        servings: duplicatedRecipe.servings,
+        ingredients: duplicatedRecipe.ingredients.map((ingredient) => ({
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          pricePerUnit: ingredient.pricePerUnit,
+          category: ingredient.category,
+          supplierId: ingredient.supplierId as Id<'suppliers'> | undefined,
+          supplierName: ingredient.supplierName,
+        })),
+        totalCost: duplicatedRecipe.totalCost,
+        costPerServing: duplicatedRecipe.costPerServing,
+        suggestedSellingPrice: duplicatedRecipe.suggestedSellingPrice,
+        profitMargin: duplicatedRecipe.profitMargin,
+        category: duplicatedRecipe.category,
+        preparationTime: duplicatedRecipe.preparationTime,
+        difficulty: duplicatedRecipe.difficulty,
+        tags: duplicatedRecipe.tags,
+      });
+      setUiMessage(`Duplicated ${recipe.name}.`);
+    } catch (error) {
+      console.error('Failed to duplicate recipe:', error);
+      setUiMessage('Failed to duplicate recipe.');
+    }
+  };
+
   const costs = calculateRecipeCost();
 
   // Calculate popular ingredients and cost trends
-  const ingredientUsage = savedRecipes.flatMap(r => r.ingredients).reduce((acc, ing) => {
+  const ingredientUsage = recipesList.flatMap(r => r.ingredients).reduce((acc, ing) => {
     acc[ing.name] = (acc[ing.name] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -228,6 +334,44 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
   const popularIngredients = Object.entries(ingredientUsage)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5);
+
+  const trackedItems = useMemo(
+    () => popularIngredients.map(([name]) => name).slice(0, 5),
+    [popularIngredients]
+  );
+  const priceTrends = useQuery(
+    api.inventory.getBulkPriceTrends,
+    trackedItems.length > 0 ? { itemNames: trackedItems, days: 30 } : "skip"
+  ) as Array<{
+    itemName: string;
+    currentPrice: number;
+    change: number;
+    changePercent: number;
+    trend: string;
+    dataPoints: number;
+  }> | undefined;
+  const priceAlerts = useQuery(api.priceAlerts.getVendorPriceAlerts, { vendorId });
+
+  const triggeredAlerts = useMemo(
+    () => (priceAlerts ?? []).filter((alert) => alert.currentPrice > 0 && alert.currentPrice <= alert.targetPrice),
+    [priceAlerts]
+  );
+
+  const risingTrends = useMemo(
+    () => (priceTrends ?? []).filter((trend) => trend.changePercent > 5),
+    [priceTrends]
+  );
+  const fallingTrends = useMemo(
+    () => (priceTrends ?? []).filter((trend) => trend.changePercent < -5),
+    [priceTrends]
+  );
+
+  const optimizationCandidates = useMemo(() => {
+    return recipesList
+      .filter((recipe) => recipe.costPerServing > 0)
+      .sort((a, b) => b.costPerServing - a.costPerServing)
+      .slice(0, 2);
+  }, [recipesList]);
 
   return (
     <div className="space-y-6">
@@ -239,11 +383,17 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
             <p className="opacity-90">Calculate accurate costs and set profitable prices for your dishes</p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold">{savedRecipes.length}</div>
+            <div className="text-3xl font-bold">{recipesList.length}</div>
             <div className="text-sm opacity-90">Saved Recipes</div>
           </div>
         </div>
       </div>
+
+      {uiMessage && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 text-sm text-orange-800">
+          {uiMessage}
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
@@ -361,6 +511,25 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Ingredients</h3>
                   
                   <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Use Marketplace Item (Optional)</label>
+                      <select
+                        value={selectedInventoryId}
+                        onChange={(e) => selectInventorySuggestion(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      >
+                        <option value="">Choose from live inventory</option>
+                        {(allInventory || []).slice(0, 100).map(item => (
+                          <option key={item._id} value={item._id}>
+                            {item.itemName} • ₹{item.pricePerUnit}/{item.unit} • Stock: {item.currentStock}
+                          </option>
+                        ))}
+                      </select>
+                      {isLoading && (
+                        <p className="text-xs text-gray-500 mt-1">Loading live inventory suggestions...</p>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Ingredient Name</label>
@@ -418,7 +587,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Price/Kg or L</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Price per Unit</label>
                         <input
                           type="number"
                           min="0"
@@ -459,12 +628,17 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">{ingredient.name}</div>
                             <div className="text-sm text-gray-600">
-                              {ingredient.quantity} {ingredient.unit} × ₹{ingredient.pricePerUnit}/kg
+                              {ingredient.quantity} {ingredient.unit} × ₹{ingredient.pricePerUnit}/{ingredient.unit}
                             </div>
+                            {ingredient.supplierName && (
+                              <div className="text-xs text-gray-500">
+                                Supplier: {ingredient.supplierName}
+                              </div>
+                            )}
                           </div>
                           <div className="text-right mr-4">
                             <div className="font-semibold text-green-600">
-                              ₹{((ingredient.quantity * ingredient.pricePerUnit) / 1000).toFixed(2)}
+                              ₹{calculateIngredientLineCost(ingredient).toFixed(2)}
                             </div>
                           </div>
                           <button
@@ -546,8 +720,8 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {savedRecipes.map(recipe => (
-                <div key={recipe.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+              {recipesList.map(recipe => (
+                <div key={recipe.recipeId || recipe.name} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                   <div className="mb-4">
                     <h4 className="font-semibold text-gray-900 mb-2">{recipe.name}</h4>
                     <p className="text-sm text-gray-600 mb-2">{recipe.description}</p>
@@ -580,7 +754,10 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                     >
                       Edit
                     </button>
-                    <button className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded-md text-sm font-medium transition-colors">
+                    <button
+                      onClick={() => duplicateRecipe(recipe)}
+                      className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded-md text-sm font-medium transition-colors"
+                    >
                       Duplicate
                     </button>
                   </div>
@@ -619,7 +796,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                 <h4 className="font-semibold text-gray-800 mb-4">Recipe Categories</h4>
                 <div className="space-y-3">
                   {Object.entries(
-                    savedRecipes.reduce((acc, recipe) => {
+                    recipesList.reduce((acc, recipe) => {
                       acc[recipe.category] = (acc[recipe.category] || 0) + 1;
                       return acc;
                     }, {} as Record<string, number>)
@@ -630,7 +807,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         <div className="w-20 bg-gray-200 rounded-full h-2 mr-3">
                           <div 
                             className="bg-orange-500 h-2 rounded-full" 
-                            style={{ width: `${(count / savedRecipes.length) * 100}%` }}
+                            style={{ width: `${(count / Math.max(recipesList.length, 1)) * 100}%` }}
                           ></div>
                         </div>
                         <span className="text-sm text-gray-500">{count}</span>
@@ -661,81 +838,94 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Market Trends & Price Alerts</h3>
             
             <div className="grid gap-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h4 className="font-semibold text-gray-800 mb-4">Triggered Price Alerts</h4>
+                {triggeredAlerts.length === 0 ? (
+                  <div className="text-sm text-gray-600">No active alerts have been triggered.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {triggeredAlerts.map((alert) => (
+                      <div key={alert._id} className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">{alert.itemName}</span>
+                          <span className="text-green-700 font-semibold">
+                            ₹{alert.currentPrice.toFixed(2)} (target ₹{alert.targetPrice.toFixed(2)})
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg p-6">
-                <h4 className="font-semibold text-red-800 mb-4">📈 Price Increase Alerts</h4>
-                <div className="space-y-3">
-                  <div className="bg-white p-3 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Tomatoes</span>
-                      <span className="text-red-600 font-semibold">+15% this week</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Price increased from ₹30/kg to ₹35/kg. Consider adjusting recipes or finding alternatives.
-                    </p>
+                <h4 className="font-semibold text-red-800 mb-4">Price Increase Alerts</h4>
+                {risingTrends.length === 0 ? (
+                  <div className="text-sm text-red-700">No significant price increases detected.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {risingTrends.map((trend) => (
+                      <div key={`rise-${trend.itemName}`} className="bg-white p-3 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">{trend.itemName}</span>
+                          <span className="text-red-600 font-semibold">
+                            +{trend.changePercent.toFixed(1)}% in last 30 days
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Current avg price: ₹{trend.currentPrice.toFixed(2)}. Consider adjusting recipes or sourcing alternatives.
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                  <div className="bg-white p-3 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Chicken</span>
-                      <span className="text-red-600 font-semibold">+8% this week</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Price increased from ₹260/kg to ₹280/kg. Update your Butter Chicken recipe pricing.
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
 
               <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-6">
-                <h4 className="font-semibold text-green-800 mb-4">📉 Cost Savings Opportunities</h4>
-                <div className="space-y-3">
-                  <div className="bg-white p-3 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Rice</span>
-                      <span className="text-green-600 font-semibold">-12% from last month</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Great time to stock up or create more rice-based dishes for better margins.
-                    </p>
+                <h4 className="font-semibold text-green-800 mb-4">Cost Savings Opportunities</h4>
+                {fallingTrends.length === 0 ? (
+                  <div className="text-sm text-green-700">No major price drops yet.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {fallingTrends.map((trend) => (
+                      <div key={`fall-${trend.itemName}`} className="bg-white p-3 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">{trend.itemName}</span>
+                          <span className="text-green-600 font-semibold">
+                            {trend.changePercent.toFixed(1)}% in last 30 days
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Current avg price: ₹{trend.currentPrice.toFixed(2)}. Consider stocking up or promoting dishes using this ingredient.
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                  <div className="bg-white p-3 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Seasonal Vegetables</span>
-                      <span className="text-green-600 font-semibold">-20% seasonal discount</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Winter vegetables are at peak season. Perfect for creating seasonal menu items.
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h4 className="font-semibold text-gray-800 mb-4">💡 Recipe Optimization Suggestions</h4>
-                <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h5 className="font-medium text-blue-800 mb-2">Butter Chicken - Cost Optimization</h5>
-                    <p className="text-sm text-blue-700 mb-2">
-                      Your current cost: ₹43.88/serving. Market average: ₹38/serving
-                    </p>
-                    <ul className="text-sm text-blue-600 space-y-1">
-                      <li>• Switch to seasonal tomatoes: Save ₹2/serving</li>
-                      <li>• Use alternative cuts of chicken: Save ₹3/serving</li>
-                      <li>• Bulk spice purchasing: Save ₹1/serving</li>
-                    </ul>
+                <h4 className="font-semibold text-gray-800 mb-4">Recipe Optimization Suggestions</h4>
+                {optimizationCandidates.length === 0 ? (
+                  <div className="text-sm text-gray-600">
+                    Save recipes to start getting cost optimization insights.
                   </div>
-                  
-                  <div className="p-4 bg-purple-50 rounded-lg">
-                    <h5 className="font-medium text-purple-800 mb-2">Masala Dosa - Profit Enhancement</h5>
-                    <p className="text-sm text-purple-700 mb-2">
-                      Current margin: 71%. Market tolerance: Up to 80%
-                    </p>
-                    <ul className="text-sm text-purple-600 space-y-1">
-                      <li>• Increase serving price to ₹50: +₹5 profit</li>
-                      <li>• Premium organic ingredients: Justify ₹55 price</li>
-                      <li>• Add value-added sides: Increase overall basket</li>
-                    </ul>
+                ) : (
+                  <div className="space-y-4">
+                    {optimizationCandidates.map((recipe) => (
+                      <div key={`opt-${recipe.recipeId || recipe.name}`} className="p-4 bg-blue-50 rounded-lg">
+                        <h5 className="font-medium text-blue-800 mb-2">{recipe.name}</h5>
+                        <p className="text-sm text-blue-700 mb-2">
+                          Current cost per serving: ₹{recipe.costPerServing.toFixed(2)}. Profit margin: {recipe.profitMargin}%.
+                        </p>
+                        <ul className="text-sm text-blue-600 space-y-1">
+                          <li>Review ingredient pricing from your top suppliers.</li>
+                          <li>Compare with recent price alerts for key items.</li>
+                          <li>Adjust selling price if cost changes persist.</li>
+                        </ul>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { VOICE_QUERY_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES, LANGUAGE_NAMES } from '../config/voiceQuery';
+import { voiceProcessor } from '../utils/enhancedVoiceProcessor';
+import { useAuth } from '../contexts/AuthContext';
 
 interface VoiceQueryProps {
   userRole: 'vendor' | 'supplier';
@@ -79,6 +81,7 @@ export default function VoiceQuery({
   onFiltersApplied, 
   className = '' 
 }: VoiceQueryProps) {
+  const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [response, setResponse] = useState<VoiceQueryResponse | null>(null);
@@ -92,7 +95,13 @@ export default function VoiceQuery({
   const [confidenceLevel, setConfidenceLevel] = useState(0);
   const [alternatives, setAlternatives] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
-  
+  const [searchIngredients, setSearchIngredients] = useState<string[]>([]);
+  const [pendingSearchMeta, setPendingSearchMeta] = useState<{
+    originalQuery: string;
+    translatedQuery: string;
+    language: string;
+  } | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -100,12 +109,106 @@ export default function VoiceQuery({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  const processVoiceQuery = useMutation(api.voiceQuery.processVoiceQuery);
   const processEnhancedVoiceQuery = useMutation(api.voiceQuery.processEnhancedVoiceQuery);
+  const currentUserId = user?.id || `anonymous_${userRole}`;
+  const supplierMatches = useQuery(
+    api.voiceQuery.searchSuppliersForIngredients,
+    searchIngredients.length > 0
+      ? {
+          ingredients: searchIngredients,
+        }
+      : "skip"
+  );
 
-  // Temporarily disable history queries to avoid auth errors until Convex is updated
-  const voiceHistory = null; // useQuery(api.voiceQuery.getVoiceQueryHistory, { userRole, limit: 10 });
-  const voiceStats = null; // useQuery(api.voiceQuery.getVoiceQueryStats, { userRole });
+  useEffect(() => {
+    if (!supplierMatches || !pendingSearchMeta) return;
+
+    const items: SupplierItem[] = [];
+    const suppliers: Supplier[] = [];
+
+    supplierMatches.forEach((match: any) => {
+      const supplier = match.supplier;
+      suppliers.push({
+        id: String(supplier._id),
+        name: supplier.businessName,
+        trustScore: supplier.trustScore ?? 0,
+        location: supplier.location?.city || '',
+        categories: supplier.categories || [],
+        fssaiCertified: supplier.fssaiCertified || false,
+      });
+
+      (match.matchingItems || []).forEach((item: any) => {
+        items.push({
+          id: String(item._id),
+          name: item.itemName,
+          category: item.category,
+          price: item.pricePerUnit,
+          unit: item.unit,
+          supplierId: String(supplier._id),
+          supplierName: supplier.businessName,
+          trustScore: supplier.trustScore ?? 0,
+          availability: item.isAvailable,
+        });
+      });
+    });
+
+    const result: SearchResults = {
+      items,
+      suppliers,
+      filters: {},
+      confidence: 0.8,
+      originalQuery: pendingSearchMeta.originalQuery,
+      translatedQuery: pendingSearchMeta.translatedQuery,
+      language: pendingSearchMeta.language,
+    };
+
+    setSearchResults(result);
+    onResults?.(result);
+    const matchSummary = suppliers.length > 0
+      ? `Found ${suppliers.length} suppliers matching your request.`
+      : 'No supplier matched your current query. Try adding ingredient names or removing filters.';
+    setResponse({
+      answer: matchSummary,
+      originalText: pendingSearchMeta.originalQuery,
+      language: pendingSearchMeta.language,
+      confidence: 0.8,
+      searchResults: result,
+    });
+    setIsProcessing(false);
+
+    processEnhancedVoiceQuery({
+      userId: currentUserId,
+      userRole,
+      queryType: 'search',
+      queryText: pendingSearchMeta.originalQuery,
+      language: pendingSearchMeta.language,
+      englishText: pendingSearchMeta.translatedQuery,
+      confidence: 0.8,
+      searchResults: {
+        items: items.map((item) => item.name),
+        suppliers: suppliers.map((supplier) => supplier.name),
+        filters: {},
+      },
+      response: matchSummary,
+      responseLanguage: pendingSearchMeta.language,
+      processingTime: 1,
+      audioDuration: recordingTime,
+    }).catch((error) => {
+      console.error('Failed to store voice query:', error);
+    });
+
+    setPendingSearchMeta(null);
+  }, [supplierMatches, pendingSearchMeta, onResults, processEnhancedVoiceQuery, recordingTime, userRole, currentUserId]);
+
+  const voiceHistory = useQuery(api.voiceQuery.getVoiceQueryHistory, {
+    userId: currentUserId,
+    userRole,
+    limit: 10,
+  });
+  const voiceStats = useQuery(api.voiceQuery.getVoiceQueryStats, {
+    userId: currentUserId,
+    userRole,
+  });
 
   // Auto-stop recording after 30 seconds
   const MAX_RECORDING_TIME = VOICE_QUERY_CONFIG.MAX_RECORDING_TIME;
@@ -211,7 +314,14 @@ export default function VoiceQuery({
 
     } catch (err) {
       console.error('Error starting recording:', err);
-      const errorMessage = err instanceof Error && err.name === 'NotAllowedError' 
+      const errorName = typeof err === 'object' && err && 'name' in err
+        ? String((err as any).name)
+        : '';
+      const rawMessage = err instanceof Error ? err.message : String(err ?? '');
+      const isPermissionError =
+        errorName === 'NotAllowedError' ||
+        /notallowed|permission|denied/i.test(rawMessage);
+      const errorMessage = isPermissionError
         ? ERROR_MESSAGES.MICROPHONE_ACCESS_DENIED
         : ERROR_MESSAGES.RECORDING_FAILED;
       setError(errorMessage);
@@ -267,37 +377,64 @@ export default function VoiceQuery({
 
       // Show processing status
       setTranscriptionText('Processing your voice...');
+      const voiceResult = await voiceProcessor.processAudioToText(
+        uint8Array,
+        selectedLanguage === 'auto' ? undefined : selectedLanguage
+      );
+      const parsed = await voiceProcessor.parseSearchQuery(
+        voiceResult.transcription,
+        voiceResult.language
+      );
 
-      // Process enhanced voice query based on mode
-      const result = await processEnhancedVoiceQuery({
-        userId: 'demo-user', // In real app, get from auth
+      setTranscriptionText(voiceResult.transcription);
+      setConfidenceLevel(voiceResult.confidence);
+      setAlternatives(voiceResult.alternatives || []);
+
+      if (mode === 'search' && parsed.searchTerms.length > 0) {
+        setPendingSearchMeta({
+          originalQuery: parsed.originalText,
+          translatedQuery: parsed.translatedText,
+          language: parsed.language,
+        });
+        setSearchIngredients(parsed.searchTerms);
+        return;
+      }
+
+      const assistantResponse = buildDeterministicVoiceResponse(
+        parsed.translatedText || parsed.originalText,
+        mode,
+        userRole
+      );
+
+      const resolvedResponse: VoiceQueryResponse = {
+        answer: assistantResponse,
+        originalText: parsed.originalText,
+        language: parsed.language,
+        confidence: voiceResult.confidence,
+        alternatives: voiceResult.alternatives || [],
+      };
+
+      if (mode === 'filter') {
+        resolvedResponse.appliedFilters = parsed.filters;
+        onFiltersApplied?.(parsed.filters);
+      }
+
+      setResponse(resolvedResponse);
+
+      await processEnhancedVoiceQuery({
+        userId: currentUserId,
         userRole,
         queryType: mode,
-        queryText: 'Processing...', // Will be updated by backend
-        language: selectedLanguage === 'auto' ? 'auto' : selectedLanguage,
-        englishText: '',
-        confidence: 0,
-        response: '',
-        responseLanguage: 'en',
-        processingTime: 0,
+        queryText: parsed.originalText,
+        language: parsed.language,
+        englishText: parsed.translatedText,
+        confidence: voiceResult.confidence,
+        appliedFilters: mode === 'filter' ? parsed.filters : undefined,
+        response: assistantResponse,
+        responseLanguage: parsed.language,
+        processingTime: voiceResult.processingTime,
         audioDuration
       });
-
-      // Simulate enhanced processing with mock data
-      const mockEnhancedResult = await simulateEnhancedProcessing(uint8Array, mode, userRole);
-      
-      setResponse(mockEnhancedResult);
-      setConfidenceLevel(mockEnhancedResult.confidence || 0);
-      setAlternatives(mockEnhancedResult.alternatives || []);
-      
-      if (mockEnhancedResult.searchResults) {
-        setSearchResults(mockEnhancedResult.searchResults);
-        onResults?.(mockEnhancedResult.searchResults);
-      }
-      
-      if (mockEnhancedResult.appliedFilters) {
-        onFiltersApplied?.(mockEnhancedResult.appliedFilters);
-      }
 
     } catch (err) {
       console.error('Error processing voice query:', err);
@@ -308,167 +445,44 @@ export default function VoiceQuery({
     }
   };
 
-  // Simulate enhanced voice processing with realistic data
-  const simulateEnhancedProcessing = async (
-    audioData: Uint8Array, 
-    queryMode: string, 
-    role: string
-  ): Promise<VoiceQueryResponse> => {
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  const buildDeterministicVoiceResponse = (
+    query: string,
+    queryMode: 'search' | 'filter' | 'general',
+    role: 'vendor' | 'supplier'
+  ): string => {
+    const normalizedQuery = query.toLowerCase();
 
-    const mockSearchResults: SearchResults = {
-      items: [
-        {
-          id: '1',
-          name: 'Fresh Tomatoes',
-          category: 'Vegetables',
-          price: 35,
-          unit: 'kg',
-          supplierId: 'sup1',
-          supplierName: 'Fresh Vegetables Hub',
-          trustScore: 4.5,
-          distance: 2.3,
-          availability: true
-        },
-        {
-          id: '2',
-          name: 'Red Onions',
-          category: 'Vegetables',
-          price: 25,
-          unit: 'kg',
-          supplierId: 'sup2',
-          supplierName: 'Vegetable Market Pro',
-          trustScore: 4.2,
-          distance: 1.8,
-          availability: true
-        },
-        {
-          id: '3',
-          name: 'Green Chilies',
-          category: 'Vegetables',
-          price: 80,
-          unit: 'kg',
-          supplierId: 'sup1',
-          supplierName: 'Fresh Vegetables Hub',
-          trustScore: 4.5,
-          distance: 2.3,
-          availability: true
-        }
-      ],
-      suppliers: [
-        {
-          id: 'sup1',
-          name: 'Fresh Vegetables Hub',
-          trustScore: 4.5,
-          location: 'Andheri West',
-          distance: 2.3,
-          categories: ['Vegetables', 'Fruits'],
-          fssaiCertified: true
-        },
-        {
-          id: 'sup2',
-          name: 'Vegetable Market Pro',
-          trustScore: 4.2,
-          location: 'Bandra East',
-          distance: 1.8,
-          categories: ['Vegetables'],
-          fssaiCertified: true
-        }
-      ],
-      filters: {},
-      confidence: 0.87,
-      originalQuery: 'मुझे सब्जियों के लिए सप्लायर चाहिए',
-      translatedQuery: 'I need suppliers for vegetables',
-      language: 'hi'
-    };
-
-    const responses = {
-      search: {
-        vendor: [
-          {
-            answer: "I found 3 suppliers near you with fresh vegetables. Fresh Vegetables Hub is closest at 2.3km with tomatoes at ₹35/kg and onions at ₹25/kg. All suppliers are FSSAI certified.",
-            originalText: "मुझे सब्जियों के लिए सप्लायर चाहिए",
-            language: "hi",
-            confidence: 0.87,
-            alternatives: ["मुझे सब्जी सप्लायर चाहिए", "सब्���ियों के लिए दुकान चाहिए"],
-            searchResults: mockSearchResults
-          },
-          {
-            answer: "Found 2 spice suppliers with competitive prices. Spice Palace has turmeric at ₹180/kg and red chili at ₹220/kg. Quality Spices offers bulk discounts.",
-            originalText: "Where can I find good spices?",
-            language: "en",
-            confidence: 0.92,
-            alternatives: ["Where to buy spices?", "Good spice suppliers?"],
-            searchResults: {
-              ...mockSearchResults,
-              items: [
-                {
-                  id: '4',
-                  name: 'Turmeric Powder',
-                  category: 'Spices',
-                  price: 180,
-                  unit: 'kg',
-                  supplierId: 'sup3',
-                  supplierName: 'Spice Palace',
-                  trustScore: 4.7,
-                  distance: 3.1,
-                  availability: true
-                }
-              ]
-            }
-          }
-        ],
-        supplier: [
-          {
-            answer: "Based on demand patterns, vendors in your area are looking for tomatoes, onions, and green chilies. Consider stocking these items for better sales.",
-            originalText: "What should I stock?",
-            language: "en",
-            confidence: 0.89,
-            searchResults: mockSearchResults
-          }
-        ]
-      },
-      filter: {
-        vendor: [
-          {
-            answer: "Applied filters: FSSAI certified suppliers only, within 5km radius, price range ₹20-50/kg. Found 4 matching suppliers.",
-            originalText: "Show only certified suppliers nearby",
-            language: "en",
-            confidence: 0.85,
-            appliedFilters: {
-              fssaiRequired: true,
-              location: "within 5km",
-              priceRange: { min: 20, max: 50 }
-            }
-          }
-        ]
-      },
-      general: {
-        vendor: [
-          {
-            answer: "You can search for suppliers by speaking item names, set price alerts, join group orders, or ask about market trends. Try saying 'Find tomato suppliers' or 'Set price alert for onions'.",
-            originalText: "What can I do here?",
-            language: "en",
-            confidence: 0.94
-          }
-        ],
-        supplier: [
-          {
-            answer: "You can check inventory status, view new orders, update stock levels, or get demand forecasts. Try saying 'Show new orders' or 'What needs restocking?'.",
-            originalText: "How can I use this?",
-            language: "en",
-            confidence: 0.91
-          }
-        ]
+    if (queryMode === 'filter') {
+      if (normalizedQuery.includes('fssai') || normalizedQuery.includes('certified')) {
+        return 'Applied filter for FSSAI-certified suppliers. You can add location or price range for narrower results.';
       }
-    };
+      if (normalizedQuery.includes('price') || normalizedQuery.includes('rupees') || normalizedQuery.includes('rs')) {
+        return 'Applied price filters from your request. Review the filtered supplier list to refine the range.';
+      }
+      return 'Applied the requested filters. You can refine by category, distance, and delivery speed.';
+    }
 
-    const modeResponses = responses[queryMode as keyof typeof responses] || responses.general;
-    const roleResponses = modeResponses[role as keyof typeof modeResponses] || modeResponses.vendor;
-    const randomResponse = roleResponses[Math.floor(Math.random() * roleResponses.length)];
+    if (queryMode === 'search') {
+      return 'Searching live supplier inventory for your requested ingredients.';
+    }
 
-    return randomResponse;
+    if (role === 'supplier') {
+      if (normalizedQuery.includes('order')) {
+        return 'You can manage incoming orders from the Orders tab and update fulfillment status there.';
+      }
+      if (normalizedQuery.includes('stock') || normalizedQuery.includes('inventory')) {
+        return 'Use the Products tab to update inventory and keep stock availability accurate for vendor searches.';
+      }
+      return 'You can manage products, track orders, and monitor analytics from your supplier dashboard tabs.';
+    }
+
+    if (normalizedQuery.includes('group order')) {
+      return 'Use Group Orders to create or join pooled purchases and reduce per-unit costs.';
+    }
+    if (normalizedQuery.includes('price')) {
+      return 'You can compare supplier prices, configure alerts, and monitor trends from your dashboard.';
+    }
+    return 'You can search suppliers by ingredient, apply voice filters, and place tracked orders from your dashboard.';
   };
 
   const formatTime = (ms: number) => {

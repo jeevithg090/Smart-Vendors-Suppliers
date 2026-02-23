@@ -38,9 +38,11 @@ Object.defineProperty(global, 'performance', {
 describe('PerformanceMonitoring', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    performanceMonitoring.clearMetrics();
     localStorage.clear();
     sessionStorage.clear();
-    vi.mocked(fetch).mockResolvedValue(new Response('{}', { status: 200 }));
+    global.fetch = vi.fn();
+    (global.fetch as any).mockResolvedValue(new Response('{}', { status: 200 }));
   });
 
   afterEach(() => {
@@ -183,7 +185,7 @@ describe('PerformanceMonitoring', () => {
     });
 
     it('should store metrics locally on send failure', async () => {
-      vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
+      (global.fetch as any).mockRejectedValue(new Error('Network error'));
       
       performanceMonitoring.recordMetric('Test Metric', 100);
       await performanceMonitoring.sendBatchMetrics();

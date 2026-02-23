@@ -182,11 +182,19 @@ export const validateFileUpload = (file: File): { valid: boolean; error?: string
 export const sanitizeUserInput = (input: string): string => {
   if (!SECURITY_CONFIG.validation.sanitizeHtml) return input
 
-  return input
-    .replace(/[<>]/g, '') // Remove HTML tags
+  const withoutScriptBlocks = input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+
+  const withoutTags = withoutScriptBlocks.replace(/<[^>]+>/g, '');
+
+  return withoutTags
     .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .replace(/data:text\/html/gi, '') // Remove data URLs
+    .replace(/on\w+\s*=\s*(['"]).*?\1/gi, '') // Remove quoted inline handlers
+    .replace(/on\w+\s*=\s*[^\s>]+/gi, '') // Remove unquoted inline handlers
+    .replace(/data:text\/html/gi, '') // Remove dangerous data URLs
+    .replace(/alert\s*\([^)]*\)/gi, '') // Remove common inline payload patterns
+    .replace(/[\u0000-\u001F\u007F]/g, '') // Strip control characters
     .trim()
     .substring(0, SECURITY_CONFIG.validation.maxInputLength)
 }

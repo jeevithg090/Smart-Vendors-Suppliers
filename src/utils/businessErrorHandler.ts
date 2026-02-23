@@ -41,7 +41,7 @@ export class BusinessLogicValidator {
     // Check inventory availability
     for (const item of orderData.items) {
       const stockCheck = await this.checkInventoryStock(orderData.supplierId, item);
-      if (!stockCheck.available) {
+      if (stockCheck.available < item.quantity) {
         errors.push({
           type: 'BUSINESS_ERROR',
           code: 'INSUFFICIENT_STOCK',
@@ -138,7 +138,7 @@ export class BusinessLogicValidator {
     }
 
     // Check if requested quantity fits
-    if (groupOrderData.requestedQuantity > remainingCapacity) {
+    if (remainingCapacity > 0 && groupOrderData.requestedQuantity > remainingCapacity) {
       errors.push({
         type: 'BUSINESS_ERROR',
         code: 'QUANTITY_EXCEEDS_CAPACITY',

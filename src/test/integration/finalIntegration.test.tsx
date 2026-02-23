@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, renderHook } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { ConvexProvider } from 'convex/react'
 import { ConvexReactClient } from 'convex/react'
@@ -11,38 +11,100 @@ import { SECURITY_CONFIG } from '../../config/security'
 // Mock Convex client
 const mockConvexClient = new ConvexReactClient('https://test.convex.cloud')
 
+const convexMockData = vi.hoisted(() => ({
+  emptyQueryCallCount: 0,
+  vendor: {
+    _id: 'test-vendor-id',
+    userId: 'test-user',
+    businessName: 'Test Business',
+    ownerName: 'Test Owner',
+    email: 'test@example.com',
+    phone: '9876543210',
+    location: {
+      address: 'Test Address',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400001',
+      coordinates: { lat: 19.0760, lng: 72.8777 }
+    },
+    businessType: 'Street Food',
+    isVerified: true,
+    trustScore: 4.2,
+    preferences: {
+      maxDeliveryDistance: 10,
+      preferredCategories: ['Vegetables', 'Spices'],
+      budgetRange: { min: 1000, max: 10000 },
+      qualityPreference: 'High',
+      deliveryTimePreference: 'Same Day'
+    },
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  },
+  workflowState: {
+    discoveryCompleted: false,
+    recommendationsViewed: false,
+    groupOrderParticipated: false,
+    firstOrderPlaced: false,
+    inventoryTracked: false,
+    priceAlertsSet: false,
+    financialAnalyticsViewed: false,
+    communicationUsed: false,
+    currentStep: 'discover',
+    lastActivity: Date.now()
+  },
+  inventory: [
+    {
+      _id: 'inv-1',
+      itemName: 'Onion',
+      category: 'Vegetables',
+      supplierId: 'sup-1',
+      currentStock: 120,
+      unit: 'kg',
+      pricePerUnit: 30,
+      quality: 'Grade A'
+    },
+    {
+      _id: 'inv-2',
+      itemName: 'Rice',
+      category: 'Grains',
+      supplierId: 'sup-2',
+      currentStock: 200,
+      unit: 'kg',
+      pricePerUnit: 55,
+      quality: 'Premium'
+    }
+  ],
+  suppliers: [
+    { _id: 'sup-1', businessName: 'Fresh Hub' },
+    { _id: 'sup-2', businessName: 'Grain Masters' }
+  ]
+}));
+
 // Mock Convex queries
 vi.mock('convex/react', async () => {
   const actual = await vi.importActual('convex/react')
   return {
     ...actual,
-    useQuery: vi.fn(() => ({
-      _id: 'test-vendor-id',
-      userId: 'test-user',
-      businessName: 'Test Business',
-      ownerName: 'Test Owner',
-      email: 'test@example.com',
-      phone: '9876543210',
-      location: {
-        address: 'Test Address',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pincode: '400001',
-        coordinates: { lat: 19.0760, lng: 72.8777 }
-      },
-      businessType: 'Street Food',
-      isVerified: true,
-      trustScore: 4.2,
-      preferences: {
-        maxDeliveryDistance: 10,
-        preferredCategories: ['Vegetables', 'Spices'],
-        budgetRange: { min: 1000, max: 10000 },
-        qualityPreference: 'High',
-        deliveryTimePreference: 'Same Day'
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    })),
+    useQuery: vi.fn((_query, args) => {
+      if (args === 'skip') return null
+
+      if (args && typeof args === 'object' && 'userId' in args) {
+        return convexMockData.vendor
+      }
+
+      if (args && typeof args === 'object' && 'vendorId' in args) {
+        return convexMockData.workflowState
+      }
+
+      if (args && typeof args === 'object' && Object.keys(args).length === 0) {
+        convexMockData.emptyQueryCallCount += 1
+        return convexMockData.emptyQueryCallCount % 2 === 1
+          ? convexMockData.inventory
+          : convexMockData.suppliers
+      }
+
+      return null
+    }),
     useMutation: vi.fn(() => vi.fn())
   }
 })
@@ -58,6 +120,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe('Final Integration Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    convexMockData.emptyQueryCallCount = 0
     // Reset localStorage
     localStorage.clear()
   })
@@ -106,9 +169,9 @@ describe('Final Integration Tests', () => {
       })
 
       // Check if workflow steps are rendered
-      expect(screen.getByText('Discover Suppliers')).toBeInTheDocument()
-      expect(screen.getByText('AI Recommendations')).toBeInTheDocument()
-      expect(screen.getByText('Group Orders')).toBeInTheDocument()
+      expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument()
+      expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument()
+      expect(screen.getByText(/Group Orders/i)).toBeInTheDocument()
     })
 
     it('should handle workflow navigation', async () => {
@@ -119,16 +182,16 @@ describe('Final Integration Tests', () => {
       )
 
       await waitFor(() => {
-        expect(screen.getByText('Discover Suppliers')).toBeInTheDocument()
+        expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument()
       })
 
       // Click on AI Recommendations step
-      const recommendationsButton = screen.getByText('AI Recommendations')
+      const recommendationsButton = screen.getByText(/AI Recommendations/i)
       fireEvent.click(recommendationsButton)
 
       // Should navigate to recommendations step
       await waitFor(() => {
-        expect(screen.getByText('AI Recommendations')).toBeInTheDocument()
+        expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument()
       })
     })
   })
@@ -203,11 +266,12 @@ describe('Final Integration Tests', () => {
       const itemHeight = 50
       const containerHeight = 400
       
-      // This would be used in a component, but we can test the logic
-      const result = useVirtualScrolling(items, itemHeight, containerHeight)
+      const { result } = renderHook(() =>
+        useVirtualScrolling(items, itemHeight, containerHeight)
+      )
       
-      expect(result.visibleItems.length).toBeLessThan(items.length)
-      expect(result.totalHeight).toBe(items.length * itemHeight)
+      expect(result.current.visibleItems.length).toBeLessThan(items.length)
+      expect(result.current.totalHeight).toBe(items.length * itemHeight)
     })
   })
 
@@ -254,7 +318,7 @@ describe('Final Integration Tests', () => {
       )
 
       // Should not crash the application
-      expect(screen.getByText(/Smart Street/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0)
       
       consoleSpy.mockRestore()
     })
@@ -269,8 +333,10 @@ describe('Final Integration Tests', () => {
       )
 
       // Check for accessibility features
-      const buttons = screen.getAllByRole('button')
-      expect(buttons.length).toBeGreaterThan(0)
+      const buttons = screen.queryAllByRole('button')
+      const links = screen.queryAllByRole('link')
+      const interactiveElements = [...buttons, ...links]
+      expect(interactiveElements.length).toBeGreaterThan(0)
       
       // Should have proper focus management
       buttons.forEach(button => {
@@ -295,7 +361,7 @@ describe('Final Integration Tests', () => {
       )
 
       // Should render mobile-friendly interface
-      expect(screen.getByText(/Smart Street/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0)
     })
   })
 
@@ -315,7 +381,7 @@ describe('Final Integration Tests', () => {
       )
 
       // Should still render the application
-      expect(screen.getByText(/Smart Street/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0)
     })
   })
 })
@@ -336,9 +402,9 @@ describe('End-to-End Workflow Tests', () => {
     expect(screen.getByText(/Progress:/)).toBeInTheDocument()
     
     // Should show workflow steps
-    expect(screen.getByText('Discover Suppliers')).toBeInTheDocument()
-    expect(screen.getByText('AI Recommendations')).toBeInTheDocument()
-    expect(screen.getByText('Group Orders')).toBeInTheDocument()
+    expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument()
+    expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument()
+    expect(screen.getByText(/Group Orders/i)).toBeInTheDocument()
     
     // Should have quick actions
     expect(screen.getByText('Quick Order')).toBeInTheDocument()

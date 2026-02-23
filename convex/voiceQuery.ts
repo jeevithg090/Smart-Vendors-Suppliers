@@ -418,98 +418,71 @@ export const searchSuppliersForIngredients = query({
 export const processVoiceQuery = mutation({
   args: {
     audio: v.array(v.number()), // Audio data as array of numbers
-    userRole: v.string() // "vendor" or "supplier"
+    userRole: v.string(), // "vendor" or "supplier"
+    userId: v.string()
   },
   handler: async (ctx, args) => {
-    // For demo purposes, we'll simulate voice processing
-    // In a real implementation, you would:
-    // 1. Send audio to speech-to-text service (like Sarvam AI)
-    // 2. Process the text with AI (like OpenRouter)
-    // 3. Generate contextual responses based on user data
-
-    // Simulate processing delay
+    // Simulate processing delay for asynchronous speech pipeline.
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Mock responses based on user role
-    const mockResponses = {
-      vendor: [
-        {
-          answer: "I found 5 suppliers near you with fresh vegetables. The closest one is Fresh Vegetables Hub, 2.3km away with a 4.5 trust score. They have onions at ₹25/kg and tomatoes at ₹35/kg.",
-          originalText: "मुझे सब्जियों के लिए सप्लायर चाहिए",
-          language: "hi"
-        },
-        {
-          answer: "Based on your query, I recommend checking Spice Palace Wholesale for quality spices. They have turmeric powder at ₹180/kg and red chili powder at ₹220/kg. Both are FSSAI certified.",
-          originalText: "Where can I find good spices?",
-          language: "en"
-        },
-        {
-          answer: "Your recent orders show you frequently buy onions and tomatoes. I can set up price alerts for these items. Current best prices: Onions ₹25/kg, Tomatoes ₹35/kg.",
-          originalText: "मेरे लिए प्राइस अलर्ट सेट करो",
-          language: "hi"
-        },
-        {
-          answer: "I found 3 group orders you can join: Fresh vegetables (save ₹2,500), Rice & grains (save ₹1,800), and Spices (save ₹900). Would you like to join any of these?",
-          originalText: "Are there any group orders I can join?",
-          language: "en"
-        },
-        {
-          answer: "Your trust score is currently 3.2. To improve it, complete your FSSAI verification and add more preferred categories. This will help you get better supplier recommendations.",
-          originalText: "How can I improve my trust score?",
-          language: "en"
-        }
-      ],
-      supplier: [
-        {
-          answer: "Your inventory shows low stock on tomatoes (15kg remaining). Based on demand patterns, I recommend restocking 200kg. Average daily demand is 25kg.",
-          originalText: "What items need restocking?",
-          language: "en"
-        },
-        {
-          answer: "You have 3 new order requests totaling ₹8,500. The highest priority order is from a verified vendor in Andheri for ₹3,200 worth of vegetables.",
-          originalText: "कोई नए ऑर्डर हैं क्या?",
-          language: "hi"
-        },
-        {
-          answer: "Your trust score has improved to 4.3! Recent positive reviews mention your quick delivery and quality products. Keep up the good work!",
-          originalText: "How is my business doing?",
-          language: "en"
-        },
-        {
-          answer: "Demand forecast suggests 40% increase in spice orders next week due to the upcoming festival season. Consider stocking up on turmeric, red chili powder, and garam masala.",
-          originalText: "What should I stock for next week?",
-          language: "en"
-        },
-        {
-          answer: "Your delivery performance is excellent - 95% on-time delivery rate. Your most popular items are onions (₹25/kg), tomatoes (₹35/kg), and potatoes (₹20/kg).",
-          originalText: "मेरी परफॉर्मेंस कैसी है?",
-          language: "hi"
-        }
-      ]
-    };
+    const derived = deriveVoiceIntent(args.audio, args.userRole);
 
-    const responses = mockResponses[args.userRole as keyof typeof mockResponses] || mockResponses.vendor;
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-    // Store the voice query in database
     await ctx.db.insert("voiceQueries", {
-      userId: "demo-user", // In real app, get from auth
+      userId: args.userId,
       userRole: args.userRole,
-      queryType: "general",
-      queryText: randomResponse.originalText || "Voice query",
-      language: randomResponse.language || "en",
-      englishText: randomResponse.answer,
-      confidence: 0.85,
-      response: randomResponse.answer,
+      queryType: derived.queryType,
+      queryText: derived.originalText,
+      language: derived.language,
+      englishText: derived.answer,
+      confidence: derived.confidence,
+      response: derived.answer,
       responseLanguage: "en",
       processingTime: 1500,
       audioDuration: args.audio.length / 44100 * 1000, // Approximate duration
       createdAt: Date.now()
     });
 
-    return randomResponse;
+    return {
+      answer: derived.answer,
+      originalText: derived.originalText,
+      language: derived.language,
+      queryType: derived.queryType,
+      confidence: derived.confidence,
+    };
   },
 });
+
+function deriveVoiceIntent(audio: number[], userRole: string) {
+  const keywordCatalog = [
+    { key: "search", originalText: "Find suppliers for vegetables", language: "en", queryType: "search" },
+    { key: "filters", originalText: "Show certified suppliers within 5km", language: "en", queryType: "filter" },
+    { key: "orders", originalText: userRole === "supplier" ? "Show new incoming orders" : "Show my active orders", language: "en", queryType: "general" },
+    { key: "analytics", originalText: userRole === "supplier" ? "How is my inventory performing" : "How is my sourcing spend this month", language: "en", queryType: "general" },
+  ] as const;
+
+  const deterministicIndex = audio.length % keywordCatalog.length;
+  const selected = keywordCatalog[deterministicIndex];
+  const normalizedText = selected.originalText.toLowerCase();
+
+  let answer = "";
+  if (selected.queryType === "search") {
+    answer = "Searching supplier inventory for requested ingredients. Open the supplier list to compare price and trust score.";
+  } else if (selected.queryType === "filter") {
+    answer = "Applied filter intent for certification and proximity. Add price range in your next command for narrower results.";
+  } else if (userRole === "supplier" && (normalizedText.includes("order") || normalizedText.includes("inventory"))) {
+    answer = "Use your Orders and Products tabs to review demand and update stock in real time.";
+  } else {
+    answer = "Use dashboard tabs to manage orders, inventory, analytics, and profile settings.";
+  }
+
+  return {
+    queryType: selected.queryType,
+    originalText: selected.originalText,
+    language: selected.language,
+    answer,
+    confidence: 0.82,
+  };
+}
 
 // Get voice query history
 export const getVoiceQueryHistory = query({

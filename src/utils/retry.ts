@@ -19,17 +19,31 @@ export class RetryManager {
     maxDelay: 30000,
     backoffFactor: 2,
     retryCondition: (error: any) => {
-      // Retry on network errors, timeouts, and 5xx server errors
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      const status = typeof error?.status === 'number' ? error.status : undefined;
+      if (status !== undefined) {
+        if (status >= 500 && status < 600) return true;
+        if (status === 408 || status === 429) return true;
+        if (status >= 400 && status < 500) return false;
+      }
+
+      const code = String(error?.code || '').toUpperCase();
+      if (['INVALID_ARGUMENT', 'UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND', 'VALIDATION_ERROR'].includes(code)) {
+        return false;
+      }
+      if (['TIMEOUT', 'CONNECTION_FAILED', 'OVERLOADED', 'INTERNAL_SERVER_ERROR', 'NETWORK_ERROR'].includes(code)) {
         return true;
       }
-      if (error.status >= 500 && error.status < 600) {
+
+      const message = String(error?.message || '').toLowerCase();
+      if (message.includes('timeout') || message.includes('network') || message.includes('fetch')) {
         return true;
       }
-      if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_FAILED') {
-        return true;
+      if (message.includes('invalid') || message.includes('validation') || message.includes('unauthorized')) {
+        return false;
       }
-      return false;
+
+      // Default to retry for unknown transient failures.
+      return true;
     },
     onRetry: () => {}
   };
@@ -64,7 +78,8 @@ export class RetryManager {
         );
 
         // Add jitter to prevent thundering herd
-        const jitteredDelay = delay + Math.random() * 1000;
+        const jitterWindow = Math.min(100, Math.max(1, Math.floor(config.baseDelay * 0.1)));
+        const jitteredDelay = delay + Math.random() * jitterWindow;
 
         config.onRetry(attempt + 1, error);
 
@@ -112,21 +127,31 @@ export class OfflineOperationQueue {
   private static instance: OfflineOperationQueue;
   private queue: QueuedOperation[] = [];
   private isProcessing = false;
-  private isOnline = navigator.onLine;
+  private isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
 
   private constructor() {
-    // Listen for online/offline events
-    window.addEventListener('online', () => {
-      this.isOnline = true;
-      this.processQueue();
-    });
-    
-    window.addEventListener('offline', () => {
-      this.isOnline = false;
-    });
+    if (typeof window !== 'undefined') {
+      // Listen for online/offline events
+      window.addEventListener('online', () => {
+        this.isOnline = true;
+        this.processQueue();
+      });
+      
+      window.addEventListener('offline', () => {
+        this.isOnline = false;
+      });
+    }
 
     // Load persisted queue from localStorage
     this.loadPersistedQueue();
+  }
+
+  private syncOnlineState(): void {
+    if (typeof navigator === 'undefined') {
+      this.isOnline = true;
+      return;
+    }
+    this.isOnline = navigator.onLine;
   }
 
   static getInstance(): OfflineOperationQueue {
@@ -137,6 +162,8 @@ export class OfflineOperationQueue {
   }
 
   async enqueue(operation: QueuedOperation): Promise<void> {
+    this.syncOnlineState();
+
     this.queue.push({
       ...operation,
       id: operation.id || crypto.randomUUID(),
@@ -152,13 +179,18 @@ export class OfflineOperationQueue {
   }
 
   private async processQueue(): Promise<void> {
+    this.syncOnlineState();
+
     if (this.isProcessing || !this.isOnline || this.queue.length === 0) {
       return;
     }
 
     this.isProcessing = true;
 
-    while (this.queue.length > 0 && this.isOnline) {
+    while (this.queue.length > 0) {
+      this.syncOnlineState();
+      if (!this.isOnline) break;
+
       const operation = this.queue[0];
       
       try {

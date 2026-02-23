@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from 'convex/react';
+import { useMemo, useState, useEffect } from 'react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
@@ -51,6 +51,14 @@ interface SeasonalInsight {
   opportunity: string;
 }
 
+interface ReportHistoryItem {
+  _id: Id<'marketReports'>;
+  title: string;
+  generatedAt: number;
+  type: string;
+  content: string;
+}
+
 interface Props {
   vendorId: Id<'vendors'>;
   location: {
@@ -62,167 +70,139 @@ interface Props {
 export default function MarketIntelligence({ vendorId, location }: Props) {
   const [activeTab, setActiveTab] = useState<'alerts' | 'trends' | 'competitors' | 'seasonal' | 'reports'>('alerts');
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d' | '90d'>('7d');
+  const [message, setMessage] = useState('');
+  const [showAlertPreferences, setShowAlertPreferences] = useState(false);
+  const [selectedAlert, setSelectedAlert] = useState<PriceAlert | null>(null);
+  const [showCompetitorCreator, setShowCompetitorCreator] = useState(false);
+  const [customReportType, setCustomReportType] = useState('Competitor pricing analysis');
 
-  // Mock market data - in real app, this would come from APIs/data sources
-  const priceAlerts: PriceAlert[] = [
-    {
-      id: '1',
-      itemName: 'Tomatoes',
-      currentPrice: 35,
-      previousPrice: 30,
-      changePercent: 16.7,
-      trend: 'up',
-      category: 'Vegetables',
-      region: location.city,
-      alertType: 'significant_increase',
-      message: 'Tomato prices increased due to monsoon affecting supply chains',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000)
-    },
-    {
-      id: '2',
-      itemName: 'Rice',
-      currentPrice: 55,
-      previousPrice: 62,
-      changePercent: -11.3,
-      trend: 'down',
-      category: 'Grains',
-      region: location.city,
-      alertType: 'opportunity',
-      message: 'Great time to stock up on rice - prices dropped due to new harvest',
-      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000)
-    },
-    {
-      id: '3',
-      itemName: 'Chicken',
-      currentPrice: 280,
-      previousPrice: 260,
-      changePercent: 7.7,
-      trend: 'up',
-      category: 'Meat',
-      region: location.city,
-      alertType: 'significant_increase',
-      message: 'Chicken prices rising ahead of festival season',
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
-    }
-  ];
+  const priceAlertsData = useQuery(api.priceAlerts.getVendorPriceAlerts, { vendorId });
+  const inventory = useQuery(api.inventory.getAvailableInventory, {});
+  const competitorInsights = useQuery(api.marketIntelligence.getCompetitorInsights, { vendorId }) as CompetitorInsight[] | undefined;
+  const seasonalInsights = useQuery(api.marketIntelligence.getSeasonalInsights, { vendorId }) as SeasonalInsight[] | undefined;
+  const reportHistory = useQuery(api.marketIntelligence.getMarketReports, { vendorId }) as ReportHistoryItem[] | undefined;
 
-  const marketTrends: MarketTrend[] = [
-    {
-      item: 'Tomatoes',
-      category: 'Vegetables',
-      currentPrice: 35,
-      weeklyChange: 16.7,
-      monthlyChange: 25.3,
-      seasonalPattern: 'seasonal_peak',
-      forecast7Days: 37,
-      forecast30Days: 32,
-      confidence: 85,
-      suppliers: 12
-    },
-    {
-      item: 'Onions',
-      category: 'Vegetables',
-      currentPrice: 28,
-      weeklyChange: 5.2,
-      monthlyChange: 12.8,
-      seasonalPattern: 'increasing',
-      forecast7Days: 30,
-      forecast30Days: 33,
-      confidence: 78,
-      suppliers: 15
-    },
-    {
-      item: 'Rice (Basmati)',
-      category: 'Grains',
-      currentPrice: 55,
-      weeklyChange: -11.3,
-      monthlyChange: -8.5,
-      seasonalPattern: 'seasonal_low',
-      forecast7Days: 53,
-      forecast30Days: 58,
-      confidence: 92,
-      suppliers: 8
-    },
-    {
-      item: 'Cooking Oil',
-      category: 'Oil',
-      currentPrice: 140,
-      weeklyChange: 2.1,
-      monthlyChange: 8.7,
-      seasonalPattern: 'stable',
-      forecast7Days: 142,
-      forecast30Days: 145,
-      confidence: 71,
-      suppliers: 6
-    }
-  ];
+  const createCompetitorInsight = useMutation(api.marketIntelligence.createCompetitorInsight);
+  const deleteCompetitorInsight = useMutation(api.marketIntelligence.deleteCompetitorInsight);
+  const createMarketReport = useMutation(api.marketIntelligence.createMarketReport);
 
-  const competitorInsights: CompetitorInsight[] = [
-    {
-      competitorName: "Singh's Street Kitchen",
-      businessType: 'Street Food Cart',
-      location: '2.3 km away',
-      popularItems: ['Chole Bhature', 'Aloo Paratha', 'Lassi'],
-      priceStrategy: 'competitive',
-      estimatedRevenue: '₹15-20K/month',
-      uniqueSellingPoints: ['Authentic Punjab flavors', 'Family recipes', 'Fresh daily preparations'],
-      strengths: ['High customer loyalty', 'Prime location', 'Consistent quality'],
-      opportunities: ['Limited menu variety', 'No digital presence', 'Peak hour congestion']
-    },
-    {
-      competitorName: 'Mumbai Munchies',
-      businessType: 'Food Truck',
-      location: '1.8 km away',
-      popularItems: ['Vada Pav', 'Pav Bhaji', 'Bhel Puri'],
-      priceStrategy: 'budget',
-      estimatedRevenue: '₹25-30K/month',
-      uniqueSellingPoints: ['Quick service', 'Multiple payment options', 'Social media presence'],
-      strengths: ['Modern equipment', 'Digital ordering', 'Brand recognition'],
-      opportunities: ['Higher prices', 'Quality inconsistency', 'Limited parking']
-    }
-  ];
+  const itemNames = useMemo(() => {
+    if (!inventory) return [];
+    const names = Array.from(new Set(inventory.map((item) => item.itemName)));
+    return names.slice(0, 12);
+  }, [inventory]);
 
-  const seasonalInsights: SeasonalInsight[] = [
-    {
-      period: 'Winter (Dec-Feb)',
-      peakItems: ['Root vegetables', 'Wheat products', 'Dairy items'],
-      priceIncrease: 15,
-      demandIncrease: 25,
-      preparation: [
-        'Stock up on seasonal vegetables',
-        'Plan winter special menu',
-        'Negotiate bulk rates for wheat',
-        'Ensure cold storage for dairy'
-      ],
-      opportunity: 'Launch hot beverages and soup varieties'
-    },
-    {
-      period: 'Summer (Mar-May)',
-      peakItems: ['Cooling ingredients', 'Fresh fruits', 'Beverages'],
-      priceIncrease: 20,
-      demandIncrease: 40,
-      preparation: [
-        'Secure mango suppliers early',
-        'Plan cooling menu items',
-        'Invest in refrigeration',
-        'Develop beverage offerings'
-      ],
-      opportunity: 'Focus on refreshing and cooling food items'
-    },
-    {
-      period: 'Monsoon (Jun-Sep)',
-      peakItems: ['Comfort foods', 'Hot snacks', 'Preserved items'],
-      priceIncrease: 25,
-      demandIncrease: 15,
-      preparation: [
-        'Ensure weatherproof setup',
-        'Stock preserved ingredients',
-        'Plan indoor-friendly menu',
-        'Secure reliable supply chains'
-      ],
-      opportunity: 'Hot snacks and comfort food have high demand'
-    }
-  ];
+  const trendDays = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90;
+  const priceTrends = useQuery(
+    api.inventory.getBulkPriceTrends,
+    itemNames.length > 0 ? { itemNames, days: trendDays } : "skip"
+  ) as Array<{
+    itemName: string;
+    currentPrice: number;
+    change: number;
+    changePercent: number;
+    trend: string;
+    dataPoints: number;
+  }> | undefined;
+
+  const priceTrendsMonthly = useQuery(
+    api.inventory.getBulkPriceTrends,
+    itemNames.length > 0 ? { itemNames, days: 30 } : "skip"
+  ) as Array<{
+    itemName: string;
+    currentPrice: number;
+    change: number;
+    changePercent: number;
+    trend: string;
+    dataPoints: number;
+  }> | undefined;
+
+  const marketTrends: MarketTrend[] = useMemo(() => {
+    if (!inventory || !priceTrends) return [];
+
+    const monthlyMap = new Map(
+      (priceTrendsMonthly ?? []).map((trend) => [trend.itemName.toLowerCase(), trend])
+    );
+
+    return priceTrends.map((trend) => {
+      const monthly = monthlyMap.get(trend.itemName.toLowerCase());
+      const suppliers = inventory.filter((item) => item.itemName === trend.itemName).length;
+      const monthlyChange = monthly?.changePercent ?? 0;
+      const seasonalPattern: MarketTrend['seasonalPattern'] =
+        monthlyChange > 5 ? 'increasing' : monthlyChange < -5 ? 'decreasing' : 'stable';
+      const confidence = Math.min(95, Math.max(50, (trend.dataPoints || 1) * 10));
+
+      return {
+        item: trend.itemName,
+        category: inventory.find((item) => item.itemName === trend.itemName)?.category || 'General',
+        currentPrice: trend.currentPrice,
+        weeklyChange: trend.changePercent,
+        monthlyChange,
+        seasonalPattern,
+        forecast7Days: trend.currentPrice * (1 + trend.changePercent / 100),
+        forecast30Days: trend.currentPrice * (1 + monthlyChange / 100),
+        confidence,
+        suppliers,
+      };
+    });
+  }, [inventory, priceTrends, priceTrendsMonthly]);
+
+  const priceAlerts: PriceAlert[] = useMemo(() => {
+    const alerts: PriceAlert[] = [];
+    const categoryByItem = new Map<string, string>(
+      (inventory ?? []).map((item) => [item.itemName.toLowerCase(), item.category])
+    );
+
+    (priceAlertsData ?? []).forEach((alert) => {
+      alerts.push({
+        id: String(alert._id),
+        itemName: alert.itemName,
+        currentPrice: alert.currentPrice,
+        previousPrice: alert.currentPrice,
+        changePercent: 0,
+        trend: 'stable',
+        category: categoryByItem.get(alert.itemName.toLowerCase()) || 'General',
+        region: location.city,
+        alertType: alert.currentPrice <= alert.targetPrice ? 'opportunity' : 'significant_increase',
+        message: alert.currentPrice <= alert.targetPrice
+          ? 'Price alert triggered at or below target.'
+          : 'Price above target.',
+        timestamp: new Date(alert.lastTriggered || alert.createdAt),
+      });
+    });
+
+    (priceTrends ?? [])
+      .filter((trend) => Math.abs(trend.changePercent) >= 5)
+      .forEach((trend) => {
+        const alertType = trend.changePercent > 0 ? 'significant_increase' : 'significant_decrease';
+        alerts.push({
+          id: `trend-${trend.itemName}`,
+          itemName: trend.itemName,
+          currentPrice: trend.currentPrice,
+          previousPrice: trend.currentPrice - trend.change,
+          changePercent: trend.changePercent,
+          trend: trend.changePercent > 0 ? 'up' : 'down',
+          category: categoryByItem.get(trend.itemName.toLowerCase()) || 'General',
+          region: location.city,
+          alertType,
+          message: trend.changePercent > 0
+            ? 'Prices rising based on recent transactions.'
+            : 'Prices dropping based on recent transactions.',
+          timestamp: new Date(),
+        });
+      });
+
+    return alerts.slice(0, 12);
+  }, [priceAlertsData, priceTrends, inventory, location.city]);
+
+  const reportHistoryList = reportHistory ?? [];
+
+  const [newCompetitor, setNewCompetitor] = useState({
+    competitorName: '',
+    businessType: 'Street Food Cart',
+    location: '',
+    priceStrategy: 'competitive' as CompetitorInsight['priceStrategy']
+  });
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -248,6 +228,116 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
     return 'text-red-600';
   };
 
+  useEffect(() => {
+    if (!message) return;
+    const timer = window.setTimeout(() => setMessage(''), 5000);
+    return () => window.clearTimeout(timer);
+  }, [message]);
+
+  const notify = (text: string) => {
+    setMessage(text);
+  };
+
+  const downloadReport = (filename: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportTrendsReport = () => {
+    const csvRows = [
+      ['Item', 'Category', 'Current Price', 'Weekly Change', 'Monthly Change', 'Forecast 7 Days', 'Confidence'],
+      ...marketTrends.map(trend => [
+        trend.item,
+        trend.category,
+        trend.currentPrice.toString(),
+        trend.weeklyChange.toString(),
+        trend.monthlyChange.toString(),
+        trend.forecast7Days.toString(),
+        `${trend.confidence}%`
+      ])
+    ];
+
+    const csv = csvRows.map(row => row.join(',')).join('\\n');
+    const fileName = `market-trends-${location.city.toLowerCase().replace(/\\s+/g, '-')}.csv`;
+    downloadReport(fileName, csv);
+    notify('Trends report exported.');
+  };
+
+  const createReportEntry = async (title: string, type: string, content: string) => {
+    await createMarketReport({
+      vendorId,
+      title,
+      type,
+      content,
+      generatedAt: Date.now(),
+    });
+    notify(`${title} generated.`);
+  };
+
+  const generateWeeklyReport = async () => {
+    const content = [
+      `Vendor: ${vendorId}`,
+      `Location: ${location.city}, ${location.state}`,
+      `Generated: ${new Date().toLocaleString()}`,
+      '',
+      'Key Alerts:',
+      ...priceAlerts.map(alert => `- ${alert.itemName}: ${alert.message}`),
+      '',
+      'Top Trend Items:',
+      ...marketTrends.slice(0, 3).map(trend => `- ${trend.item}: ₹${trend.currentPrice} (${trend.weeklyChange > 0 ? '+' : ''}${trend.weeklyChange.toFixed(1)}%)`)
+    ].join('\\n');
+
+    await createReportEntry(`Weekly Market Summary - ${new Date().toLocaleDateString()}`, 'Weekly Summary', content);
+  };
+
+  const generateCustomReport = async () => {
+    const content = [
+      `Custom Report Type: ${customReportType}`,
+      `Generated: ${new Date().toLocaleString()}`,
+      `City: ${location.city}`,
+      '',
+      'Recommended Actions:',
+      '- Review high-volatility ingredients',
+      '- Compare price movements against competitor positioning',
+      '- Update weekly purchase plan based on forecast'
+    ].join('\\n');
+
+    await createReportEntry(`${customReportType} - ${location.city}`, 'Custom', content);
+  };
+
+  const addCompetitor = async () => {
+    if (!newCompetitor.competitorName || !newCompetitor.location) {
+      notify('Competitor name and location are required.');
+      return;
+    }
+
+    await createCompetitorInsight({
+      vendorId,
+      competitorName: newCompetitor.competitorName,
+      businessType: newCompetitor.businessType,
+      location: newCompetitor.location,
+      popularItems: [],
+      priceStrategy: newCompetitor.priceStrategy,
+      estimatedRevenue: undefined,
+      uniqueSellingPoints: [],
+      strengths: [],
+      opportunities: [],
+    });
+    setShowCompetitorCreator(false);
+    setNewCompetitor({
+      competitorName: '',
+      businessType: 'Street Food Cart',
+      location: '',
+      priceStrategy: 'competitive'
+    });
+    notify(`${newCompetitor.competitorName} added to competitor watchlist.`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -263,6 +353,12 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
           </div>
         </div>
       </div>
+
+      {message && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-sm text-indigo-800">
+          {message}
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
@@ -307,7 +403,13 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   <option value="30d">Last 30 Days</option>
                   <option value="90d">Last 90 Days</option>
                 </select>
-                <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                <button
+                  onClick={() => {
+                    setShowAlertPreferences(true);
+                    notify('Adjust your alert preferences.');
+                  }}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                >
                   Set Alert Preferences
                 </button>
               </div>
@@ -337,6 +439,11 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
 
             {/* Alerts List */}
             <div className="space-y-4">
+              {priceAlerts.length === 0 && (
+                <div className="rounded-lg border border-dashed border-gray-200 p-6 text-sm text-gray-600">
+                  No alerts yet. Create price alerts to track item movements.
+                </div>
+              )}
               {priceAlerts.map(alert => (
                 <div key={alert.id} className={`border rounded-lg p-4 ${getAlertColor(alert.alertType)}`}>
                   <div className="flex items-start justify-between">
@@ -354,11 +461,11 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="font-medium">Current Price:</span>
-                          <div>₹{alert.currentPrice}/{alert.itemName === 'Cooking Oil' ? 'L' : 'kg'}</div>
+                          <div>₹{alert.currentPrice}/unit</div>
                         </div>
                         <div>
                           <span className="font-medium">Previous Price:</span>
-                          <div>₹{alert.previousPrice}/{alert.itemName === 'Cooking Oil' ? 'L' : 'kg'}</div>
+                          <div>₹{alert.previousPrice}/unit</div>
                         </div>
                         <div>
                           <span className="font-medium">Change:</span>
@@ -377,7 +484,13 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                       <div className="text-xs opacity-75">
                         {alert.timestamp.toLocaleTimeString()}
                       </div>
-                      <button className="mt-2 text-sm font-medium hover:underline">
+                      <button
+                        onClick={() => {
+                          setSelectedAlert(alert);
+                          notify(`Viewing details for ${alert.itemName}.`);
+                        }}
+                        className="mt-2 text-sm font-medium hover:underline"
+                      >
                         View Details
                       </button>
                     </div>
@@ -393,7 +506,10 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold text-gray-800">Market Trends Analysis</h3>
-              <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
+              <button
+                onClick={exportTrendsReport}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors"
+              >
                 Export Trends Report
               </button>
             </div>
@@ -483,13 +599,21 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold text-gray-800">Competitor Analysis - {location.city}</h3>
-              <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
+              <button
+                onClick={() => setShowCompetitorCreator(true)}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors"
+              >
                 + Add Competitor
               </button>
             </div>
 
             <div className="grid gap-6">
-              {competitorInsights.map((competitor, index) => (
+              {(competitorInsights ?? []).length === 0 && (
+                <div className="rounded-lg border border-dashed border-gray-200 p-6 text-sm text-gray-600">
+                  No competitors tracked yet. Add a competitor to start analysis.
+                </div>
+              )}
+              {(competitorInsights ?? []).map((competitor, index) => (
                 <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -506,7 +630,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                         </span>
                       </div>
                       <div className="text-sm text-gray-500 mb-4">
-                        Est. Revenue: {competitor.estimatedRevenue}
+                        Est. Revenue: {competitor.estimatedRevenue || 'Not set'}
                       </div>
                     </div>
                   </div>
@@ -558,10 +682,23 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   </div>
 
                   <div className="mt-4 flex space-x-3">
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    <button
+                      onClick={() => {
+                        setActiveTab('reports');
+                        setCustomReportType('Competitor pricing analysis');
+                        notify(`Detailed analysis opened for ${competitor.competitorName}.`);
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    >
                       View Detailed Analysis
                     </button>
-                    <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    <button
+                      onClick={() => {
+                        setActiveTab('alerts');
+                        notify(`Price alerts focused for ${competitor.competitorName}.`);
+                      }}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    >
                       Set Price Alerts
                     </button>
                   </div>
@@ -577,7 +714,12 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Seasonal Market Insights</h3>
             
             <div className="grid gap-6">
-              {seasonalInsights.map((insight, index) => (
+              {(seasonalInsights ?? []).length === 0 && (
+                <div className="rounded-lg border border-dashed border-gray-200 p-6 text-sm text-gray-600">
+                  No seasonal insights available yet.
+                </div>
+              )}
+              {(seasonalInsights ?? []).map((insight, index) => (
                 <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="font-semibold text-gray-900 text-lg">{insight.period}</h4>
@@ -656,7 +798,10 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   <div>✓ Seasonal recommendations</div>
                   <div>✓ Cost optimization tips</div>
                 </div>
-                <button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-md font-medium transition-colors">
+                <button
+                  onClick={generateWeeklyReport}
+                  className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-md font-medium transition-colors"
+                >
                   Generate Weekly Report
                 </button>
               </div>
@@ -667,14 +812,20 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   Create custom reports focusing on specific items, competitors, or time periods that matter to your business.
                 </p>
                 <div className="space-y-3">
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option>Select report type</option>
+                  <select
+                    value={customReportType}
+                    onChange={(e) => setCustomReportType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
                     <option>Competitor pricing analysis</option>
                     <option>Seasonal trend forecast</option>
                     <option>Cost optimization report</option>
                     <option>Market opportunity analysis</option>
                   </select>
-                  <button className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md font-medium transition-colors">
+                  <button
+                    onClick={generateCustomReport}
+                    className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md font-medium transition-colors"
+                  >
                     Create Custom Report
                   </button>
                 </div>
@@ -685,38 +836,190 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h4 className="font-semibold text-gray-800 mb-4">Report History</h4>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">Weekly Market Summary - Dec 2024</div>
-                    <div className="text-sm text-gray-500">Generated 3 days ago</div>
+                {reportHistoryList.map((report) => (
+                  <div key={report._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-gray-900">{report.title}</div>
+                      <div className="text-sm text-gray-500">
+                        Generated {new Date(report.generatedAt).toLocaleDateString()} • {report.type}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        downloadReport(`${report.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.txt`, report.content);
+                        notify(`${report.title} downloaded.`);
+                      }}
+                      className="text-indigo-600 hover:text-indigo-800 font-medium text-sm"
+                    >
+                      Download
+                    </button>
                   </div>
-                  <button className="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
-                    Download
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">Competitor Analysis - Mumbai Region</div>
-                    <div className="text-sm text-gray-500">Generated 1 week ago</div>
-                  </div>
-                  <button className="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
-                    Download
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-gray-900">Seasonal Forecast - Winter 2024</div>
-                    <div className="text-sm text-gray-500">Generated 2 weeks ago</div>
-                  </div>
-                  <button className="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
-                    Download
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {showAlertPreferences && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">Alert Preferences</h3>
+                <button
+                  onClick={() => setShowAlertPreferences(false)}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-sm text-gray-600">
+                Alerts are currently configured for the <span className="font-medium">{timeframe}</span> timeframe in {location.city}.
+              </p>
+              <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
+                <li>Notify on price increase above 8%</li>
+                <li>Notify on price decrease above 5%</li>
+                <li>Prioritize alerts for frequently purchased categories</li>
+              </ul>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowAlertPreferences(false);
+                    notify('Alert preferences saved.');
+                  }}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                >
+                  Save Preferences
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedAlert && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">{selectedAlert.itemName} Alert Details</h3>
+                <button
+                  onClick={() => setSelectedAlert(null)}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-sm text-gray-700">{selectedAlert.message}</p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-gray-500">Current Price</div>
+                  <div className="font-semibold">₹{selectedAlert.currentPrice}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Previous Price</div>
+                  <div className="font-semibold">₹{selectedAlert.previousPrice}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Change</div>
+                  <div className={`font-semibold ${selectedAlert.changePercent > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    {selectedAlert.changePercent > 0 ? '+' : ''}{selectedAlert.changePercent.toFixed(1)}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Time</div>
+                  <div className="font-semibold">{selectedAlert.timestamp.toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setSelectedAlert(null)}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCompetitorCreator && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">Add Competitor</h3>
+                <button
+                  onClick={() => setShowCompetitorCreator(false)}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Competitor Name</label>
+                  <input
+                    type="text"
+                    value={newCompetitor.competitorName}
+                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, competitorName: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                  <input
+                    type="text"
+                    value={newCompetitor.businessType}
+                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, businessType: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <input
+                    type="text"
+                    value={newCompetitor.location}
+                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="e.g. 1.2 km away"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Price Strategy</label>
+                  <select
+                    value={newCompetitor.priceStrategy}
+                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, priceStrategy: e.target.value as CompetitorInsight['priceStrategy'] }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="premium">Premium</option>
+                    <option value="competitive">Competitive</option>
+                    <option value="budget">Budget</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowCompetitorCreator(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={addCompetitor}
+                  className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md"
+                >
+                  Add Competitor
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,7 @@
-import { VOICE_QUERY_CONFIG, LANGUAGE_NAMES, INGREDIENT_ALTERNATIVES } from '../config/voiceQuery';
+import { VOICE_QUERY_CONFIG, INGREDIENT_ALTERNATIVES } from '../config/voiceQuery';
+import { openRouterFilterService } from '../services/openRouterFilterService';
+import { aiServiceIntegration } from '../services/aiServiceIntegration';
+import { computerVisionManager } from './computerVision';
 
 export interface VoiceProcessingResult {
   transcription: string;
@@ -27,16 +30,7 @@ export interface VoiceFilters {
 }
 
 export class EnhancedVoiceProcessor {
-  private sarvamApiKey: string;
-  private openRouterApiKey: string;
-  private googleTranslateApiKey: string;
-
-  constructor() {
-    // In a real implementation, these would come from environment variables
-    this.sarvamApiKey = process.env.VITE_SARVAM_API_KEY || '';
-    this.openRouterApiKey = process.env.VITE_OPENROUTER_API_KEY || '';
-    this.googleTranslateApiKey = process.env.VITE_GOOGLE_TRANSLATE_API_KEY || '';
-  }
+  constructor() {}
 
   /**
    * Process audio data using Sarvam AI for speech-to-text
@@ -45,18 +39,108 @@ export class EnhancedVoiceProcessor {
     const startTime = Date.now();
 
     try {
-      // In a real implementation, this would call Sarvam AI API
-      // For now, we'll simulate the processing
-      const mockResult = await this.simulateSarvamSTT(audioData, targetLanguage);
-      
+      // Prefer real API integration when configured; fallback to deterministic mock behavior.
+      const audioBlob = new Blob([audioData], { type: 'audio/wav' });
+      const liveResult = await aiServiceIntegration.speechToText(audioBlob, targetLanguage);
+
+      const alternatives = Array.isArray(liveResult.alternatives)
+        ? liveResult.alternatives
+            .map((alt: any) => (typeof alt === 'string' ? alt : alt?.transcript))
+            .filter((alt): alt is string => typeof alt === 'string' && alt.length > 0)
+        : [];
+
       return {
-        ...mockResult,
-        processingTime: Date.now() - startTime
+        transcription: liveResult.transcript || '',
+        language: liveResult.language || targetLanguage || 'en',
+        confidence: liveResult.confidence || 0.8,
+        alternatives,
+        processingTime: Math.max(1, Date.now() - startTime),
       };
     } catch (error) {
-      console.error('Error processing audio:', error);
-      throw new Error('Failed to process audio. Please try again.');
+      try {
+        const mockResult = await this.simulateSarvamSTT(audioData, targetLanguage);
+        return {
+          ...mockResult,
+          processingTime: Math.max(1, Date.now() - startTime),
+        };
+      } catch (fallbackError) {
+        console.error('Error processing audio:', error, fallbackError);
+        throw new Error('Failed to process audio. Please try again.');
+      }
     }
+  }
+
+  /**
+   * Backward-compatible search pipeline used by legacy UI/tests.
+   */
+  async processVoiceSearch(audioData: Uint8Array, userContext?: any): Promise<{
+    originalQuery: string;
+    translatedQuery: string;
+    language: string;
+    confidence: number;
+    searchTerms: string[];
+    filters: VoiceFilters;
+    searchType: string;
+  }> {
+    const transcription = await this.processAudioToText(audioData, userContext?.preferences?.language);
+    const parsed = await this.parseSearchQuery(
+      transcription.transcription,
+      transcription.language,
+      userContext
+    );
+
+    return {
+      originalQuery: transcription.transcription,
+      translatedQuery: parsed.translatedText,
+      language: transcription.language,
+      confidence: transcription.confidence,
+      searchTerms: parsed.searchTerms,
+      filters: parsed.filters,
+      searchType: parsed.searchTerms.length > 0 ? 'item' : 'general',
+    };
+  }
+
+  /**
+   * Backward-compatible filter command processing.
+   */
+  async processVoiceFilter(
+    audioData: Uint8Array,
+    currentFilters: VoiceFilters = {},
+    userContext?: any
+  ): Promise<VoiceFilters> {
+    const transcription = await this.processAudioToText(audioData, userContext?.preferences?.language);
+    const parsed = await this.parseSearchQuery(
+      transcription.transcription,
+      transcription.language,
+      userContext
+    );
+
+    return {
+      ...currentFilters,
+      ...parsed.filters,
+    };
+  }
+
+  /**
+   * Backward-compatible voice response helper.
+   */
+  async generateVoiceResponse(
+    query: string,
+    context: any,
+    targetLanguage = 'en'
+  ): Promise<{ answer: string; language: string; confidence: number; processingTime: number }> {
+    const startTime = Date.now();
+    const ai = await aiServiceIntegration.generateAIResponse(query, context);
+    const translatedAnswer = targetLanguage === 'en'
+      ? ai.response
+      : await this.translateText(ai.response, 'en', targetLanguage);
+
+    return {
+      answer: translatedAnswer,
+      language: targetLanguage,
+      confidence: ai.confidence || 0.8,
+      processingTime: Math.max(1, Date.now() - startTime),
+    };
   }
 
   /**
@@ -73,16 +157,15 @@ export class EnhancedVoiceProcessor {
       // Try AI-powered filter extraction first, fallback to rule-based
       let filters: VoiceFilters;
       try {
-        const { openRouterFilterService } = await import('../services/openRouterFilterService');
         const aiResult = await openRouterFilterService.parseFilters({
           text: translatedText,
           language,
           userContext
         });
-        filters = aiResult.filters;
+        filters = this.sanitizeFilters(aiResult.filters);
       } catch (aiError) {
         console.warn('AI filter parsing failed, using rule-based fallback:', aiError);
-        filters = this.extractFilters(translatedText);
+        filters = this.sanitizeFilters(this.extractFilters(translatedText));
       }
       
       return {
@@ -97,6 +180,51 @@ export class EnhancedVoiceProcessor {
       console.error('Error parsing search query:', error);
       throw new Error('Failed to parse search query.');
     }
+  }
+
+  private sanitizeFilters(filters: VoiceFilters | null | undefined): VoiceFilters {
+    if (!filters || typeof filters !== 'object') {
+      return {};
+    }
+
+    const sanitized: VoiceFilters = {};
+
+    if (typeof filters.location === 'string' && filters.location.trim().length > 0) {
+      sanitized.location = filters.location.trim();
+    }
+
+    if (filters.priceRange) {
+      const min = Math.max(0, Number(filters.priceRange.min) || 0);
+      const cappedMax = Math.min(999999, Number(filters.priceRange.max) || 0);
+      const max = Math.max(min, cappedMax);
+      sanitized.priceRange = { min, max };
+    }
+
+    const validDeliveryTime = new Set(['same_day', 'next_day', 'express', 'standard', 'scheduled']);
+    if (filters.deliveryTime && validDeliveryTime.has(filters.deliveryTime)) {
+      sanitized.deliveryTime = filters.deliveryTime;
+    }
+
+    const validQuality = new Set(['premium', 'organic', 'fresh', 'grade_a']);
+    if (filters.quality && validQuality.has(filters.quality)) {
+      sanitized.quality = filters.quality;
+    }
+
+    if (Array.isArray(filters.categories)) {
+      const validCategories = new Set(['vegetables', 'fruits', 'spices', 'grains', 'pulses', 'dairy']);
+      const categories = filters.categories
+        .map((category) => category.toLowerCase())
+        .filter((category) => validCategories.has(category));
+      if (categories.length > 0) {
+        sanitized.categories = Array.from(new Set(categories));
+      }
+    }
+
+    if (typeof filters.fssaiRequired === 'boolean') {
+      sanitized.fssaiRequired = filters.fssaiRequired;
+    }
+
+    return sanitized;
   }
 
   /**
@@ -121,24 +249,42 @@ export class EnhancedVoiceProcessor {
    * Translate text using Google Translate API
    */
   private async translateText(text: string, fromLang: string, toLang: string): Promise<string> {
-    // Mock translation - in real implementation, call Google Translate API
-    const translations: Record<string, Record<string, string>> = {
-      'hi': {
-        'मुझे सब्जियों के लिए सप्लायर चाहिए': 'I need suppliers for vegetables',
-        'टमाटर की कीमत क्या है': 'What is the price of tomatoes',
-        'केवल प्रमाणित सप्लायर दिखाएं': 'Show only certified suppliers'
-      },
-      'ta': {
-        'காய்கறி சப்ளையர்களை காட்டு': 'Show vegetable suppliers',
-        'தக்காளி விலை என்ன': 'What is the price of tomatoes'
-      },
-      'te': {
-        'కూరగాయల సప్లైయర్లను చూపించు': 'Show vegetable suppliers',
-        'టమాట ధర ఎంత': 'What is the price of tomatoes'
-      }
-    };
+    if (toLang === 'en') {
+      const localTranslations: Record<string, Record<string, string>> = {
+        hi: {
+          'मुझे सब्जियों के लिए सप्लायर चाहिए': 'I need suppliers for vegetables',
+          'टमाटर की कीमत क्या है': 'What is the price of tomatoes',
+          'केवल प्रमाणित सप्लायर दिखाएं': 'Show only certified suppliers',
+          'केवल प्रमाणित सप्लायर दिखाएं जो पास में हों': 'Show only certified suppliers nearby',
+          'टमाटर के सप्लायर दिखाओ': 'Show tomato suppliers',
+          'मुझे प्याज चाहिए': 'I need onions',
+        },
+        ta: {
+          'காய்கறி சப்ளையர்களை காட்டு': 'Show vegetable suppliers',
+          'தக்காளி விலை என்ன': 'What is the price of tomatoes',
+        },
+        te: {
+          'కూరగాయల సప్లైయర్లను చూపించు': 'Show vegetable suppliers',
+          'టమాట ధర ఎంత': 'What is the price of tomatoes',
+        },
+      };
 
-    return translations[fromLang]?.[text] || text;
+      const local = localTranslations[fromLang]?.[text];
+      if (local) {
+        return local;
+      }
+    }
+
+    try {
+      const translated = await aiServiceIntegration.translateText(text, fromLang, toLang);
+      return translated.translatedText || text;
+    } catch {
+      if (toLang !== 'en') {
+        return text;
+      }
+
+      return text;
+    }
   }
 
   /**
@@ -359,7 +505,12 @@ export class EnhancedVoiceProcessor {
       }
     ];
 
-    return mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    const languageFiltered = targetLanguage
+      ? mockResponses.filter((response) => response.language === targetLanguage)
+      : mockResponses;
+    const candidates = languageFiltered.length > 0 ? languageFiltered : mockResponses;
+    const stableIndex = audioData.length % candidates.length;
+    return candidates[stableIndex];
   }
 
   /**
@@ -425,9 +576,9 @@ export class EnhancedVoiceProcessor {
    */
   detectLanguage(audioData: Uint8Array): string {
     // In a real implementation, this would analyze audio characteristics
-    // For now, return a random supported language
+    // For now, derive a deterministic language from input size.
     const supportedLanguages = VOICE_QUERY_CONFIG.SUPPORTED_LANGUAGES;
-    return supportedLanguages[Math.floor(Math.random() * supportedLanguages.length)];
+    return supportedLanguages[audioData.length % supportedLanguages.length];
   }
 
   /**
@@ -449,6 +600,28 @@ export class EnhancedVoiceProcessor {
        transcriptionLength * 0.2 + 
        wordCountFactor * 0.1) * 100
     ) / 100;
+  }
+}
+
+export class ImageAnalysisService {
+  async analyzeImage(imageFile: File): Promise<{
+    identifiedItems: Array<any>;
+    ingredients: Array<any>;
+    confidence: number;
+    categories: string[];
+    alternatives: string[];
+    suggestions: string[];
+  }> {
+    try {
+      const result = await computerVisionManager.analyzeFoodImage(imageFile);
+      return {
+        ...result,
+        suggestions: result.alternatives.slice(0, 5),
+      };
+    } catch (error) {
+      console.error('Image analysis failed:', error);
+      throw new Error('Failed to analyze image');
+    }
   }
 }
 

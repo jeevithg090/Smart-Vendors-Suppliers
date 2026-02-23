@@ -3,7 +3,6 @@ import type { ErrorInfo, ReactNode } from 'react';
 import type { SystemError } from '../types/errors';
 import { errorReporting } from '../services/errorReporting';
 import { performanceMonitoring } from '../services/performanceMonitoring';
-import { retryWithBackoff } from '../utils/retry';
 
 interface Props {
   children: ReactNode;
@@ -100,6 +99,17 @@ export class ErrorBoundary extends Component<Props, State> {
     errorReporting.reportError(systemError);
   }
 
+  componentDidUpdate(prevProps: Props) {
+    // Allow recovery when parent rerenders with different children after an error.
+    if (this.state.hasError && prevProps.children !== this.props.children) {
+      this.setState({
+        hasError: false,
+        error: null,
+        errorInfo: null
+      });
+    }
+  }
+
   private categorizeError(error: Error): SystemError['code'] {
     const message = error.message.toLowerCase();
     const stack = error.stack?.toLowerCase() || '';
@@ -140,35 +150,18 @@ export class ErrorBoundary extends Component<Props, State> {
       return;
     }
 
-    // Increment retry count
-    this.setState(prevState => ({
-      retryCount: prevState.retryCount + 1
-    }));
+    const nextRetryCount = this.state.retryCount + 1;
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: nextRetryCount
+    });
 
-    // Use exponential backoff for retries
-    try {
-      await retryWithBackoff(
-        () => Promise.resolve(), // Just a delay
-        1, // Single attempt since we're managing retries here
-        1000 * Math.pow(2, this.state.retryCount) // Exponential backoff
-      );
-
-      // Reset error state
-      this.setState({ 
-        hasError: false, 
-        error: null, 
-        errorInfo: null 
-      });
-
-      // Track successful retry
-      performanceMonitoring.recordMetric('Error Boundary Retry Success', this.state.retryCount, {
-        errorId: this.state.errorId,
-        totalRetries: this.state.retryCount + 1
-      });
-    } catch (retryError) {
-      console.error('Retry failed:', retryError);
-      // The error boundary will catch this and handle it
-    }
+    performanceMonitoring.recordMetric('Error Boundary Retry Success', nextRetryCount, {
+      errorId: this.state.errorId,
+      totalRetries: nextRetryCount
+    });
   };
 
   private handleMaxRetriesReached = () => {

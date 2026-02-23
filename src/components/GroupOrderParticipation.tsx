@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -6,6 +6,8 @@ import type { Id } from '../../convex/_generated/dataModel';
 interface GroupOrderParticipationProps {
   groupOrderId: Id<"groupOrders">;
   vendorId: Id<"vendors">;
+  vendorLocation: string;
+  initialQuantity?: number;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -41,10 +43,12 @@ interface GroupOrder {
 const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
   groupOrderId,
   vendorId,
+  vendorLocation,
+  initialQuantity = 1,
   onSuccess,
   onCancel,
 }) => {
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number>(initialQuantity > 0 ? initialQuantity : 1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
 
@@ -53,8 +57,12 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
 
   // Get group order details
   const groupOrders = useQuery(api.groupOrders.getGroupOrdersByLocation, {
-    location: "Mumbai", // This should be dynamic based on vendor location
+    location: vendorLocation,
   }) as GroupOrder[] | undefined;
+
+  useEffect(() => {
+    setQuantity(initialQuantity > 0 ? initialQuantity : 1);
+  }, [initialQuantity, groupOrderId]);
 
   const groupOrder = groupOrders?.find(order => order._id === groupOrderId);
 
