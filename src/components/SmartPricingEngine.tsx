@@ -25,23 +25,23 @@ export default function SmartPricingEngine({ supplierId }: Props) {
 
   // Get supplier's inventory for pricing analysis
   const inventory = useQuery(api.inventory.getInventoryBySupplier, { supplierId });
-  
+
   const updatePricing = useMutation(api.inventory.updateInventoryItem);
 
   // Mock pricing recommendations based on market data and AI analysis
   const generatePricingRecommendations = (): PricingRecommendation[] => {
     if (!inventory) return [];
 
-    return inventory.map(item => {
+    return inventory.map((item) => {
       const basePrice = item.pricePerUnit;
       const marketVariance = Math.random() * 0.2 - 0.1; // -10% to +10%
       const demandFactor = Math.random() * 0.15; // 0-15% demand adjustment
-      
-      const recommendedPrice = Math.round((basePrice * (1 + marketVariance + demandFactor)) * 100) / 100;
-      const competitorAverage = Math.round((basePrice * (1 + (Math.random() * 0.3 - 0.15))) * 100) / 100;
-      
+
+      const recommendedPrice = Math.round(basePrice * (1 + marketVariance + demandFactor) * 100) / 100;
+      const competitorAverage = Math.round(basePrice * (1 + (Math.random() * 0.3 - 0.15)) * 100) / 100;
+
       const profitMargin = ((recommendedPrice - basePrice) / basePrice) * 100;
-      const profitability: 'high' | 'medium' | 'low' = 
+      const profitability: 'high' | 'medium' | 'low' =
         profitMargin > 10 ? 'high' : profitMargin > 5 ? 'medium' : 'low';
 
       let reasoning = '';
@@ -61,7 +61,7 @@ export default function SmartPricingEngine({ supplierId }: Props) {
         expectedDemand: Math.round(item.currentStock * (0.7 + Math.random() * 0.6)),
         competitorAverage,
         profitability,
-        reasoning
+        reasoning,
       };
     });
   };
@@ -72,20 +72,19 @@ export default function SmartPricingEngine({ supplierId }: Props) {
     try {
       await updatePricing({
         id: rec.itemId as Id<'inventory'>,
-        pricePerUnit: rec.recommendedPrice
+        pricePerUnit: rec.recommendedPrice,
       });
-      setAppliedUpdates(prev => new Set([...prev, rec.itemId]));
+      setAppliedUpdates((prev) => new Set([...prev, rec.itemId]));
     } catch (error) {
       console.error('Error updating pricing:', error);
     }
   };
 
   const applyAllRecommendations = async () => {
-    const updates = recommendations.filter(rec => 
-      rec.recommendedPrice !== rec.currentPrice && 
-      !appliedUpdates.has(rec.itemId)
+    const updates = recommendations.filter(
+      (rec) => rec.recommendedPrice !== rec.currentPrice && !appliedUpdates.has(rec.itemId),
     );
-    
+
     for (const rec of updates) {
       await handleApplyPricing(rec);
     }
@@ -122,7 +121,7 @@ export default function SmartPricingEngine({ supplierId }: Props) {
               <option value="monthly">Monthly</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <label className="flex items-center space-x-2">
               <input
@@ -133,7 +132,7 @@ export default function SmartPricingEngine({ supplierId }: Props) {
               />
               <span className="text-sm text-gray-700">Auto-update pricing</span>
             </label>
-            
+
             <button
               onClick={applyAllRecommendations}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium transition-colors"
@@ -147,13 +146,13 @@ export default function SmartPricingEngine({ supplierId }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-green-50 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-green-600">
-              {recommendations.filter(r => r.profitability === 'high').length}
+              {recommendations.filter((r) => r.profitability === 'high').length}
             </div>
             <div className="text-sm text-green-700">High Profit Opportunities</div>
           </div>
           <div className="bg-yellow-50 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-yellow-600">
-              {recommendations.filter(r => r.recommendedPrice > r.currentPrice).length}
+              {recommendations.filter((r) => r.recommendedPrice > r.currentPrice).length}
             </div>
             <div className="text-sm text-yellow-700">Price Increase Suggested</div>
           </div>
@@ -165,7 +164,9 @@ export default function SmartPricingEngine({ supplierId }: Props) {
           </div>
           <div className="bg-purple-50 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-purple-600">
-              {Math.round(recommendations.reduce((sum, r) => sum + r.expectedDemand, 0) / recommendations.length)}
+              {Math.round(
+                recommendations.reduce((sum, r) => sum + r.expectedDemand, 0) / recommendations.length,
+              )}
             </div>
             <div className="text-sm text-purple-700">Avg Expected Demand</div>
           </div>
@@ -176,64 +177,78 @@ export default function SmartPricingEngine({ supplierId }: Props) {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800">Pricing Recommendations</h3>
-          <p className="text-sm text-gray-600 mt-1">AI-analyzed optimal pricing based on market conditions and demand</p>
+          <p className="text-sm text-gray-600 mt-1">
+            AI-analyzed optimal pricing based on market conditions and demand
+          </p>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recommended</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Market Avg</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expected Demand</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profitability</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Item
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Current Price
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Recommended
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Market Avg
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Expected Demand
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Profitability
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {recommendations.map((rec) => {
                 const priceChange = rec.recommendedPrice - rec.currentPrice;
                 const isApplied = appliedUpdates.has(rec.itemId);
-                
+
                 return (
                   <tr key={rec.itemId} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">{rec.itemName}</div>
                       <div className="text-sm text-gray-500 max-w-xs">{rec.reasoning}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      ₹{rec.currentPrice.toFixed(2)}
-                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">₹{rec.currentPrice.toFixed(2)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <span className="text-sm font-medium text-gray-900">
                           ₹{rec.recommendedPrice.toFixed(2)}
                         </span>
                         {priceChange !== 0 && (
-                          <span className={`ml-2 text-xs px-2 py-1 rounded-full ${
-                            priceChange > 0 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
+                          <span
+                            className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                              priceChange > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}
+                          >
                             {priceChange > 0 ? '+' : ''}₹{priceChange.toFixed(2)}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      ₹{rec.competitorAverage.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {rec.expectedDemand} units
-                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">₹{rec.competitorAverage.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{rec.expectedDemand} units</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        rec.profitability === 'high' ? 'bg-green-100 text-green-800' :
-                        rec.profitability === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          rec.profitability === 'high'
+                            ? 'bg-green-100 text-green-800'
+                            : rec.profitability === 'medium'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
                         {rec.profitability} profit
                       </span>
                     </td>
@@ -269,15 +284,15 @@ export default function SmartPricingEngine({ supplierId }: Props) {
           <div className="bg-blue-50 p-4 rounded-lg">
             <h4 className="font-medium text-blue-800 mb-2">📈 Trending Up</h4>
             <p className="text-sm text-blue-700">
-              Vegetable prices showing 8% increase this week due to seasonal demand. 
-              Consider increasing prices for tomatoes, onions, and leafy greens.
+              Vegetable prices showing 8% increase this week due to seasonal demand. Consider increasing
+              prices for tomatoes, onions, and leafy greens.
             </p>
           </div>
           <div className="bg-orange-50 p-4 rounded-lg">
             <h4 className="font-medium text-orange-800 mb-2">⚠️ Price Alert</h4>
             <p className="text-sm text-orange-700">
-              Rice and wheat prices expected to drop 5% next week due to new supply arrivals. 
-              Consider current inventory levels.
+              Rice and wheat prices expected to drop 5% next week due to new supply arrivals. Consider current
+              inventory levels.
             </p>
           </div>
         </div>

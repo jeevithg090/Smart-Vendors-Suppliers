@@ -4,7 +4,7 @@ import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface OrderConfirmationProps {
-  orderId: Id<"orders">;
+  orderId: Id<'orders'>;
   onClose: () => void;
   onTrackOrder: () => void;
 }
@@ -12,7 +12,7 @@ interface OrderConfirmationProps {
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'INR'
+    currency: 'INR',
   }).format(amount);
 };
 
@@ -22,15 +22,11 @@ const formatDate = (timestamp: number) => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
-export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({
-  orderId,
-  onClose,
-  onTrackOrder
-}) => {
+export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ orderId, onClose, onTrackOrder }) => {
   const order = useQuery(api.orders.getOrderDetails, { orderId });
 
   if (!order) {

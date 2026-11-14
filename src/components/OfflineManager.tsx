@@ -24,9 +24,9 @@ export function OfflineManager({ children }: OfflineManagerProps) {
 
     try {
       const startTime = performance.now();
-      const response = await fetch('/api/health', { 
+      const response = await fetch('/api/health', {
         method: 'HEAD',
-        cache: 'no-cache'
+        cache: 'no-cache',
       });
       const endTime = performance.now();
       const latency = endTime - startTime;
@@ -47,14 +47,14 @@ export function OfflineManager({ children }: OfflineManagerProps) {
     const handleOnline = async () => {
       setIsOnline(true);
       setLastSyncTime(new Date());
-      
+
       // Check connection quality when coming back online
       await checkConnectionQuality();
-      
+
       // Show success message when back online
       if (queueStatus.pending > 0) {
         showNotification('Back online! Processing pending actions...', 'success');
-        
+
         // Track offline duration
         const offlineStart = localStorage.getItem('offlineStartTime');
         if (offlineStart) {
@@ -64,16 +64,19 @@ export function OfflineManager({ children }: OfflineManagerProps) {
         }
       }
     };
-    
+
     const handleOffline = () => {
       setIsOnline(false);
       setConnectionQuality('offline');
       localStorage.setItem('offlineStartTime', Date.now().toString());
-      showNotification('You\'re offline. Actions will be saved and synced when you\'re back online.', 'warning');
-      
+      showNotification(
+        "You're offline. Actions will be saved and synced when you're back online.",
+        'warning',
+      );
+
       // Track offline event
       performanceMonitoring.recordMetric('Offline Event', Date.now(), {
-        pendingOperations: queueStatus.pending
+        pendingOperations: queueStatus.pending,
       });
     };
 
@@ -106,11 +109,11 @@ export function OfflineManager({ children }: OfflineManagerProps) {
   const showNotification = (message: string, type: 'success' | 'warning' | 'error') => {
     // This would integrate with your notification system
     console.log(`${type.toUpperCase()}: ${message}`);
-    
+
     // Track notification events
     performanceMonitoring.recordMetric('Offline Notification', Date.now(), {
       type,
-      message: message.substring(0, 50) // Truncate for privacy
+      message: message.substring(0, 50), // Truncate for privacy
     });
   };
 
@@ -137,10 +140,10 @@ export function OfflineManager({ children }: OfflineManagerProps) {
   return (
     <>
       {children}
-      
+
       {/* Offline indicator */}
       {!isOnline && (
-        <div 
+        <div
           className="fixed top-0 left-0 right-0 bg-yellow-500 text-white px-4 py-2 text-center text-sm font-medium z-50 shadow-lg"
           data-testid="offline-indicator"
           role="alert"
@@ -148,7 +151,12 @@ export function OfflineManager({ children }: OfflineManagerProps) {
         >
           <div className="flex items-center justify-center space-x-2">
             <svg className="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
             <span>You're offline</span>
             <span className="text-yellow-200">•</span>
@@ -159,7 +167,7 @@ export function OfflineManager({ children }: OfflineManagerProps) {
 
       {/* Queue status indicator */}
       {queueStatus.pending > 0 && (
-        <div 
+        <div
           className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50"
           data-testid="pending-actions"
           role="status"
@@ -168,60 +176,63 @@ export function OfflineManager({ children }: OfflineManagerProps) {
           <div className="flex items-center space-x-2">
             {queueStatus.processing ? (
               <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
             ) : (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             )}
             <span className="text-sm">
-              {queueStatus.processing ? 'Syncing...' : `${queueStatus.pending} action${queueStatus.pending !== 1 ? 's' : ''} pending`}
+              {queueStatus.processing
+                ? 'Syncing...'
+                : `${queueStatus.pending} action${queueStatus.pending !== 1 ? 's' : ''} pending`}
             </span>
           </div>
         </div>
       )}
 
       {/* Enhanced Connection Status Indicator */}
-      <div 
+      <div
         className={`fixed top-4 right-4 flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium z-50 transition-all duration-300 ${
-          connectionQuality === 'good' 
-            ? 'bg-green-100 text-green-800 border border-green-200' 
+          connectionQuality === 'good'
+            ? 'bg-green-100 text-green-800 border border-green-200'
             : connectionQuality === 'poor'
-            ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-            : 'bg-red-100 text-red-800 border border-red-200'
+              ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+              : 'bg-red-100 text-red-800 border border-red-200'
         }`}
         title={
-          connectionQuality === 'good' 
-            ? 'Good connection' 
+          connectionQuality === 'good'
+            ? 'Good connection'
             : connectionQuality === 'poor'
-            ? 'Poor connection'
-            : 'Offline'
+              ? 'Poor connection'
+              : 'Offline'
         }
         data-testid="connection-status"
       >
-        <div 
+        <div
           className={`w-2 h-2 rounded-full ${
-            connectionQuality === 'good' 
-              ? 'bg-green-500' 
+            connectionQuality === 'good'
+              ? 'bg-green-500'
               : connectionQuality === 'poor'
-              ? 'bg-yellow-500 animate-pulse'
-              : 'bg-red-500'
+                ? 'bg-yellow-500 animate-pulse'
+                : 'bg-red-500'
           }`}
         />
         <span>
-          {connectionQuality === 'good' 
-            ? 'Online' 
-            : connectionQuality === 'poor'
-            ? 'Slow'
-            : 'Offline'
-          }
+          {connectionQuality === 'good' ? 'Online' : connectionQuality === 'poor' ? 'Slow' : 'Offline'}
         </span>
-        {lastSyncTime && (
-          <span className="text-xs opacity-75">
-            {lastSyncTime.toLocaleTimeString()}
-          </span>
-        )}
+        {lastSyncTime && <span className="text-xs opacity-75">{lastSyncTime.toLocaleTimeString()}</span>}
       </div>
     </>
   );

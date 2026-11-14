@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface LoyaltyTier {
@@ -55,7 +54,7 @@ export default function SupplierLoyalty(_props: Props) {
       color: 'text-amber-600 bg-amber-100',
       icon: '🥉',
       commissionRate: 2.5,
-      prioritySupport: false
+      prioritySupport: false,
     },
     {
       name: 'Silver',
@@ -64,26 +63,37 @@ export default function SupplierLoyalty(_props: Props) {
       color: 'text-gray-600 bg-gray-100',
       icon: '🥈',
       commissionRate: 2.0,
-      prioritySupport: false
+      prioritySupport: false,
     },
     {
       name: 'Gold',
       minOrders: 25,
-      benefits: ['Dedicated account manager', '10% bulk discount', 'Free quality certificates', 'Priority delivery'],
+      benefits: [
+        'Dedicated account manager',
+        '10% bulk discount',
+        'Free quality certificates',
+        'Priority delivery',
+      ],
       color: 'text-yellow-600 bg-yellow-100',
       icon: '🥇',
       commissionRate: 1.5,
-      prioritySupport: true
+      prioritySupport: true,
     },
     {
       name: 'Platinum',
       minOrders: 50,
-      benefits: ['Personal relationship manager', '15% bulk discount', 'Custom pricing', 'Zero commission fees', 'Premium features'],
+      benefits: [
+        'Personal relationship manager',
+        '15% bulk discount',
+        'Custom pricing',
+        'Zero commission fees',
+        'Premium features',
+      ],
       color: 'text-purple-600 bg-purple-100',
       icon: '💎',
       commissionRate: 0,
-      prioritySupport: true
-    }
+      prioritySupport: true,
+    },
   ];
 
   // Mock vendor loyalty data
@@ -91,7 +101,7 @@ export default function SupplierLoyalty(_props: Props) {
     {
       vendorId: '1',
       vendorName: 'Raj Kumar',
-      businessName: 'Raj\'s Street Kitchen',
+      businessName: "Raj's Street Kitchen",
       currentTier: 'Gold',
       totalOrders: 28,
       totalSpent: 145000,
@@ -99,7 +109,7 @@ export default function SupplierLoyalty(_props: Props) {
       joinDate: new Date('2024-01-15'),
       lastOrder: new Date('2024-12-20'),
       avgOrderValue: 5178,
-      growthRate: 15
+      growthRate: 15,
     },
     {
       vendorId: '2',
@@ -112,12 +122,12 @@ export default function SupplierLoyalty(_props: Props) {
       joinDate: new Date('2024-03-10'),
       lastOrder: new Date('2024-12-18'),
       avgOrderValue: 5200,
-      growthRate: 22
+      growthRate: 22,
     },
     {
       vendorId: '3',
       vendorName: 'Mohammed Ali',
-      businessName: 'Ali\'s Biryani Corner',
+      businessName: "Ali's Biryani Corner",
       currentTier: 'Platinum',
       totalOrders: 67,
       totalSpent: 320000,
@@ -125,8 +135,8 @@ export default function SupplierLoyalty(_props: Props) {
       joinDate: new Date('2023-11-20'),
       lastOrder: new Date('2024-12-21'),
       avgOrderValue: 4776,
-      growthRate: 8
-    }
+      growthRate: 8,
+    },
   ];
 
   const availableRewards: LoyaltyReward[] = [
@@ -137,7 +147,7 @@ export default function SupplierLoyalty(_props: Props) {
       pointsCost: 500,
       type: 'discount',
       available: true,
-      popularity: 85
+      popularity: 85,
     },
     {
       id: '2',
@@ -146,7 +156,7 @@ export default function SupplierLoyalty(_props: Props) {
       pointsCost: 1000,
       type: 'feature',
       available: true,
-      popularity: 70
+      popularity: 70,
     },
     {
       id: '3',
@@ -155,7 +165,7 @@ export default function SupplierLoyalty(_props: Props) {
       pointsCost: 300,
       type: 'priority',
       available: true,
-      popularity: 92
+      popularity: 92,
     },
     {
       id: '4',
@@ -164,19 +174,20 @@ export default function SupplierLoyalty(_props: Props) {
       pointsCost: 2000,
       type: 'cashback',
       available: true,
-      popularity: 95
-    }
+      popularity: 95,
+    },
   ];
 
   const getNextTier = (currentOrders: number): LoyaltyTier | null => {
-    return loyaltyTiers.find(tier => tier.minOrders > currentOrders) || null;
+    return loyaltyTiers.find((tier) => tier.minOrders > currentOrders) || null;
   };
 
   const loyaltyStats = {
     totalLoyalVendors: loyalVendors.length,
     totalPointsAwarded: loyalVendors.reduce((sum, vendor) => sum + vendor.loyaltyPoints, 0),
     avgRetentionRate: 87,
-    topTierVendors: loyalVendors.filter(v => v.currentTier === 'Gold' || v.currentTier === 'Platinum').length
+    topTierVendors: loyalVendors.filter((v) => v.currentTier === 'Gold' || v.currentTier === 'Platinum')
+      .length,
   };
 
   return (
@@ -203,8 +214,8 @@ export default function SupplierLoyalty(_props: Props) {
               { id: 'overview', label: 'Program Overview', icon: '📊' },
               { id: 'vendors', label: 'Loyal Vendors', icon: '👥' },
               { id: 'rewards', label: 'Rewards Catalog', icon: '🎁' },
-              { id: 'analytics', label: 'Analytics', icon: '📈' }
-            ].map(tab => (
+              { id: 'analytics', label: 'Analytics', icon: '📈' },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -228,24 +239,25 @@ export default function SupplierLoyalty(_props: Props) {
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Loyalty Tiers</h3>
               <div className="grid md:grid-cols-4 gap-4">
-                {loyaltyTiers.map(tier => (
-                  <div key={tier.name} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                {loyaltyTiers.map((tier) => (
+                  <div
+                    key={tier.name}
+                    className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
                     <div className="text-center mb-4">
                       <div className="text-3xl mb-2">{tier.icon}</div>
                       <h4 className={`font-semibold text-lg px-3 py-1 rounded-full ${tier.color}`}>
                         {tier.name}
                       </h4>
                     </div>
-                    
+
                     <div className="text-center mb-4">
                       <div className="text-sm text-gray-600 mb-2">
                         {tier.minOrders === 0 ? 'Starting tier' : `${tier.minOrders}+ orders`}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        Commission: {tier.commissionRate}%
-                      </div>
+                      <div className="text-xs text-gray-500">Commission: {tier.commissionRate}%</div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       {tier.benefits.map((benefit, idx) => (
                         <div key={idx} className="flex items-start text-xs">
@@ -284,7 +296,9 @@ export default function SupplierLoyalty(_props: Props) {
               <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-purple-600">{loyaltyStats.totalPointsAwarded.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-purple-600">
+                      {loyaltyStats.totalPointsAwarded.toLocaleString()}
+                    </div>
                     <div className="text-purple-700 text-sm">Points Awarded</div>
                   </div>
                   <div className="text-3xl text-purple-500">🏆</div>
@@ -311,23 +325,29 @@ export default function SupplierLoyalty(_props: Props) {
                     <span className="text-2xl text-white">📦</span>
                   </div>
                   <h4 className="font-medium text-gray-900 mb-2">Vendors Place Orders</h4>
-                  <p className="text-sm text-gray-600">Every order earns loyalty points and contributes to tier progression</p>
+                  <p className="text-sm text-gray-600">
+                    Every order earns loyalty points and contributes to tier progression
+                  </p>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-2xl text-white">🏆</span>
                   </div>
                   <h4 className="font-medium text-gray-900 mb-2">Tier Progression</h4>
-                  <p className="text-sm text-gray-600">Vendors automatically advance tiers based on order frequency and value</p>
+                  <p className="text-sm text-gray-600">
+                    Vendors automatically advance tiers based on order frequency and value
+                  </p>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-2xl text-white">🎁</span>
                   </div>
                   <h4 className="font-medium text-gray-900 mb-2">Unlock Rewards</h4>
-                  <p className="text-sm text-gray-600">Higher tiers unlock better benefits, lower commissions, and exclusive perks</p>
+                  <p className="text-sm text-gray-600">
+                    Higher tiers unlock better benefits, lower commissions, and exclusive perks
+                  </p>
                 </div>
               </div>
             </div>
@@ -345,8 +365,10 @@ export default function SupplierLoyalty(_props: Props) {
                 className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               >
                 <option value="all">All Tiers</option>
-                {loyaltyTiers.map(tier => (
-                  <option key={tier.name} value={tier.name}>{tier.name}</option>
+                {loyaltyTiers.map((tier) => (
+                  <option key={tier.name} value={tier.name}>
+                    {tier.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -355,22 +377,36 @@ export default function SupplierLoyalty(_props: Props) {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Tier</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loyalty Points</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Growth</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vendor
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Current Tier
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Orders
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total Spent
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Loyalty Points
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Growth
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loyalVendors
-                    .filter(vendor => selectedTier === 'all' || vendor.currentTier === selectedTier)
-                    .map(vendor => {
-                      const currentTier = loyaltyTiers.find(t => t.name === vendor.currentTier)!;
+                    .filter((vendor) => selectedTier === 'all' || vendor.currentTier === selectedTier)
+                    .map((vendor) => {
+                      const currentTier = loyaltyTiers.find((t) => t.name === vendor.currentTier)!;
                       const nextTier = getNextTier(vendor.totalOrders);
-                      
+
                       return (
                         <tr key={vendor.vendorId} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -380,7 +416,9 @@ export default function SupplierLoyalty(_props: Props) {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${currentTier.color}`}>
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${currentTier.color}`}
+                            >
                               {currentTier.icon} {vendor.currentTier}
                             </span>
                           </td>
@@ -393,15 +431,24 @@ export default function SupplierLoyalty(_props: Props) {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">₹{vendor.totalSpent.toLocaleString()}</div>
-                            <div className="text-xs text-gray-500">Avg: ₹{vendor.avgOrderValue.toLocaleString()}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              ₹{vendor.totalSpent.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Avg: ₹{vendor.avgOrderValue.toLocaleString()}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-purple-600">{vendor.loyaltyPoints.toLocaleString()}</div>
+                            <div className="text-sm font-medium text-purple-600">
+                              {vendor.loyaltyPoints.toLocaleString()}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className={`text-sm font-medium ${vendor.growthRate > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {vendor.growthRate > 0 ? '+' : ''}{vendor.growthRate}%
+                            <div
+                              className={`text-sm font-medium ${vendor.growthRate > 0 ? 'text-green-600' : 'text-red-600'}`}
+                            >
+                              {vendor.growthRate > 0 ? '+' : ''}
+                              {vendor.growthRate}%
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -429,50 +476,59 @@ export default function SupplierLoyalty(_props: Props) {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {availableRewards.map(reward => (
-                <div key={reward.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+              {availableRewards.map((reward) => (
+                <div
+                  key={reward.id}
+                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h4 className="font-semibold text-gray-900 mb-2">{reward.name}</h4>
                       <p className="text-sm text-gray-600">{reward.description}</p>
                     </div>
                     <span className="text-2xl">
-                      {reward.type === 'discount' ? '💰' :
-                       reward.type === 'priority' ? '⚡' :
-                       reward.type === 'feature' ? '⭐' : '🎁'}
+                      {reward.type === 'discount'
+                        ? '💰'
+                        : reward.type === 'priority'
+                          ? '⚡'
+                          : reward.type === 'feature'
+                            ? '⭐'
+                            : '🎁'}
                     </span>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Cost:</span>
                       <span className="font-semibold text-purple-600">{reward.pointsCost} points</span>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Popularity:</span>
                       <div className="flex items-center">
                         <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                          <div 
-                            className="bg-purple-500 h-2 rounded-full" 
+                          <div
+                            className="bg-purple-500 h-2 rounded-full"
                             style={{ width: `${reward.popularity}%` }}
                           ></div>
                         </div>
                         <span className="text-xs text-gray-500">{reward.popularity}%</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Status:</span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        reward.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          reward.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}
+                      >
                         {reward.available ? 'Available' : 'Unavailable'}
                       </span>
                     </div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     className="w-full mt-4 bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-md font-medium transition-colors disabled:opacity-50"
                     disabled={!reward.available}
                   >
@@ -488,16 +544,16 @@ export default function SupplierLoyalty(_props: Props) {
         {activeTab === 'analytics' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Loyalty Program Analytics</h3>
-            
+
             {/* Key Metrics */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-4">Member Distribution</h4>
                 <div className="space-y-3">
-                  {loyaltyTiers.map(tier => {
-                    const count = loyalVendors.filter(v => v.currentTier === tier.name).length;
+                  {loyaltyTiers.map((tier) => {
+                    const count = loyalVendors.filter((v) => v.currentTier === tier.name).length;
                     const percentage = (count / loyalVendors.length) * 100;
-                    
+
                     return (
                       <div key={tier.name} className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -535,7 +591,7 @@ export default function SupplierLoyalty(_props: Props) {
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-4">Top Performing Rewards</h4>
                 <div className="space-y-3">
-                  {availableRewards.slice(0, 3).map(reward => (
+                  {availableRewards.slice(0, 3).map((reward) => (
                     <div key={reward.id} className="flex justify-between items-center">
                       <div className="text-sm font-medium truncate">{reward.name}</div>
                       <div className="text-sm text-purple-600">{reward.popularity}%</div>
@@ -552,7 +608,9 @@ export default function SupplierLoyalty(_props: Props) {
                 <div className="text-center">
                   <div className="text-4xl mb-4">📊</div>
                   <p className="text-gray-600">Revenue impact chart would appear here</p>
-                  <p className="text-sm text-gray-500 mt-2">Showing 23% increase in revenue from loyalty members</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Showing 23% increase in revenue from loyalty members
+                  </p>
                 </div>
               </div>
             </div>

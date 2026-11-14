@@ -26,7 +26,7 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
     estimatedDelivery: '',
     isThirdParty: false,
     thirdPartyProvider: '',
-    notes: ''
+    notes: '',
   });
 
   // Queries
@@ -37,7 +37,7 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
 
   const handleAddTracking = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // For now, just mark as shipped with notes containing tracking info
       const trackingNotes = `Tracking: ${trackingForm.trackingNumber} | Carrier: ${trackingForm.carrier}${
@@ -47,7 +47,7 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
       await updateOrderStatus({
         orderId,
         status: 'shipped',
-        notes: trackingNotes
+        notes: trackingNotes,
       });
 
       // Reset form and close modal
@@ -57,7 +57,7 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
         estimatedDelivery: '',
         isThirdParty: false,
         thirdPartyProvider: '',
-        notes: ''
+        notes: '',
       });
       setShowAddTracking(false);
     } catch (error) {
@@ -69,7 +69,7 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
     try {
       await updateOrderStatus({
         orderId,
-        status: newStatus
+        status: newStatus,
       });
     } catch (error) {
       console.error('Error updating status:', error);
@@ -82,12 +82,12 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {
-      'pending': 'bg-yellow-100 text-yellow-800',
-      'confirmed': 'bg-blue-100 text-blue-800',
-      'processing': 'bg-purple-100 text-purple-800',
-      'shipped': 'bg-orange-100 text-orange-800',
-      'delivered': 'bg-green-100 text-green-800',
-      'cancelled': 'bg-red-100 text-red-800'
+      pending: 'bg-yellow-100 text-yellow-800',
+      confirmed: 'bg-blue-100 text-blue-800',
+      processing: 'bg-purple-100 text-purple-800',
+      shipped: 'bg-orange-100 text-orange-800',
+      delivered: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -106,38 +106,39 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
       timestamp: orderDetails.createdAt,
       title: 'Order Placed',
       description: 'Order has been placed and is awaiting confirmation',
-      completed: true
+      completed: true,
     },
     {
       status: 'confirmed',
       timestamp: orderDetails.updatedAt,
       title: 'Order Confirmed',
       description: 'Supplier has confirmed the order',
-      completed: ['confirmed', 'processing', 'shipped', 'delivered'].includes(orderDetails.status)
+      completed: ['confirmed', 'processing', 'shipped', 'delivered'].includes(orderDetails.status),
     },
     {
       status: 'processing',
       timestamp: orderDetails.updatedAt,
       title: 'Order Processing',
       description: 'Order is being prepared',
-      completed: ['processing', 'shipped', 'delivered'].includes(orderDetails.status)
+      completed: ['processing', 'shipped', 'delivered'].includes(orderDetails.status),
     },
     {
       status: 'shipped',
       timestamp: orderDetails.updatedAt,
       title: 'Order Shipped',
-      description: orderDetails.notes && orderDetails.notes.includes('Tracking:') 
-        ? orderDetails.notes 
-        : 'Order has been shipped',
-      completed: ['shipped', 'delivered'].includes(orderDetails.status)
+      description:
+        orderDetails.notes && orderDetails.notes.includes('Tracking:')
+          ? orderDetails.notes
+          : 'Order has been shipped',
+      completed: ['shipped', 'delivered'].includes(orderDetails.status),
     },
     {
       status: 'delivered',
       timestamp: orderDetails.actualDelivery || orderDetails.updatedAt,
       title: 'Order Delivered',
       description: 'Order has been successfully delivered',
-      completed: orderDetails.status === 'delivered'
-    }
+      completed: orderDetails.status === 'delivered',
+    },
   ];
 
   return (
@@ -150,14 +151,13 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
             <p className="text-sm text-gray-600">Order #{orderDetails._id.slice(-8)}</p>
           </div>
           <div className="flex items-center space-x-4">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(orderDetails.status)}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(orderDetails.status)}`}
+            >
               {orderDetails.status.charAt(0).toUpperCase() + orderDetails.status.slice(1)}
             </span>
             {onClose && (
-              <button
-                onClick={onClose}
-                className="text-gray-500 hover:text-gray-800 text-xl"
-              >
+              <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-xl">
                 ✕
               </button>
             )}
@@ -259,9 +259,11 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
             <div className="space-y-4">
               {timeline.map((event, index) => (
                 <div key={index} className="relative flex items-start">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium z-10 ${
-                    event.completed ? 'bg-green-500' : 'bg-gray-300'
-                  }`}>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium z-10 ${
+                      event.completed ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                  >
                     {event.completed ? '✓' : index + 1}
                   </div>
                   <div className="ml-4 flex-1">
@@ -284,52 +286,54 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
         </div>
 
         {/* Action Buttons for Suppliers */}
-        {userRole === 'supplier' && orderDetails.status !== 'delivered' && orderDetails.status !== 'cancelled' && (
-          <div className="border-t pt-6">
-            <div className="flex space-x-4 mb-4">
-              {orderDetails.status === 'confirmed' && (
-                <>
+        {userRole === 'supplier' &&
+          orderDetails.status !== 'delivered' &&
+          orderDetails.status !== 'cancelled' && (
+            <div className="border-t pt-6">
+              <div className="flex space-x-4 mb-4">
+                {orderDetails.status === 'confirmed' && (
+                  <>
+                    <button
+                      onClick={() => handleStatusUpdate('processing')}
+                      className="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                    >
+                      Mark as Processing
+                    </button>
+                    <button
+                      onClick={() => setShowAddTracking(true)}
+                      className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Add Tracking & Ship
+                    </button>
+                  </>
+                )}
+                {orderDetails.status === 'processing' && (
+                  <>
+                    <button
+                      onClick={() => setShowAddTracking(true)}
+                      className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Add Tracking & Ship
+                    </button>
+                    <button
+                      onClick={() => handleStatusUpdate('shipped')}
+                      className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                    >
+                      Mark as Shipped
+                    </button>
+                  </>
+                )}
+                {orderDetails.status === 'shipped' && (
                   <button
-                    onClick={() => handleStatusUpdate('processing')}
-                    className="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                    onClick={() => handleStatusUpdate('delivered')}
+                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
                   >
-                    Mark as Processing
+                    Mark as Delivered
                   </button>
-                  <button
-                    onClick={() => setShowAddTracking(true)}
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    Add Tracking & Ship
-                  </button>
-                </>
-              )}
-              {orderDetails.status === 'processing' && (
-                <>
-                  <button
-                    onClick={() => setShowAddTracking(true)}
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    Add Tracking & Ship
-                  </button>
-                  <button
-                    onClick={() => handleStatusUpdate('shipped')}
-                    className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-                  >
-                    Mark as Shipped
-                  </button>
-                </>
-              )}
-              {orderDetails.status === 'shipped' && (
-                <button
-                  onClick={() => handleStatusUpdate('delivered')}
-                  className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                >
-                  Mark as Delivered
-                </button>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Add Tracking Modal */}
         {showAddTracking && (
@@ -345,30 +349,26 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
                     ✕
                   </button>
                 </div>
-                
+
                 <form onSubmit={handleAddTracking} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tracking Number *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tracking Number *</label>
                     <input
                       type="text"
                       required
                       value={trackingForm.trackingNumber}
-                      onChange={(e) => setTrackingForm({...trackingForm, trackingNumber: e.target.value})}
+                      onChange={(e) => setTrackingForm({ ...trackingForm, trackingNumber: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter tracking number"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Carrier *
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Carrier *</label>
                     <select
                       required
                       value={trackingForm.carrier}
-                      onChange={(e) => setTrackingForm({...trackingForm, carrier: e.target.value})}
+                      onChange={(e) => setTrackingForm({ ...trackingForm, carrier: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select Carrier</option>
@@ -388,7 +388,7 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
                       type="checkbox"
                       id="thirdParty"
                       checked={trackingForm.isThirdParty}
-                      onChange={(e) => setTrackingForm({...trackingForm, isThirdParty: e.target.checked})}
+                      onChange={(e) => setTrackingForm({ ...trackingForm, isThirdParty: e.target.checked })}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <label htmlFor="thirdParty" className="text-sm text-gray-700">
@@ -405,7 +405,9 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
                         type="text"
                         required={trackingForm.isThirdParty}
                         value={trackingForm.thirdPartyProvider}
-                        onChange={(e) => setTrackingForm({...trackingForm, thirdPartyProvider: e.target.value})}
+                        onChange={(e) =>
+                          setTrackingForm({ ...trackingForm, thirdPartyProvider: e.target.value })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Enter provider name"
                       />
@@ -413,12 +415,10 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Notes
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                     <textarea
                       value={trackingForm.notes}
-                      onChange={(e) => setTrackingForm({...trackingForm, notes: e.target.value})}
+                      onChange={(e) => setTrackingForm({ ...trackingForm, notes: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       rows={3}
                       placeholder="Additional notes..."

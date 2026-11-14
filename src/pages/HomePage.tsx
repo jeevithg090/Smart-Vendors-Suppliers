@@ -1,5 +1,5 @@
-import { Link, Navigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const PLATFORM_STATS = [
   { label: 'Active Vendors', value: '18,400+', tone: 'text-orange-600' },
@@ -121,19 +121,23 @@ const TESTIMONIALS = [
 const FAQ_ITEMS = [
   {
     question: 'Can I use Smart Street in local languages?',
-    answer: 'Yes. Voice and translation-friendly workflows support English plus major Indic languages for search and supplier discovery.',
+    answer:
+      'Yes. Voice and translation-friendly workflows support English plus major Indic languages for search and supplier discovery.',
   },
   {
     question: 'Is this only for large businesses?',
-    answer: 'No. The platform is built for daily street vendors, small kitchens, and local suppliers who need practical procurement tools.',
+    answer:
+      'No. The platform is built for daily street vendors, small kitchens, and local suppliers who need practical procurement tools.',
   },
   {
     question: 'How are suppliers ranked?',
-    answer: 'Ranking combines trust score, inventory availability, price relevance, distance, and recent fulfillment performance.',
+    answer:
+      'Ranking combines trust score, inventory availability, price relevance, distance, and recent fulfillment performance.',
   },
   {
     question: 'Can I start with no upfront payment?',
-    answer: 'Yes. You can create your profile, compare suppliers, and explore workflows before scaling up usage.',
+    answer:
+      'Yes. You can create your profile, compare suppliers, and explore workflows before scaling up usage.',
   },
 ];
 
@@ -158,7 +162,9 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <span className="rounded-xl bg-orange-100 px-2 py-1 text-lg">🏪</span>
               <div>
-                <div className="text-base font-black tracking-tight text-slate-900 sm:text-lg">Smart Street</div>
+                <div className="text-base font-black tracking-tight text-slate-900 sm:text-lg">
+                  Smart Street
+                </div>
                 <div className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Food Supply OS</div>
               </div>
             </div>
@@ -194,8 +200,9 @@ export default function HomePage() {
               Grow Smarter.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
-              Smart Street connects vendors and suppliers on a single intelligence layer for discovery, pricing, trust, ordering, and forecasting.
-              Reduce sourcing chaos and make daily procurement decisions with confidence.
+              Smart Street connects vendors and suppliers on a single intelligence layer for discovery,
+              pricing, trust, ordering, and forecasting. Reduce sourcing chaos and make daily procurement
+              decisions with confidence.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -219,7 +226,9 @@ export default function HomePage() {
                   style={{ animationDelay: `${index * 90}ms` }}
                 >
                   <div className={`text-xl font-black ${stat.tone}`}>{stat.value}</div>
-                  <div className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">{stat.label}</div>
+                  <div className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -229,10 +238,14 @@ export default function HomePage() {
             <div className="rounded-3xl border border-white/80 bg-white/75 p-5 shadow-2xl shadow-slate-300/30 backdrop-blur-xl sm:p-6">
               <div className="mb-5 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Control Center</div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    Control Center
+                  </div>
                   <div className="text-xl font-bold text-slate-900">Live Procurement Pulse</div>
                 </div>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Online</span>
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                  Online
+                </span>
               </div>
               <div className="space-y-3">
                 {OPERATING_HIGHLIGHTS.map((item, index) => (
@@ -246,7 +259,9 @@ export default function HomePage() {
                         <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
                         <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
                       </div>
-                      <span className={`rounded-full bg-gradient-to-r px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white ${item.color}`}>
+                      <span
+                        className={`rounded-full bg-gradient-to-r px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white ${item.color}`}
+                      >
                         {item.badge}
                       </span>
                     </div>
@@ -256,7 +271,8 @@ export default function HomePage() {
               <div className="mt-4 rounded-2xl bg-slate-900 p-4 text-white">
                 <div className="text-xs uppercase tracking-[0.12em] text-slate-300">Today&apos;s signal</div>
                 <p className="mt-2 text-sm text-slate-100">
-                  Tomato demand trending +18% in your zone. Suggested action: lock supplier rates before 9:00 AM.
+                  Tomato demand trending +18% in your zone. Suggested action: lock supplier rates before 9:00
+                  AM.
                 </p>
               </div>
             </div>
@@ -266,8 +282,12 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">How Smart Street Works</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">From Chaos to Repeatable Procurement</h2>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+            How Smart Street Works
+          </p>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            From Chaos to Repeatable Procurement
+          </h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {PROCESS_STEPS.map((item, index) => (
@@ -288,14 +308,19 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Choose Your Path</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Built for Both Sides of the Market</h2>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+              Built for Both Sides of the Market
+            </h2>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="group rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl">
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-2xl">🍽️</div>
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-2xl">
+                🍽️
+              </div>
               <h3 className="text-2xl font-black text-slate-900">I&apos;m a Vendor</h3>
               <p className="mt-4 text-slate-700">
-                Discover reliable suppliers, compare prices instantly, run voice-based searches, and optimize daily sourcing costs.
+                Discover reliable suppliers, compare prices instantly, run voice-based searches, and optimize
+                daily sourcing costs.
               </p>
               <ul className="mt-6 space-y-2 text-sm text-slate-700">
                 <li>• Smart supplier ranking by trust + price</li>
@@ -310,10 +335,13 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="group rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl">
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-2xl">🚚</div>
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-2xl">
+                🚚
+              </div>
               <h3 className="text-2xl font-black text-slate-900">I&apos;m a Supplier</h3>
               <p className="mt-4 text-slate-700">
-                Reach verified demand, manage inventory intelligently, and respond to market trends with AI-supported forecasting.
+                Reach verified demand, manage inventory intelligently, and respond to market trends with
+                AI-supported forecasting.
               </p>
               <ul className="mt-6 space-y-2 text-sm text-slate-700">
                 <li>• Supplier storefront with trust signals</li>
@@ -334,7 +362,9 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Capabilities</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Everything Needed for Daily Supply Operations</h2>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            Everything Needed for Daily Supply Operations
+          </h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {VALUE_PILLARS.map((feature, index) => (
@@ -354,8 +384,12 @@ export default function HomePage() {
       <section className="bg-slate-950 py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Where It Performs Best</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Designed for Real Market Conditions</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+              Where It Performs Best
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
+              Designed for Real Market Conditions
+            </h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {USE_CASES.map((caseItem, index) => (
@@ -375,7 +409,9 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Customer Voice</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Teams Seeing Real Operational Impact</h2>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+            Teams Seeing Real Operational Impact
+          </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           {TESTIMONIALS.map((item, index) => (
@@ -407,7 +443,10 @@ export default function HomePage() {
           </div>
           <div className="space-y-3">
             {FAQ_ITEMS.map((item) => (
-              <details key={item.question} className="group rounded-xl border border-slate-200 p-4 open:border-slate-300 open:bg-slate-50">
+              <details
+                key={item.question}
+                className="group rounded-xl border border-slate-200 p-4 open:border-slate-300 open:bg-slate-50"
+              >
                 <summary className="cursor-pointer list-none pr-6 text-sm font-bold text-slate-900 marker:content-none">
                   {item.question}
                 </summary>
@@ -424,7 +463,8 @@ export default function HomePage() {
             Upgrade Your Sourcing Workflow This Week
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/90 sm:text-base">
-            Join vendors and suppliers building healthier margins, stronger fulfillment reliability, and faster daily decisions.
+            Join vendors and suppliers building healthier margins, stronger fulfillment reliability, and
+            faster daily decisions.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link

@@ -11,7 +11,7 @@ class ErrorReportingService {
       this.isOnline = true;
       this.flushErrorQueue();
     });
-    
+
     window.addEventListener('offline', () => {
       this.isOnline = false;
     });
@@ -28,13 +28,13 @@ class ErrorReportingService {
     const errorReport: ErrorReport = {
       error: {
         ...error,
-        context: { ...error.context, ...additionalContext }
+        context: { ...error.context, ...additionalContext },
       },
       userAgent: navigator.userAgent,
       url: window.location.href,
       userId: this.getCurrentUserId(),
       sessionId: this.getSessionId(),
-      buildVersion: import.meta.env.VITE_BUILD_VERSION || 'development'
+      buildVersion: import.meta.env.VITE_BUILD_VERSION || 'development',
     };
 
     if (this.isOnline) {
@@ -72,7 +72,7 @@ class ErrorReportingService {
 
   private queueError(errorReport: ErrorReport): void {
     this.errorQueue.push(errorReport);
-    
+
     // Store in localStorage for persistence
     try {
       const existingErrors = JSON.parse(localStorage.getItem('errorQueue') || '[]');

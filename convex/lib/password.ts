@@ -14,7 +14,7 @@ export interface PasswordHash {
   iterations: number;
 }
 
-const toHex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+const toHex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 
 const fromHex = (hex: string) => {
   const bytes = new Uint8Array(hex.length / 2);
@@ -25,11 +25,11 @@ const fromHex = (hex: string) => {
 };
 
 async function derive(password: string, salt: Uint8Array, iterations: number): Promise<string> {
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, [
-    "deriveBits",
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
+    'deriveBits',
   ]);
   const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", hash: "SHA-256", salt: salt as BufferSource, iterations },
+    { name: 'PBKDF2', hash: 'SHA-256', salt: salt as BufferSource, iterations },
     key,
     KEY_LENGTH_BITS,
   );

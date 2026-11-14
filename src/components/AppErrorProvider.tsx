@@ -8,21 +8,14 @@ interface AppErrorContextType {
   executeOperation: <T>(
     operation: () => Promise<T>,
     operationName?: string,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) => Promise<T>;
   validateBusinessLogic: (
     validationType: 'orderPlacement' | 'groupOrderParticipation' | 'payment',
-    data: any
+    data: any,
   ) => Promise<any>;
-  validateForm: (
-    formData: Record<string, any>,
-    validationRules: Record<string, any>
-  ) => Promise<any>;
-  handleError: (
-    error: Error,
-    context?: Record<string, any>,
-    recoveryActions?: string[]
-  ) => Promise<any>;
+  validateForm: (formData: Record<string, any>, validationRules: Record<string, any>) => Promise<any>;
+  handleError: (error: Error, context?: Record<string, any>, recoveryActions?: string[]) => Promise<any>;
   isLoading: boolean;
   error: any;
   canRetry: boolean;
@@ -42,15 +35,13 @@ export function AppErrorProvider({ children }: AppErrorProviderProps) {
     enableBusinessValidation: true,
     enablePerformanceTracking: true,
     maxRetries: 3,
-    retryDelay: 100
+    retryDelay: 100,
   });
 
   return (
     <AppErrorContext.Provider value={errorHandling}>
       <ErrorBoundary>
-        <OfflineManager>
-          {children}
-        </OfflineManager>
+        <OfflineManager>{children}</OfflineManager>
       </ErrorBoundary>
     </AppErrorContext.Provider>
   );

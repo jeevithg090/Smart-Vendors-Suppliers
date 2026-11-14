@@ -1,17 +1,16 @@
-import { v } from "convex/values";
-import { query } from "./_generated/server";
-
+import { v } from 'convex/values';
+import { query } from './_generated/server';
 
 // Get market pricing data for a supplier's items
 export const getMarketPricingData = query({
   args: {
-    supplierId: v.id("suppliers"),
+    supplierId: v.id('suppliers'),
   },
   handler: async (ctx, args) => {
     // Get the supplier's inventory to analyze
     const inventory = await ctx.db
-      .query("inventory")
-      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
+      .query('inventory')
+      .withIndex('by_supplier', (q) => q.eq('supplierId', args.supplierId))
       .collect();
 
     if (!inventory.length) {
@@ -19,24 +18,25 @@ export const getMarketPricingData = query({
         marketTrends: [],
         competitorData: [],
         demandForecasts: [],
-        priceRecommendations: []
+        priceRecommendations: [],
       };
     }
 
     // Get recent financial records to understand pricing trends
-    const threeMonthsAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    const threeMonthsAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
     const recentTransactions = await ctx.db
-      .query("financialRecords")
-      .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
-      .filter((q) => q.gte(q.field("date"), threeMonthsAgo))
+      .query('financialRecords')
+      .withIndex('by_supplier', (q) => q.eq('supplierId', args.supplierId))
+      .filter((q) => q.gte(q.field('date'), threeMonthsAgo))
       .collect();
 
     // Analyze market trends based on transaction data
-    const marketTrends = inventory.map(item => {
-      const itemTransactions = recentTransactions.filter(t => t.itemName === item.itemName);
-      const avgTransactionValue = itemTransactions.length > 0 
-        ? itemTransactions.reduce((sum, t) => sum + t.amount, 0) / itemTransactions.length
-        : item.pricePerUnit;
+    const marketTrends = inventory.map((item) => {
+      const itemTransactions = recentTransactions.filter((t) => t.itemName === item.itemName);
+      const avgTransactionValue =
+        itemTransactions.length > 0
+          ? itemTransactions.reduce((sum, t) => sum + t.amount, 0) / itemTransactions.length
+          : item.pricePerUnit;
 
       // Simulate market trend analysis
       const trendDirection = Math.random() > 0.5 ? 'up' : 'down';
@@ -56,14 +56,15 @@ export const getMarketPricingData = query({
     });
 
     // Generate competitor pricing data (simulated)
-    const competitorData = inventory.map(item => {
+    const competitorData = inventory.map((item) => {
       const competitors = 3 + Math.floor(Math.random() * 5); // 3-7 competitors
       const competitorPrices = Array.from({ length: competitors }, () => {
         const variance = 0.8 + Math.random() * 0.4; // 80%-120% of base price
         return Math.round(item.pricePerUnit * variance * 100) / 100;
       });
 
-      const avgCompetitorPrice = competitorPrices.reduce((sum, price) => sum + price, 0) / competitorPrices.length;
+      const avgCompetitorPrice =
+        competitorPrices.reduce((sum, price) => sum + price, 0) / competitorPrices.length;
       const minPrice = Math.min(...competitorPrices);
       const maxPrice = Math.max(...competitorPrices);
 
@@ -75,16 +76,20 @@ export const getMarketPricingData = query({
         minCompetitorPrice: minPrice,
         maxCompetitorPrice: maxPrice,
         myPrice: item.pricePerUnit,
-        marketPosition: item.pricePerUnit < avgCompetitorPrice ? 'below_market' : 
-                       item.pricePerUnit > avgCompetitorPrice ? 'above_market' : 'at_market',
+        marketPosition:
+          item.pricePerUnit < avgCompetitorPrice
+            ? 'below_market'
+            : item.pricePerUnit > avgCompetitorPrice
+              ? 'above_market'
+              : 'at_market',
       };
     });
 
     // Generate demand forecasts based on historical data
-    const demandForecasts = inventory.map(item => {
-      const itemTransactions = recentTransactions.filter(t => t.itemName === item.itemName);
+    const demandForecasts = inventory.map((item) => {
+      const itemTransactions = recentTransactions.filter((t) => t.itemName === item.itemName);
       const monthlyDemand = itemTransactions.length; // Simplified demand metric
-      
+
       // Simulate demand forecasting
       const seasonalFactor = 0.8 + Math.random() * 0.4; // 80%-120% seasonal adjustment
       const growthTrend = -0.1 + Math.random() * 0.3; // -10% to +20% growth
@@ -98,16 +103,20 @@ export const getMarketPricingData = query({
         forecastedDemand,
         seasonalFactor: Math.round(seasonalFactor * 100) / 100,
         growthTrend: Math.round(growthTrend * 100) / 100,
-        stockLevel: item.currentStock >= forecastedDemand * 2 ? 'high' :
-                   item.currentStock >= forecastedDemand ? 'optimal' : 'low',
+        stockLevel:
+          item.currentStock >= forecastedDemand * 2
+            ? 'high'
+            : item.currentStock >= forecastedDemand
+              ? 'optimal'
+              : 'low',
       };
     });
 
     // Generate price recommendations
-    const priceRecommendations = inventory.map(item => {
-      const trend = marketTrends.find(t => t.itemName === item.itemName);
-      const competitor = competitorData.find(c => c.itemName === item.itemName);
-      const demand = demandForecasts.find(d => d.itemName === item.itemName);
+    const priceRecommendations = inventory.map((item) => {
+      const trend = marketTrends.find((t) => t.itemName === item.itemName);
+      const competitor = competitorData.find((c) => c.itemName === item.itemName);
+      const demand = demandForecasts.find((d) => d.itemName === item.itemName);
 
       if (!trend || !competitor || !demand) {
         return {
@@ -115,7 +124,7 @@ export const getMarketPricingData = query({
           currentPrice: item.pricePerUnit,
           recommendedPrice: item.pricePerUnit,
           confidence: 50,
-          reasoning: 'Insufficient data for recommendation'
+          reasoning: 'Insufficient data for recommendation',
         };
       }
 
@@ -125,15 +134,18 @@ export const getMarketPricingData = query({
 
       // Factor 1: Market trend
       if (trend.trendDirection === 'up' && trend.trendStrength > 5) {
-        recommendedPrice *= (1 + (trend.trendStrength / 100) * 0.5);
+        recommendedPrice *= 1 + (trend.trendStrength / 100) * 0.5;
         reasoning += `Market trending up ${trend.trendStrength.toFixed(1)}%. `;
       } else if (trend.trendDirection === 'down' && trend.trendStrength > 5) {
-        recommendedPrice *= (1 - (trend.trendStrength / 100) * 0.3);
+        recommendedPrice *= 1 - (trend.trendStrength / 100) * 0.3;
         reasoning += `Market trending down ${trend.trendStrength.toFixed(1)}%. `;
       }
 
       // Factor 2: Competitor positioning
-      if (competitor.marketPosition === 'below_market' && competitor.avgCompetitorPrice > item.pricePerUnit * 1.1) {
+      if (
+        competitor.marketPosition === 'below_market' &&
+        competitor.avgCompetitorPrice > item.pricePerUnit * 1.1
+      ) {
         recommendedPrice = Math.min(recommendedPrice * 1.1, competitor.avgCompetitorPrice * 0.95);
         reasoning += `Below market average, room to increase. `;
       } else if (competitor.marketPosition === 'above_market' && demand.stockLevel === 'high') {
@@ -155,9 +167,10 @@ export const getMarketPricingData = query({
 
       // Calculate confidence based on data quality
       const confidence = Math.round(
-        (trend.confidence / 100 * 0.4 + 
-         (competitor.competitorCount / 7) * 0.3 + 
-         Math.min(demand.historicalDemand / 10, 1) * 0.3) * 100
+        ((trend.confidence / 100) * 0.4 +
+          (competitor.competitorCount / 7) * 0.3 +
+          Math.min(demand.historicalDemand / 10, 1) * 0.3) *
+          100,
       );
 
       return {
@@ -165,7 +178,7 @@ export const getMarketPricingData = query({
         currentPrice: item.pricePerUnit,
         recommendedPrice,
         confidence: Math.max(50, Math.min(95, confidence)),
-        reasoning: reasoning.trim() || 'Price optimization based on market analysis'
+        reasoning: reasoning.trim() || 'Price optimization based on market analysis',
       };
     });
 
@@ -179,10 +192,9 @@ export const getMarketPricingData = query({
         transactionCount: recentTransactions.length,
         inventoryItems: inventory.length,
         analysisConfidence: Math.round(
-          priceRecommendations.reduce((sum, rec) => sum + rec.confidence, 0) / 
-          priceRecommendations.length
-        )
-      }
+          priceRecommendations.reduce((sum, rec) => sum + rec.confidence, 0) / priceRecommendations.length,
+        ),
+      },
     };
   },
 });
@@ -190,7 +202,7 @@ export const getMarketPricingData = query({
 // Get market insights for dashboard
 export const getMarketInsights = query({
   args: {
-    supplierId: v.optional(v.id("suppliers")),
+    supplierId: v.optional(v.id('suppliers')),
   },
   handler: async () => {
     // Generate market insights (can be supplier-specific or general)
@@ -203,7 +215,7 @@ export const getMarketInsights = query({
         description: 'Vegetable prices showing 8-12% increase due to seasonal demand patterns',
         impact: 'positive',
         confidence: 85,
-        timeframe: 'next_2_weeks'
+        timeframe: 'next_2_weeks',
       },
       {
         id: 'alert_1',
@@ -213,7 +225,7 @@ export const getMarketInsights = query({
         description: 'New grain shipments arriving next week may cause 5-7% price reduction',
         impact: 'negative',
         confidence: 78,
-        timeframe: 'next_week'
+        timeframe: 'next_week',
       },
       {
         id: 'opportunity_1',
@@ -223,15 +235,15 @@ export const getMarketInsights = query({
         description: 'Festival season creating opportunity for 15-20% premium pricing on spices',
         impact: 'positive',
         confidence: 92,
-        timeframe: 'next_month'
-      }
+        timeframe: 'next_month',
+      },
     ];
 
     return {
       insights,
       lastUpdated: Date.now(),
       marketStatus: 'active',
-      volatilityIndex: 65 // 0-100 scale
+      volatilityIndex: 65, // 0-100 scale
     };
   },
 });

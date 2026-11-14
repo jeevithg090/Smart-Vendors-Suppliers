@@ -41,7 +41,7 @@ class PerformanceMonitoringService {
         const lastEntry = entries[entries.length - 1] as any;
         this.recordMetric('LCP', lastEntry.startTime, {
           element: lastEntry.element?.tagName,
-          url: lastEntry.url
+          url: lastEntry.url,
         });
       });
 
@@ -57,7 +57,7 @@ class PerformanceMonitoringService {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
           this.recordMetric('FID', entry.processingStart - entry.startTime, {
-            eventType: entry.name
+            eventType: entry.name,
           });
         });
       });
@@ -94,7 +94,7 @@ class PerformanceMonitoringService {
         entries.forEach((entry) => {
           this.recordMetric('Long Task', entry.duration, {
             startTime: entry.startTime,
-            name: entry.name
+            name: entry.name,
           });
         });
       });
@@ -114,7 +114,7 @@ class PerformanceMonitoringService {
             this.recordMetric('API Request', entry.duration, {
               url: entry.name,
               method: entry.initiatorType,
-              size: entry.transferSize
+              size: entry.transferSize,
             });
           }
         });
@@ -141,7 +141,7 @@ class PerformanceMonitoringService {
             response: timing.responseEnd - timing.responseStart,
             dom: timing.domContentLoadedEventEnd - timing.domLoading,
             load: timing.loadEventEnd - timing.loadEventStart,
-            total: timing.loadEventEnd - timing.navigationStart
+            total: timing.loadEventEnd - timing.navigationStart,
           };
 
           Object.entries(navigationTiming).forEach(([key, value]) => {
@@ -157,7 +157,7 @@ class PerformanceMonitoringService {
       name,
       value,
       timestamp: Date.now(),
-      metadata
+      metadata,
     };
 
     this.metrics.push(metric);
@@ -176,11 +176,11 @@ class PerformanceMonitoringService {
   private isCriticalMetric(name: string, value: number): boolean {
     // Define thresholds for critical metrics
     const thresholds = {
-      'LCP': 2500, // 2.5 seconds
-      'FID': 100,  // 100ms
-      'CLS': 0.1,  // 0.1
+      LCP: 2500, // 2.5 seconds
+      FID: 100, // 100ms
+      CLS: 0.1, // 0.1
       'Long Task': 50, // 50ms
-      'API Request': 1000 // 1 second
+      'API Request': 1000, // 1 second
     };
 
     return value > (thresholds[name as keyof typeof thresholds] || Infinity);
@@ -198,7 +198,7 @@ class PerformanceMonitoringService {
           metric,
           userAgent: navigator.userAgent,
           url: window.location.href,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         }),
       });
     } catch (error) {
@@ -211,10 +211,10 @@ class PerformanceMonitoringService {
   measureOperation<T>(name: string, operation: () => Promise<T>): Promise<T>;
   measureOperation<T>(name: string, operation: () => T | Promise<T>): T | Promise<T> {
     const startTime = performance.now();
-    
+
     try {
       const result = operation();
-      
+
       if (result instanceof Promise) {
         return result
           .then((value) => {
@@ -246,15 +246,18 @@ class PerformanceMonitoringService {
   // Get performance summary
   getPerformanceSummary(): Record<string, any> {
     const summary: Record<string, any> = {};
-    
+
     // Group metrics by name
-    const groupedMetrics = this.metrics.reduce((acc, metric) => {
-      if (!acc[metric.name]) {
-        acc[metric.name] = [];
-      }
-      acc[metric.name].push(metric.value);
-      return acc;
-    }, {} as Record<string, number[]>);
+    const groupedMetrics = this.metrics.reduce(
+      (acc, metric) => {
+        if (!acc[metric.name]) {
+          acc[metric.name] = [];
+        }
+        acc[metric.name].push(metric.value);
+        return acc;
+      },
+      {} as Record<string, number[]>,
+    );
 
     // Calculate statistics for each metric
     Object.entries(groupedMetrics).forEach(([name, values]) => {
@@ -264,7 +267,7 @@ class PerformanceMonitoringService {
         max: Math.max(...values),
         avg: values.reduce((sum, val) => sum + val, 0) / values.length,
         p95: this.percentile(values, 95),
-        p99: this.percentile(values, 99)
+        p99: this.percentile(values, 99),
       };
     });
 
@@ -285,7 +288,7 @@ class PerformanceMonitoringService {
       const summary = this.getPerformanceSummary();
       const deviceInfo = this.getDeviceInfo();
       const networkInfo = this.getNetworkInfo();
-      
+
       await fetch('/api/metrics/batch', {
         method: 'POST',
         headers: {
@@ -299,7 +302,7 @@ class PerformanceMonitoringService {
           url: window.location.href,
           timestamp: Date.now(),
           sessionId: this.getSessionId(),
-          userId: this.getCurrentUserId()
+          userId: this.getCurrentUserId(),
         }),
       });
 
@@ -317,34 +320,39 @@ class PerformanceMonitoringService {
       screen: {
         width: screen.width,
         height: screen.height,
-        pixelRatio: window.devicePixelRatio
+        pixelRatio: window.devicePixelRatio,
       },
       viewport: {
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       },
-      memory: (performance as any).memory ? {
-        usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
-        totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
-        jsHeapSizeLimit: (performance as any).memory.jsHeapSizeLimit
-      } : null,
+      memory: (performance as any).memory
+        ? {
+            usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
+            totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
+            jsHeapSizeLimit: (performance as any).memory.jsHeapSizeLimit,
+          }
+        : null,
       hardwareConcurrency: navigator.hardwareConcurrency,
-      platform: navigator.platform
+      platform: navigator.platform,
     };
   }
 
   private getNetworkInfo(): Record<string, any> {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-    
+    const connection =
+      (navigator as any).connection ||
+      (navigator as any).mozConnection ||
+      (navigator as any).webkitConnection;
+
     if (connection) {
       return {
         effectiveType: connection.effectiveType,
         downlink: connection.downlink,
         rtt: connection.rtt,
-        saveData: connection.saveData
+        saveData: connection.saveData,
       };
     }
-    
+
     return { available: false };
   }
 
@@ -384,7 +392,7 @@ class PerformanceMonitoringService {
       errorName: error.name,
       context,
       url: window.location.href,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Track error frequency
@@ -395,7 +403,7 @@ class PerformanceMonitoringService {
     if (errorCount > 5) {
       this.recordMetric('Frequent Error Pattern', errorCount, {
         errorPattern: errorKey,
-        context
+        context,
       });
     }
   }
@@ -406,7 +414,7 @@ class PerformanceMonitoringService {
       action,
       element,
       url: window.location.href,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -417,7 +425,7 @@ class PerformanceMonitoringService {
       method,
       status,
       size,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Track slow API calls
@@ -425,7 +433,7 @@ class PerformanceMonitoringService {
       this.recordMetric('Slow API Call', duration, {
         url,
         method,
-        status
+        status,
       });
     }
 
@@ -434,14 +442,14 @@ class PerformanceMonitoringService {
       this.recordMetric('API Error', status, {
         url,
         method,
-        duration
+        duration,
       });
     }
   }
 
   // Cleanup observers
   disconnect(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
   }
 }

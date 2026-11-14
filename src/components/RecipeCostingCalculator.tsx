@@ -70,7 +70,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     category: 'Main Course',
     preparationTime: 30,
     difficulty: 'Medium',
-    tags: []
+    tags: [],
   });
 
   const savedRecipeDocs = useQuery(api.recipes.getRecipesByVendor, { vendorId });
@@ -86,7 +86,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
           id: `${doc._id}-${index}`,
         })),
       })),
-    [savedRecipeDocs]
+    [savedRecipeDocs],
   );
   const createRecipe = useMutation(api.recipes.createRecipe);
   const updateRecipe = useMutation(api.recipes.updateRecipe);
@@ -96,7 +96,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     quantity: 0,
     unit: 'g',
     pricePerUnit: 0,
-    category: 'Vegetables'
+    category: 'Vegetables',
   });
   const [selectedInventoryId, setSelectedInventoryId] = useState('');
   const [uiMessage, setUiMessage] = useState('');
@@ -111,7 +111,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
         ...recipe,
         recipeId: recipe._id,
       })),
-    [savedRecipes]
+    [savedRecipes],
   );
 
   const normalizeQuantityForPricing = (quantity: number, unit: string) => {
@@ -120,7 +120,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     return quantity;
   };
 
-  const calculateIngredientLineCost = (ingredient: Pick<RecipeIngredient, 'quantity' | 'unit' | 'pricePerUnit'>) => {
+  const calculateIngredientLineCost = (
+    ingredient: Pick<RecipeIngredient, 'quantity' | 'unit' | 'pricePerUnit'>,
+  ) => {
     return normalizeQuantityForPricing(ingredient.quantity, ingredient.unit) * ingredient.pricePerUnit;
   };
 
@@ -133,7 +135,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     const overheadCost = ingredientCost * 0.15; // 15% overhead
     const totalCost = ingredientCost + laborCost + overheadCost;
     const costPerServing = totalCost / currentRecipe.servings;
-    
+
     const markupMultiplier = (100 + currentRecipe.profitMargin) / 100;
     const suggestedSellingPrice = costPerServing * markupMultiplier;
 
@@ -143,13 +145,15 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
       overheadCost,
       totalCost,
       costPerServing,
-      suggestedSellingPrice
+      suggestedSellingPrice,
     };
   };
 
   const addIngredient = () => {
     if (newIngredient.name && newIngredient.quantity && newIngredient.pricePerUnit) {
-      const supplierName = suppliers?.find(sup => String(sup._id) === newIngredient.supplierId)?.businessName;
+      const supplierName = suppliers?.find(
+        (sup) => String(sup._id) === newIngredient.supplierId,
+      )?.businessName;
       const ingredient: RecipeIngredient = {
         id: Date.now().toString(),
         name: newIngredient.name,
@@ -158,12 +162,12 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
         pricePerUnit: newIngredient.pricePerUnit || 0,
         category: newIngredient.category || 'Vegetables',
         supplierId: newIngredient.supplierId,
-        supplierName
+        supplierName,
       };
 
-      setCurrentRecipe(prev => ({
+      setCurrentRecipe((prev) => ({
         ...prev,
-        ingredients: [...prev.ingredients, ingredient]
+        ingredients: [...prev.ingredients, ingredient],
       }));
 
       setNewIngredient({
@@ -171,7 +175,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
         quantity: 0,
         unit: 'g',
         pricePerUnit: 0,
-        category: 'Vegetables'
+        category: 'Vegetables',
       });
       setSelectedInventoryId('');
     }
@@ -179,24 +183,24 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
   const selectInventorySuggestion = (inventoryId: string) => {
     setSelectedInventoryId(inventoryId);
-    const inventoryItem = allInventory?.find(item => String(item._id) === inventoryId);
+    const inventoryItem = allInventory?.find((item) => String(item._id) === inventoryId);
     if (!inventoryItem) return;
 
-    setNewIngredient(prev => ({
+    setNewIngredient((prev) => ({
       ...prev,
       name: inventoryItem.itemName,
       category: inventoryItem.category,
       unit: inventoryItem.unit,
       pricePerUnit: inventoryItem.pricePerUnit,
-      supplierId: String(inventoryItem.supplierId)
+      supplierId: String(inventoryItem.supplierId),
     }));
     setUiMessage(`Loaded live pricing for ${inventoryItem.itemName}.`);
   };
 
   const removeIngredient = (ingredientId: string) => {
-    setCurrentRecipe(prev => ({
+    setCurrentRecipe((prev) => ({
       ...prev,
-      ingredients: prev.ingredients.filter(ing => ing.id !== ingredientId)
+      ingredients: prev.ingredients.filter((ing) => ing.id !== ingredientId),
     }));
   };
 
@@ -206,7 +210,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
       ...currentRecipe,
       totalCost: costs.totalCost,
       costPerServing: costs.costPerServing,
-      suggestedSellingPrice: costs.suggestedSellingPrice
+      suggestedSellingPrice: costs.suggestedSellingPrice,
     };
 
     try {
@@ -266,7 +270,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
       setUiMessage('Failed to save recipe. Please try again.');
       return;
     }
-    
+
     // Reset form
     setCurrentRecipe({
       recipeId: undefined,
@@ -281,7 +285,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
       category: 'Main Course',
       preparationTime: 30,
       difficulty: 'Medium',
-      tags: []
+      tags: [],
     });
   };
 
@@ -330,44 +334,54 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
   const costs = calculateRecipeCost();
 
   // Calculate popular ingredients and cost trends
-  const ingredientUsage = recipesList.flatMap(r => r.ingredients).reduce((acc, ing) => {
-    acc[ing.name] = (acc[ing.name] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const ingredientUsage = recipesList
+    .flatMap((r) => r.ingredients)
+    .reduce(
+      (acc, ing) => {
+        acc[ing.name] = (acc[ing.name] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
   const popularIngredients = Object.entries(ingredientUsage)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([, a], [, b]) => b - a)
     .slice(0, 5);
 
   const trackedItems = useMemo(
     () => popularIngredients.map(([name]) => name).slice(0, 5),
-    [popularIngredients]
+    [popularIngredients],
   );
   const priceTrends = useQuery(
     api.inventory.getBulkPriceTrends,
-    trackedItems.length > 0 ? { itemNames: trackedItems, days: 30 } : "skip"
-  ) as Array<{
-    itemName: string;
-    currentPrice: number;
-    change: number;
-    changePercent: number;
-    trend: string;
-    dataPoints: number;
-  }> | undefined;
+    trackedItems.length > 0 ? { itemNames: trackedItems, days: 30 } : 'skip',
+  ) as
+    | Array<{
+        itemName: string;
+        currentPrice: number;
+        change: number;
+        changePercent: number;
+        trend: string;
+        dataPoints: number;
+      }>
+    | undefined;
   const priceAlerts = useQuery(api.priceAlerts.getVendorPriceAlerts, { vendorId });
 
   const triggeredAlerts = useMemo(
-    () => (priceAlerts ?? []).filter((alert) => alert.currentPrice > 0 && alert.currentPrice <= alert.targetPrice),
-    [priceAlerts]
+    () =>
+      (priceAlerts ?? []).filter(
+        (alert) => alert.currentPrice > 0 && alert.currentPrice <= alert.targetPrice,
+      ),
+    [priceAlerts],
   );
 
   const risingTrends = useMemo(
     () => (priceTrends ?? []).filter((trend) => trend.changePercent > 5),
-    [priceTrends]
+    [priceTrends],
   );
   const fallingTrends = useMemo(
     () => (priceTrends ?? []).filter((trend) => trend.changePercent < -5),
-    [priceTrends]
+    [priceTrends],
   );
 
   const optimizationCandidates = useMemo(() => {
@@ -407,8 +421,8 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
               { id: 'calculator', label: 'Cost Calculator', icon: '🧮' },
               { id: 'recipes', label: 'Saved Recipes', icon: '📝' },
               { id: 'analysis', label: 'Cost Analysis', icon: '📊' },
-              { id: 'trends', label: 'Market Trends', icon: '📈' }
-            ].map(tab => (
+              { id: 'trends', label: 'Market Trends', icon: '📈' },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -433,14 +447,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
               <div className="space-y-6">
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Recipe Details</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Recipe Name</label>
                       <input
                         type="text"
                         value={currentRecipe.name}
-                        onChange={(e) => setCurrentRecipe(prev => ({ ...prev, name: e.target.value }))}
+                        onChange={(e) => setCurrentRecipe((prev) => ({ ...prev, name: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         placeholder="Enter recipe name"
                       />
@@ -450,7 +464,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                       <textarea
                         value={currentRecipe.description}
-                        onChange={(e) => setCurrentRecipe(prev => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setCurrentRecipe((prev) => ({ ...prev, description: e.target.value }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         rows={3}
                         placeholder="Brief description of the dish"
@@ -464,17 +480,23 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                           type="number"
                           min="1"
                           value={currentRecipe.servings}
-                          onChange={(e) => setCurrentRecipe(prev => ({ ...prev, servings: Number(e.target.value) }))}
+                          onChange={(e) =>
+                            setCurrentRecipe((prev) => ({ ...prev, servings: Number(e.target.value) }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Prep Time (min)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Prep Time (min)
+                        </label>
                         <input
                           type="number"
                           min="1"
                           value={currentRecipe.preparationTime}
-                          onChange={(e) => setCurrentRecipe(prev => ({ ...prev, preparationTime: Number(e.target.value) }))}
+                          onChange={(e) =>
+                            setCurrentRecipe((prev) => ({ ...prev, preparationTime: Number(e.target.value) }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         />
                       </div>
@@ -485,7 +507,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                         <select
                           value={currentRecipe.category}
-                          onChange={(e) => setCurrentRecipe(prev => ({ ...prev, category: e.target.value }))}
+                          onChange={(e) =>
+                            setCurrentRecipe((prev) => ({ ...prev, category: e.target.value }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         >
                           <option value="Breakfast">Breakfast</option>
@@ -496,13 +520,17 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Target Profit (%)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Target Profit (%)
+                        </label>
                         <input
                           type="number"
                           min="0"
                           max="100"
                           value={currentRecipe.profitMargin}
-                          onChange={(e) => setCurrentRecipe(prev => ({ ...prev, profitMargin: Number(e.target.value) }))}
+                          onChange={(e) =>
+                            setCurrentRecipe((prev) => ({ ...prev, profitMargin: Number(e.target.value) }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         />
                       </div>
@@ -513,17 +541,19 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                 {/* Add Ingredients */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Ingredients</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Use Marketplace Item (Optional)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Use Marketplace Item (Optional)
+                      </label>
                       <select
                         value={selectedInventoryId}
                         onChange={(e) => selectInventorySuggestion(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                       >
                         <option value="">Choose from live inventory</option>
-                        {(allInventory || []).slice(0, 100).map(item => (
+                        {(allInventory || []).slice(0, 100).map((item) => (
                           <option key={item._id} value={item._id}>
                             {item.itemName} • ₹{item.pricePerUnit}/{item.unit} • Stock: {item.currentStock}
                           </option>
@@ -536,11 +566,13 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Ingredient Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Ingredient Name
+                        </label>
                         <input
                           type="text"
                           value={newIngredient.name}
-                          onChange={(e) => setNewIngredient(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={(e) => setNewIngredient((prev) => ({ ...prev, name: e.target.value }))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                           placeholder="e.g., Tomatoes"
                         />
@@ -549,7 +581,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                         <select
                           value={newIngredient.category}
-                          onChange={(e) => setNewIngredient(prev => ({ ...prev, category: e.target.value }))}
+                          onChange={(e) =>
+                            setNewIngredient((prev) => ({ ...prev, category: e.target.value }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         >
                           <option value="Vegetables">Vegetables</option>
@@ -571,7 +605,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                           min="0"
                           step="0.1"
                           value={newIngredient.quantity}
-                          onChange={(e) => setNewIngredient(prev => ({ ...prev, quantity: Number(e.target.value) }))}
+                          onChange={(e) =>
+                            setNewIngredient((prev) => ({ ...prev, quantity: Number(e.target.value) }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         />
                       </div>
@@ -579,7 +615,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
                         <select
                           value={newIngredient.unit}
-                          onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value }))}
+                          onChange={(e) => setNewIngredient((prev) => ({ ...prev, unit: e.target.value }))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                         >
                           <option value="g">Grams</option>
@@ -597,7 +633,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                           min="0"
                           step="0.01"
                           value={newIngredient.pricePerUnit}
-                          onChange={(e) => setNewIngredient(prev => ({ ...prev, pricePerUnit: Number(e.target.value) }))}
+                          onChange={(e) =>
+                            setNewIngredient((prev) => ({ ...prev, pricePerUnit: Number(e.target.value) }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                           placeholder="₹"
                         />
@@ -619,7 +657,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                 {/* Ingredients List */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Recipe Ingredients</h3>
-                  
+
                   {currentRecipe.ingredients.length === 0 ? (
                     <div className="text-center py-8">
                       <div className="text-4xl mb-4">🥘</div>
@@ -627,17 +665,19 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {currentRecipe.ingredients.map(ingredient => (
-                        <div key={ingredient.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      {currentRecipe.ingredients.map((ingredient) => (
+                        <div
+                          key={ingredient.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        >
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">{ingredient.name}</div>
                             <div className="text-sm text-gray-600">
-                              {ingredient.quantity} {ingredient.unit} × ₹{ingredient.pricePerUnit}/{ingredient.unit}
+                              {ingredient.quantity} {ingredient.unit} × ₹{ingredient.pricePerUnit}/
+                              {ingredient.unit}
                             </div>
                             {ingredient.supplierName && (
-                              <div className="text-xs text-gray-500">
-                                Supplier: {ingredient.supplierName}
-                              </div>
+                              <div className="text-xs text-gray-500">Supplier: {ingredient.supplierName}</div>
                             )}
                           </div>
                           <div className="text-right mr-4">
@@ -661,7 +701,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                 {currentRecipe.ingredients.length > 0 && (
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Cost Breakdown</h3>
-                    
+
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Ingredients Cost:</span>
@@ -724,8 +764,11 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recipesList.map(recipe => (
-                <div key={recipe.recipeId || recipe.name} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+              {recipesList.map((recipe) => (
+                <div
+                  key={recipe.recipeId || recipe.name}
+                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                >
                   <div className="mb-4">
                     <h4 className="font-semibold text-gray-900 mb-2">{recipe.name}</h4>
                     <p className="text-sm text-gray-600 mb-2">{recipe.description}</p>
@@ -747,7 +790,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Selling Price:</span>
-                      <span className="font-semibold text-green-600">₹{recipe.suggestedSellingPrice.toFixed(2)}</span>
+                      <span className="font-semibold text-green-600">
+                        ₹{recipe.suggestedSellingPrice.toFixed(2)}
+                      </span>
                     </div>
                   </div>
 
@@ -775,7 +820,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
         {activeTab === 'analysis' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Cost Analysis</h3>
-            
+
             <div className="grid md:grid-cols-2 gap-8">
               {/* Popular Ingredients */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -800,17 +845,20 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                 <h4 className="font-semibold text-gray-800 mb-4">Recipe Categories</h4>
                 <div className="space-y-3">
                   {Object.entries(
-                    recipesList.reduce((acc, recipe) => {
-                      acc[recipe.category] = (acc[recipe.category] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>)
+                    recipesList.reduce(
+                      (acc, recipe) => {
+                        acc[recipe.category] = (acc[recipe.category] || 0) + 1;
+                        return acc;
+                      },
+                      {} as Record<string, number>,
+                    ),
                   ).map(([category, count]) => (
                     <div key={category} className="flex items-center justify-between">
                       <span className="text-sm font-medium">{category}</span>
                       <div className="flex items-center">
                         <div className="w-20 bg-gray-200 rounded-full h-2 mr-3">
-                          <div 
-                            className="bg-orange-500 h-2 rounded-full" 
+                          <div
+                            className="bg-orange-500 h-2 rounded-full"
                             style={{ width: `${(count / Math.max(recipesList.length, 1)) * 100}%` }}
                           ></div>
                         </div>
@@ -829,7 +877,9 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                 <div className="text-center">
                   <div className="text-4xl mb-4">📊</div>
                   <p className="text-gray-600">Profitability charts would appear here</p>
-                  <p className="text-sm text-gray-500 mt-2">Showing cost vs profit margins across all recipes</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Showing cost vs profit margins across all recipes
+                  </p>
                 </div>
               </div>
             </div>
@@ -840,7 +890,7 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
         {activeTab === 'trends' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Market Trends & Price Alerts</h3>
-            
+
             <div className="grid gap-6">
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-4">Triggered Price Alerts</h4>
@@ -876,7 +926,8 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          Current avg price: ₹{trend.currentPrice.toFixed(2)}. Consider adjusting recipes or sourcing alternatives.
+                          Current avg price: ₹{trend.currentPrice.toFixed(2)}. Consider adjusting recipes or
+                          sourcing alternatives.
                         </p>
                       </div>
                     ))}
@@ -899,7 +950,8 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          Current avg price: ₹{trend.currentPrice.toFixed(2)}. Consider stocking up or promoting dishes using this ingredient.
+                          Current avg price: ₹{trend.currentPrice.toFixed(2)}. Consider stocking up or
+                          promoting dishes using this ingredient.
                         </p>
                       </div>
                     ))}
@@ -916,10 +968,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                 ) : (
                   <div className="space-y-4">
                     {optimizationCandidates.map((recipe) => (
-                      <div key={`opt-${recipe.recipeId || recipe.name}`} className="p-4 bg-blue-50 rounded-lg">
+                      <div
+                        key={`opt-${recipe.recipeId || recipe.name}`}
+                        className="p-4 bg-blue-50 rounded-lg"
+                      >
                         <h5 className="font-medium text-blue-800 mb-2">{recipe.name}</h5>
                         <p className="text-sm text-blue-700 mb-2">
-                          Current cost per serving: ₹{recipe.costPerServing.toFixed(2)}. Profit margin: {recipe.profitMargin}%.
+                          Current cost per serving: ₹{recipe.costPerServing.toFixed(2)}. Profit margin:{' '}
+                          {recipe.profitMargin}%.
                         </p>
                         <ul className="text-sm text-blue-600 space-y-1">
                           <li>Review ingredient pricing from your top suppliers.</li>

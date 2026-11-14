@@ -8,10 +8,7 @@ interface DisputeResolutionProps {
   onClose: () => void;
 }
 
-export const DisputeResolution: React.FC<DisputeResolutionProps> = ({
-  isOpen,
-  onClose
-}) => {
+export const DisputeResolution: React.FC<DisputeResolutionProps> = ({ isOpen, onClose }) => {
   const [activeDispute, setActiveDispute] = useState<Id<'disputes'> | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -22,11 +19,7 @@ export const DisputeResolution: React.FC<DisputeResolutionProps> = ({
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
       <div className="absolute right-4 top-4 w-full max-w-4xl h-[90vh] bg-white rounded-lg shadow-xl">
         {activeDispute ? (
-          <DisputeDetails
-            disputeId={activeDispute}
-            onBack={() => setActiveDispute(null)}
-            onClose={onClose}
-          />
+          <DisputeDetails disputeId={activeDispute} onBack={() => setActiveDispute(null)} onClose={onClose} />
         ) : showCreateForm ? (
           <CreateDisputeForm
             onBack={() => setShowCreateForm(false)}
@@ -55,9 +48,9 @@ const DisputesList: React.FC<{
   onClose: () => void;
 }> = ({ onSelectDispute, onCreateDispute, onClose }) => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   const disputes = useQuery(api.support.getDisputes, {
-    status: statusFilter === 'all' ? undefined : statusFilter
+    status: statusFilter === 'all' ? undefined : statusFilter,
   });
 
   return (
@@ -65,10 +58,7 @@ const DisputesList: React.FC<{
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <h2 className="text-xl font-semibold text-gray-900">Dispute Resolution</h2>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -84,9 +74,7 @@ const DisputesList: React.FC<{
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1 text-sm rounded-full transition-colors capitalize ${
-                  statusFilter === status
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100'
+                  statusFilter === status ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 {status.replace('_', ' ')}
@@ -116,15 +104,24 @@ const DisputesList: React.FC<{
           </div>
         ) : disputes.length === 0 ? (
           <div className="text-center py-12">
-            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className="w-16 h-16 mx-auto mb-4 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No disputes found</h3>
             <p className="text-gray-500">
-              {statusFilter === 'all' 
+              {statusFilter === 'all'
                 ? "You don't have any disputes yet."
-                : `No disputes with status "${statusFilter.replace('_', ' ')}".`
-              }
+                : `No disputes with status "${statusFilter.replace('_', ' ')}".`}
             </p>
           </div>
         ) : (
@@ -138,20 +135,18 @@ const DisputesList: React.FC<{
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="font-medium text-gray-900">
-                        Order #{dispute.orderId.slice(-8)}
-                      </h3>
+                      <h3 className="font-medium text-gray-900">Order #{dispute.orderId.slice(-8)}</h3>
                       <span
                         className={`px-2 py-1 text-xs rounded-full capitalize ${
                           dispute.status === 'open'
                             ? 'bg-red-100 text-red-800'
                             : dispute.status === 'under_review'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : dispute.status === 'mediation'
-                            ? 'bg-orange-100 text-orange-800'
-                            : dispute.status === 'resolved'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : dispute.status === 'mediation'
+                                ? 'bg-orange-100 text-orange-800'
+                                : dispute.status === 'resolved'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-800'
                         }`}
                       >
                         {dispute.status.replace('_', ' ')}
@@ -160,9 +155,7 @@ const DisputesList: React.FC<{
                     <p className="text-sm text-gray-600 mb-2">
                       Category: <span className="capitalize">{dispute.category}</span>
                     </p>
-                    <p className="text-sm text-gray-700 line-clamp-2">
-                      {dispute.description}
-                    </p>
+                    <p className="text-sm text-gray-700 line-clamp-2">{dispute.description}</p>
                   </div>
                   <div className="text-right text-sm text-gray-500">
                     <p>{new Date(dispute.createdAt).toLocaleDateString()}</p>
@@ -173,9 +166,7 @@ const DisputesList: React.FC<{
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>Dispute ID: {dispute._id.slice(-8)}</span>
-                  {dispute.mediatorId && (
-                    <span>Mediator assigned</span>
-                  )}
+                  {dispute.mediatorId && <span>Mediator assigned</span>}
                 </div>
               </div>
             ))}
@@ -225,20 +216,14 @@ const CreateDisputeForm: React.FC<{
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <div className="flex items-center space-x-2">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <h2 className="text-xl font-semibold text-gray-900">Create Dispute</h2>
         </div>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -248,9 +233,7 @@ const CreateDisputeForm: React.FC<{
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex-1 p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Order ID
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Order ID</label>
           <input
             type="text"
             value={formData.orderId}
@@ -259,15 +242,11 @@ const CreateDisputeForm: React.FC<{
             placeholder="Enter the order ID for this dispute"
             required
           />
-          <p className="text-xs text-gray-500 mt-1">
-            You can find the order ID in your order history
-          </p>
+          <p className="text-xs text-gray-500 mt-1">You can find the order ID in your order history</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Dispute Category
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Dispute Category</label>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -282,9 +261,7 @@ const CreateDisputeForm: React.FC<{
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -296,14 +273,24 @@ const CreateDisputeForm: React.FC<{
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex">
-            <svg className="w-5 h-5 text-yellow-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className="w-5 h-5 text-yellow-400 mr-2 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
             <div>
               <h4 className="text-sm font-medium text-yellow-800">Important Notice</h4>
               <p className="text-sm text-yellow-700 mt-1">
-                Creating a dispute will notify the other party and may affect your relationship. 
-                Please try to resolve issues through direct communication first.
+                Creating a dispute will notify the other party and may affect your relationship. Please try to
+                resolve issues through direct communication first.
               </p>
             </div>
           </div>
@@ -342,21 +329,14 @@ const DisputeDetails: React.FC<{
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <div className="flex items-center space-x-2">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Dispute #{dispute._id.slice(-8)}
-            </h2>
-            <p className="text-sm text-gray-500">
-              Order #{dispute.orderId.slice(-8)}
-            </p>
+            <h2 className="text-xl font-semibold text-gray-900">Dispute #{dispute._id.slice(-8)}</h2>
+            <p className="text-sm text-gray-500">Order #{dispute.orderId.slice(-8)}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -365,20 +345,17 @@ const DisputeDetails: React.FC<{
               dispute.status === 'open'
                 ? 'bg-red-100 text-red-800'
                 : dispute.status === 'under_review'
-                ? 'bg-yellow-100 text-yellow-800'
-                : dispute.status === 'mediation'
-                ? 'bg-orange-100 text-orange-800'
-                : dispute.status === 'resolved'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-gray-100 text-gray-800'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : dispute.status === 'mediation'
+                    ? 'bg-orange-100 text-orange-800'
+                    : dispute.status === 'resolved'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
             }`}
           >
             {dispute.status.replace('_', ' ')}
           </span>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -399,9 +376,7 @@ const DisputeDetails: React.FC<{
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-700">Created</p>
-                <p className="text-sm text-gray-900">
-                  {new Date(dispute.createdAt).toLocaleDateString()}
-                </p>
+                <p className="text-sm text-gray-900">{new Date(dispute.createdAt).toLocaleDateString()}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-700">Initiator</p>
@@ -468,9 +443,7 @@ const DisputeDetails: React.FC<{
                 <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">Dispute Created</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(dispute.createdAt).toLocaleString()}
-                  </p>
+                  <p className="text-sm text-gray-500">{new Date(dispute.createdAt).toLocaleString()}</p>
                 </div>
               </div>
               {dispute.status !== 'open' && (
@@ -496,9 +469,7 @@ const DisputeDetails: React.FC<{
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">Resolved</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(dispute.resolvedAt).toLocaleString()}
-                    </p>
+                    <p className="text-sm text-gray-500">{new Date(dispute.resolvedAt).toLocaleString()}</p>
                   </div>
                 </div>
               )}

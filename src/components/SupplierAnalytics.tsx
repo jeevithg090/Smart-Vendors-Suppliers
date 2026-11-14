@@ -43,7 +43,7 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
   // Memoize date calculations to prevent re-renders
   const dateRange = useMemo(() => {
     const endDate = Date.now();
-    const startDate = endDate - (timeRange * 30 * 24 * 60 * 60 * 1000);
+    const startDate = endDate - timeRange * 30 * 24 * 60 * 60 * 1000;
     return { startDate, endDate };
   }, [timeRange]);
 
@@ -67,7 +67,7 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
 
   const costOptimizationRecommendations = useQuery(
     api.financialAnalytics.getSupplierCostOptimizationRecommendations,
-    { supplierId }
+    { supplierId },
   );
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
@@ -75,16 +75,21 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
   const totalRevenue = revenueByCategory?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0;
 
   // Memoize transformed data to prevent infinite re-renders
-  const chartData = useMemo(() => ({
-    monthlyRevenue: monthlyRevenue?.map((item: any) => ({
-      ...item,
-      monthFormatted: formatMonth(item.month)
-    })) || [],
-    topProducts: topProducts?.map((item: any) => ({
-      name: item.itemName,
-      amount: item.amount
-    })) || []
-  }), [monthlyRevenue, topProducts]);
+  const chartData = useMemo(
+    () => ({
+      monthlyRevenue:
+        monthlyRevenue?.map((item: any) => ({
+          ...item,
+          monthFormatted: formatMonth(item.month),
+        })) || [],
+      topProducts:
+        topProducts?.map((item: any) => ({
+          name: item.itemName,
+          amount: item.amount,
+        })) || [],
+    }),
+    [monthlyRevenue, topProducts],
+  );
 
   return (
     <div className="space-y-6">
@@ -113,15 +118,11 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-green-600">Average Monthly</p>
-            <p className="text-2xl font-bold text-green-800">
-              {formatCurrency(totalRevenue / timeRange)}
-            </p>
+            <p className="text-2xl font-bold text-green-800">{formatCurrency(totalRevenue / timeRange)}</p>
           </div>
           <div className="bg-purple-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-purple-600">Top Product</p>
-            <p className="text-2xl font-bold text-purple-800">
-              {topProducts?.[0]?.itemName || 'N/A'}
-            </p>
+            <p className="text-2xl font-bold text-purple-800">{topProducts?.[0]?.itemName || 'N/A'}</p>
           </div>
         </div>
       </div>
@@ -135,10 +136,10 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
             <XAxis dataKey="monthFormatted" />
             <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
             <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
-            <Line 
-              type="monotone" 
-              dataKey="amount" 
-              stroke="#2563eb" 
+            <Line
+              type="monotone"
+              dataKey="amount"
+              stroke="#2563eb"
               strokeWidth={2}
               dot={{ fill: '#2563eb' }}
             />
@@ -157,7 +158,9 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ category, percent }: any) => `${category} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
+                label={({ category, percent }: any) =>
+                  `${category} ${(percent ? percent * 100 : 0).toFixed(0)}%`
+                }
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="amount"
@@ -177,12 +180,7 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData.topProducts}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
               <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
               <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
               <Bar dataKey="amount" fill="#10b981" />
@@ -203,8 +201,8 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
                   recommendation.priority === 'high'
                     ? 'bg-red-50 border-red-400'
                     : recommendation.priority === 'medium'
-                    ? 'bg-yellow-50 border-yellow-400'
-                    : 'bg-blue-50 border-blue-400'
+                      ? 'bg-yellow-50 border-yellow-400'
+                      : 'bg-blue-50 border-blue-400'
                 }`}
               >
                 <div className="flex justify-between items-start">
@@ -215,8 +213,8 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
                           recommendation.priority === 'high'
                             ? 'bg-red-100 text-red-800'
                             : recommendation.priority === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-blue-100 text-blue-800'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-blue-100 text-blue-800'
                         }`}
                       >
                         {recommendation.priority.toUpperCase()}

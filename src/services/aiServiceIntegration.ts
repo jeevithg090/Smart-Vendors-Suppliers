@@ -74,7 +74,7 @@ export class AIServiceIntegration {
       clarifaiApiKey: import.meta.env.VITE_CLARIFAI_API_KEY,
       azureVisionApiKey: import.meta.env.VITE_AZURE_VISION_API_KEY,
       azureVisionEndpoint: import.meta.env.VITE_AZURE_VISION_ENDPOINT,
-      ttsApiKey: import.meta.env.VITE_TTS_API_KEY
+      ttsApiKey: import.meta.env.VITE_TTS_API_KEY,
     };
   }
 
@@ -97,10 +97,10 @@ export class AIServiceIntegration {
       const response = await fetch(`${VOICE_QUERY_CONFIG.AI_SERVICES.sarvam.baseUrl}/speech-to-text`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.config.sarvamApiKey}`,
+          Authorization: `Bearer ${this.config.sarvamApiKey}`,
         },
         body: formData,
-        ...(timeoutSignal ? { signal: timeoutSignal } : {})
+        ...(timeoutSignal ? { signal: timeoutSignal } : {}),
       });
 
       if (!response.ok) {
@@ -108,12 +108,12 @@ export class AIServiceIntegration {
       }
 
       const result = await response.json();
-      
+
       return {
         transcript: result.transcript || '',
         language: result.language || language || 'en',
         confidence: result.confidence || 0.8,
-        alternatives: result.alternatives || []
+        alternatives: result.alternatives || [],
       };
     } catch (error) {
       console.error('Speech-to-text error:', error);
@@ -125,16 +125,16 @@ export class AIServiceIntegration {
    * Translate text using Google Translate or OpenRouter fallback
    */
   async translateText(
-    text: string, 
-    sourceLanguage: string, 
-    targetLanguage: string
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
   ): Promise<TranslationResult> {
     if (sourceLanguage === targetLanguage) {
       return {
         translatedText: text,
         sourceLanguage,
         targetLanguage,
-        confidence: 1.0
+        confidence: 1.0,
       };
     }
 
@@ -157,7 +157,7 @@ export class AIServiceIntegration {
         translatedText: text,
         sourceLanguage,
         targetLanguage,
-        confidence: 0.5
+        confidence: 0.5,
       };
     }
   }
@@ -165,11 +165,7 @@ export class AIServiceIntegration {
   /**
    * Generate AI response using OpenRouter
    */
-  async generateAIResponse(
-    prompt: string,
-    context?: any,
-    systemPrompt?: string
-  ): Promise<AIResponseResult> {
+  async generateAIResponse(prompt: string, context?: any, systemPrompt?: string): Promise<AIResponseResult> {
     if (!this.config.openRouterApiKey) {
       throw new Error(ERROR_MESSAGES.OPENROUTER_API_ERROR);
     }
@@ -180,28 +176,28 @@ export class AIServiceIntegration {
       const messages = [
         {
           role: 'system' as const,
-          content: systemPrompt || 'You are a helpful AI assistant for a food vendor sourcing platform.'
+          content: systemPrompt || 'You are a helpful AI assistant for a food vendor sourcing platform.',
         },
         {
           role: 'user' as const,
-          content: context ? `Context: ${JSON.stringify(context)}\n\nQuery: ${prompt}` : prompt
-        }
+          content: context ? `Context: ${JSON.stringify(context)}\n\nQuery: ${prompt}` : prompt,
+        },
       ];
 
       const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.API_TIMEOUT);
       const response = await fetch(`${VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.config.openRouterApiKey}`,
+          Authorization: `Bearer ${this.config.openRouterApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           model: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.model,
           messages,
           temperature: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.temperature,
-          max_tokens: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.maxTokens
+          max_tokens: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.maxTokens,
         }),
-        ...(timeoutSignal ? { signal: timeoutSignal } : {})
+        ...(timeoutSignal ? { signal: timeoutSignal } : {}),
       });
 
       if (!response.ok) {
@@ -215,7 +211,7 @@ export class AIServiceIntegration {
         response: result.choices[0].message.content,
         confidence: 0.9,
         processingTime,
-        model: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.model
+        model: VOICE_QUERY_CONFIG.AI_SERVICES.openRouter.model,
       };
     } catch (error) {
       console.error('AI response generation error:', error);
@@ -226,9 +222,12 @@ export class AIServiceIntegration {
   /**
    * Analyze image using computer vision services
    */
-  async analyzeImage(imageBase64: string, provider?: 'google' | 'clarifai' | 'azure'): Promise<VisionAnalysisResult> {
+  async analyzeImage(
+    imageBase64: string,
+    provider?: 'google' | 'clarifai' | 'azure',
+  ): Promise<VisionAnalysisResult> {
     const selectedProvider = provider || this.getAvailableVisionProvider();
-    
+
     if (!selectedProvider) {
       throw new Error(ERROR_MESSAGES.VISION_API_ERROR);
     }
@@ -256,7 +255,7 @@ export class AIServiceIntegration {
   async textToSpeech(text: string, _language: string = 'en'): Promise<Blob> {
     // This is a placeholder implementation
     // In production, integrate with a TTS service like Google TTS, Azure Speech, or ElevenLabs
-    
+
     if (!this.config.ttsApiKey) {
       throw new Error('TTS service not configured');
     }
@@ -269,9 +268,9 @@ export class AIServiceIntegration {
    * Private helper methods
    */
   private async googleTranslate(
-    text: string, 
-    sourceLanguage: string, 
-    targetLanguage: string
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
   ): Promise<TranslationResult> {
     const timeoutSignal = this.getTimeoutSignal(VOICE_QUERY_CONFIG.API_TIMEOUT);
     const response = await fetch(
@@ -285,10 +284,10 @@ export class AIServiceIntegration {
           q: text,
           source: sourceLanguage,
           target: targetLanguage,
-          format: 'text'
+          format: 'text',
         }),
-        ...(timeoutSignal ? { signal: timeoutSignal } : {})
-      }
+        ...(timeoutSignal ? { signal: timeoutSignal } : {}),
+      },
     );
 
     if (!response.ok) {
@@ -304,31 +303,31 @@ export class AIServiceIntegration {
     if (!translatedText || typeof translatedText !== 'string') {
       throw new Error('Google Translate response was missing translated text');
     }
-    
+
     return {
       translatedText,
       sourceLanguage,
       targetLanguage,
-      confidence: 0.95
+      confidence: 0.95,
     };
   }
 
   private async openRouterTranslate(
     text: string,
     sourceLanguage: string,
-    targetLanguage: string
+    targetLanguage: string,
   ): Promise<TranslationResult> {
     const response = await this.generateAIResponse(
       text,
       null,
-      `Translate the following text from ${sourceLanguage} to ${targetLanguage}. Return only the translation, no explanations.`
+      `Translate the following text from ${sourceLanguage} to ${targetLanguage}. Return only the translation, no explanations.`,
     );
 
     return {
       translatedText: response.response,
       sourceLanguage,
       targetLanguage,
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
@@ -338,7 +337,11 @@ export class AIServiceIntegration {
       if (typeof process !== 'undefined' && (process as any).env?.VITEST) {
         return undefined;
       }
-      if (typeof window !== 'undefined' && (window as any).AbortSignal && (window as any).AbortSignal !== AbortSignal) {
+      if (
+        typeof window !== 'undefined' &&
+        (window as any).AbortSignal &&
+        (window as any).AbortSignal !== AbortSignal
+      ) {
         return undefined;
       }
 
@@ -366,17 +369,19 @@ export class AIServiceIntegration {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          requests: [{
-            image: { content: imageBase64 },
-            features: [
-              { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
-              { type: 'LABEL_DETECTION', maxResults: 10 },
-              { type: 'TEXT_DETECTION', maxResults: 5 }
-            ]
-          }]
+          requests: [
+            {
+              image: { content: imageBase64 },
+              features: [
+                { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
+                { type: 'LABEL_DETECTION', maxResults: 10 },
+                { type: 'TEXT_DETECTION', maxResults: 5 },
+              ],
+            },
+          ],
         }),
-        ...(timeoutSignal ? { signal: timeoutSignal } : {})
-      }
+        ...(timeoutSignal ? { signal: timeoutSignal } : {}),
+      },
     );
 
     if (!response.ok) {
@@ -398,19 +403,21 @@ export class AIServiceIntegration {
     const response = await fetch('https://api.clarifai.com/v2/models/food-item-recognition/outputs', {
       method: 'POST',
       headers: {
-        'Authorization': `Key ${this.config.clarifaiApiKey}`,
+        Authorization: `Key ${this.config.clarifaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: [{
-          data: {
-            image: {
-              base64: imageBase64
-            }
-          }
-        }]
+        inputs: [
+          {
+            data: {
+              image: {
+                base64: imageBase64,
+              },
+            },
+          },
+        ],
       }),
-      ...(timeoutSignal ? { signal: timeoutSignal } : {})
+      ...(timeoutSignal ? { signal: timeoutSignal } : {}),
     });
 
     if (!response.ok) {
@@ -438,10 +445,10 @@ export class AIServiceIntegration {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: `data:image/jpeg;base64,${imageBase64}`
+          url: `data:image/jpeg;base64,${imageBase64}`,
         }),
-        ...(timeoutSignal ? { signal: timeoutSignal } : {})
-      }
+        ...(timeoutSignal ? { signal: timeoutSignal } : {}),
+      },
     );
 
     if (!response.ok) {
@@ -456,12 +463,12 @@ export class AIServiceIntegration {
     const objects = (annotations.localizedObjectAnnotations || []).map((obj: any) => ({
       name: obj.name.toLowerCase(),
       confidence: obj.score,
-      boundingBox: obj.boundingPoly ? this.parseBoundingBox(obj.boundingPoly) : undefined
+      boundingBox: obj.boundingPoly ? this.parseBoundingBox(obj.boundingPoly) : undefined,
     }));
 
     const labels = (annotations.labelAnnotations || []).map((label: any) => ({
       description: label.description.toLowerCase(),
-      score: label.score
+      score: label.score,
     }));
 
     const text = annotations.textAnnotations?.[0]?.description || '';
@@ -475,17 +482,18 @@ export class AIServiceIntegration {
       .filter((concept: any) => concept.value > VOICE_QUERY_CONFIG.IMAGE_ANALYSIS.confidenceThreshold)
       .map((concept: any) => ({
         name: concept.name.toLowerCase(),
-        confidence: concept.value
+        confidence: concept.value,
       }));
 
     const labels = concepts.map((concept: any) => ({
       description: concept.name.toLowerCase(),
-      score: concept.value
+      score: concept.value,
     }));
 
-    const confidence = concepts.length > 0 
-      ? concepts.reduce((sum: number, concept: any) => sum + concept.value, 0) / concepts.length 
-      : 0;
+    const confidence =
+      concepts.length > 0
+        ? concepts.reduce((sum: number, concept: any) => sum + concept.value, 0) / concepts.length
+        : 0;
 
     return { objects, labels, confidence };
   }
@@ -498,13 +506,13 @@ export class AIServiceIntegration {
         x: obj.rectangle.x,
         y: obj.rectangle.y,
         width: obj.rectangle.w,
-        height: obj.rectangle.h
-      }
+        height: obj.rectangle.h,
+      },
     }));
 
     const labels = (result.tags || []).map((tag: any) => ({
       description: tag.name.toLowerCase(),
-      score: tag.confidence
+      score: tag.confidence,
     }));
 
     const confidence = this.calculateOverallConfidence(objects, labels);
@@ -527,20 +535,18 @@ export class AIServiceIntegration {
       x: minX,
       y: minY,
       width: maxX - minX,
-      height: maxY - minY
+      height: maxY - minY,
     };
   }
 
   private calculateOverallConfidence(objects: any[], labels: any[]): number {
     if (objects.length === 0 && labels.length === 0) return 0;
-    
-    const objectConfidence = objects.length > 0 
-      ? objects.reduce((sum, obj) => sum + obj.confidence, 0) / objects.length 
-      : 0;
-    
-    const labelConfidence = labels.length > 0
-      ? labels.reduce((sum, label) => sum + label.score, 0) / labels.length
-      : 0;
+
+    const objectConfidence =
+      objects.length > 0 ? objects.reduce((sum, obj) => sum + obj.confidence, 0) / objects.length : 0;
+
+    const labelConfidence =
+      labels.length > 0 ? labels.reduce((sum, label) => sum + label.score, 0) / labels.length : 0;
 
     return (objectConfidence + labelConfidence) / 2;
   }
@@ -567,7 +573,7 @@ export class AIServiceIntegration {
       openRouter: !!this.config.openRouterApiKey,
       googleTranslate: !!this.config.googleTranslateApiKey,
       vision: !!this.getAvailableVisionProvider(),
-      tts: !!this.config.ttsApiKey
+      tts: !!this.config.ttsApiKey,
     };
   }
 
@@ -581,7 +587,7 @@ export class AIServiceIntegration {
       translationConfigured: !!(this.config.googleTranslateApiKey || this.config.openRouterApiKey),
       visionConfigured: !!this.getAvailableVisionProvider(),
       ttsConfigured: !!this.config.ttsApiKey,
-      availableVisionProvider: this.getAvailableVisionProvider()
+      availableVisionProvider: this.getAvailableVisionProvider(),
     };
   }
 }

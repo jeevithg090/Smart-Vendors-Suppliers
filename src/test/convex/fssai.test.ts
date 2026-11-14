@@ -50,7 +50,9 @@ describe('determineVerificationStatus', () => {
   });
 
   it('flags invalid license numbers', () => {
-    expect(determineVerificationStatus({ ...certificate, licenseNumber: '123' }, supplier, now)).toBe('invalid');
+    expect(determineVerificationStatus({ ...certificate, licenseNumber: '123' }, supplier, now)).toBe(
+      'invalid',
+    );
   });
 
   it('rejects low-confidence or mismatched certificates', () => {
@@ -58,12 +60,18 @@ describe('determineVerificationStatus', () => {
     expect(determineVerificationStatus({ ...certificate, businessName: 'Gupta Dairy' }, supplier, now)).toBe(
       'rejected',
     );
-    expect(determineVerificationStatus({ ...certificate, ownerName: 'Anita Iyer' }, supplier, now)).toBe('rejected');
+    expect(determineVerificationStatus({ ...certificate, ownerName: 'Anita Iyer' }, supplier, now)).toBe(
+      'rejected',
+    );
   });
 
   it('rejects unparseable validity dates and marks past dates expired', () => {
-    expect(determineVerificationStatus({ ...certificate, validityDate: 'unknown' }, supplier, now)).toBe('rejected');
-    expect(determineVerificationStatus({ ...certificate, validityDate: '2025-12-31' }, supplier, now)).toBe('expired');
+    expect(determineVerificationStatus({ ...certificate, validityDate: 'unknown' }, supplier, now)).toBe(
+      'rejected',
+    );
+    expect(determineVerificationStatus({ ...certificate, validityDate: '2025-12-31' }, supplier, now)).toBe(
+      'expired',
+    );
   });
 });
 

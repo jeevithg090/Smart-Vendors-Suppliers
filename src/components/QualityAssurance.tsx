@@ -49,7 +49,7 @@ export default function QualityAssurance(_props: Props) {
       target: 4.0,
       unit: '/5',
       trend: 'up',
-      status: 'excellent'
+      status: 'excellent',
     },
     {
       id: 'packaging',
@@ -58,7 +58,7 @@ export default function QualityAssurance(_props: Props) {
       target: 4.0,
       unit: '/5',
       trend: 'down',
-      status: 'warning'
+      status: 'warning',
     },
     {
       id: 'delivery_time',
@@ -67,7 +67,7 @@ export default function QualityAssurance(_props: Props) {
       target: 95,
       unit: '%',
       trend: 'stable',
-      status: 'good'
+      status: 'good',
     },
     {
       id: 'customer_satisfaction',
@@ -76,8 +76,8 @@ export default function QualityAssurance(_props: Props) {
       target: 4.2,
       unit: '/5',
       trend: 'up',
-      status: 'excellent'
-    }
+      status: 'excellent',
+    },
   ];
 
   const recentChecks: QualityCheck[] = [
@@ -88,7 +88,7 @@ export default function QualityAssurance(_props: Props) {
       score: 4.5,
       notes: 'Excellent quality, optimal ripeness. No bruising detected.',
       inspector: 'Quality Team',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000)
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
     },
     {
       id: '2',
@@ -98,7 +98,7 @@ export default function QualityAssurance(_props: Props) {
       notes: 'Good quality rice, but packaging could be improved for better moisture protection.',
       inspector: 'QC Inspector',
       timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      corrective_actions: ['Improve packaging material', 'Add moisture control sachets']
+      corrective_actions: ['Improve packaging material', 'Add moisture control sachets'],
     },
     {
       id: '3',
@@ -107,8 +107,8 @@ export default function QualityAssurance(_props: Props) {
       score: 4.0,
       notes: 'Fresh appearance, proper color. Minor wilting on some leaves.',
       inspector: 'Field Inspector',
-      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000)
-    }
+      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    },
   ];
 
   const qualityReport: QualityReport = {
@@ -119,27 +119,35 @@ export default function QualityAssurance(_props: Props) {
     improvements: [
       'Packaging quality improved by 15%',
       'Delivery time reduced by 2 hours',
-      'Customer complaints decreased by 30%'
-    ]
+      'Customer complaints decreased by 30%',
+    ],
   };
-
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600 bg-green-100';
-      case 'good': return 'text-blue-600 bg-blue-100';
-      case 'warning': return 'text-yellow-600 bg-yellow-100';
-      case 'critical': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'excellent':
+        return 'text-green-600 bg-green-100';
+      case 'good':
+        return 'text-blue-600 bg-blue-100';
+      case 'warning':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'critical':
+        return 'text-red-600 bg-red-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return '📈';
-      case 'down': return '📉';
-      case 'stable': return '➡️';
-      default: return '➡️';
+      case 'up':
+        return '📈';
+      case 'down':
+        return '📉';
+      case 'stable':
+        return '➡️';
+      default:
+        return '➡️';
     }
   };
 
@@ -167,8 +175,8 @@ export default function QualityAssurance(_props: Props) {
               { id: 'dashboard', label: 'Quality Dashboard', icon: '📊' },
               { id: 'checks', label: 'Quality Checks', icon: '✅' },
               { id: 'reports', label: 'Reports', icon: '📋' },
-              { id: 'standards', label: 'Standards', icon: '📏' }
-            ].map(tab => (
+              { id: 'standards', label: 'Standards', icon: '📏' },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -190,7 +198,7 @@ export default function QualityAssurance(_props: Props) {
           <div className="p-6">
             {/* Quality Metrics */}
             <div className="grid md:grid-cols-4 gap-6 mb-8">
-              {qualityMetrics.map(metric => (
+              {qualityMetrics.map((metric) => (
                 <div key={metric.id} className="bg-white border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-medium text-gray-700">{metric.name}</h3>
@@ -199,13 +207,17 @@ export default function QualityAssurance(_props: Props) {
                   <div className="flex items-end justify-between">
                     <div>
                       <div className="text-2xl font-bold text-gray-900">
-                        {metric.value}{metric.unit}
+                        {metric.value}
+                        {metric.unit}
                       </div>
                       <div className="text-xs text-gray-500">
-                        Target: {metric.target}{metric.unit}
+                        Target: {metric.target}
+                        {metric.unit}
                       </div>
                     </div>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(metric.status)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(metric.status)}`}
+                    >
                       {metric.status}
                     </span>
                   </div>
@@ -230,7 +242,12 @@ export default function QualityAssurance(_props: Props) {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-2xl font-bold text-green-600">
-                      {Math.round(((qualityReport.itemsChecked - qualityReport.issuesFound) / qualityReport.itemsChecked) * 100)}%
+                      {Math.round(
+                        ((qualityReport.itemsChecked - qualityReport.issuesFound) /
+                          qualityReport.itemsChecked) *
+                          100,
+                      )}
+                      %
                     </div>
                     <div className="text-green-700 text-sm">Pass Rate</div>
                     <div className="text-xs text-green-600 mt-1">+5% from last week</div>
@@ -266,26 +283,30 @@ export default function QualityAssurance(_props: Props) {
                   </button>
                 </div>
               </div>
-              
+
               <div className="divide-y divide-gray-200">
-                {recentChecks.map(check => (
+                {recentChecks.map((check) => (
                   <div key={check.id} className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
                           <span className="text-lg">
-                            {check.checkType === 'visual' ? '👁️' :
-                             check.checkType === 'freshness' ? '🌱' :
-                             check.checkType === 'packaging' ? '📦' : '📄'}
+                            {check.checkType === 'visual'
+                              ? '👁️'
+                              : check.checkType === 'freshness'
+                                ? '🌱'
+                                : check.checkType === 'packaging'
+                                  ? '📦'
+                                  : '📄'}
                           </span>
                           <div>
                             <h4 className="font-medium text-gray-900">{check.itemName}</h4>
                             <p className="text-sm text-gray-500 capitalize">{check.checkType} Check</p>
                           </div>
                         </div>
-                        
+
                         <p className="text-sm text-gray-600 mb-2">{check.notes}</p>
-                        
+
                         {check.corrective_actions && (
                           <div className="mb-2">
                             <p className="text-xs font-medium text-gray-700 mb-1">Corrective Actions:</p>
@@ -296,19 +317,25 @@ export default function QualityAssurance(_props: Props) {
                             </ul>
                           </div>
                         )}
-                        
+
                         <div className="flex items-center space-x-4 text-xs text-gray-500">
                           <span>By: {check.inspector}</span>
                           <span>{check.timestamp.toLocaleString()}</span>
                         </div>
                       </div>
-                      
+
                       <div className="text-right">
-                        <div className={`text-lg font-bold ${
-                          check.score >= 4.5 ? 'text-green-600' :
-                          check.score >= 4.0 ? 'text-blue-600' :
-                          check.score >= 3.5 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
+                        <div
+                          className={`text-lg font-bold ${
+                            check.score >= 4.5
+                              ? 'text-green-600'
+                              : check.score >= 4.0
+                                ? 'text-blue-600'
+                                : check.score >= 3.5
+                                  ? 'text-yellow-600'
+                                  : 'text-red-600'
+                          }`}
+                        >
                           {check.score.toFixed(1)}/5
                         </div>
                         <div className="text-xs text-gray-500">Score</div>
@@ -348,10 +375,13 @@ export default function QualityAssurance(_props: Props) {
                     'Color consistency and appearance',
                     'No visible defects or damage',
                     'Proper size and shape',
-                    'Surface texture quality'
+                    'Surface texture quality',
                   ].map((item, idx) => (
                     <label key={idx} className="flex items-center space-x-3">
-                      <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
                       <span className="text-sm text-gray-700">{item}</span>
                     </label>
                   ))}
@@ -365,10 +395,13 @@ export default function QualityAssurance(_props: Props) {
                     'Optimal ripeness level',
                     'No signs of wilting',
                     'Proper moisture content',
-                    'Absence of spoilage'
+                    'Absence of spoilage',
                   ].map((item, idx) => (
                     <label key={idx} className="flex items-center space-x-3">
-                      <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
                       <span className="text-sm text-gray-700">{item}</span>
                     </label>
                   ))}
@@ -382,10 +415,13 @@ export default function QualityAssurance(_props: Props) {
                     'Intact packaging material',
                     'Proper labeling information',
                     'Clean and hygienic',
-                    'Adequate protection'
+                    'Adequate protection',
                   ].map((item, idx) => (
                     <label key={idx} className="flex items-center space-x-3">
-                      <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
                       <span className="text-sm text-gray-700">{item}</span>
                     </label>
                   ))}
@@ -399,10 +435,13 @@ export default function QualityAssurance(_props: Props) {
                     'FSSAI compliance certificates',
                     'Batch/lot tracking information',
                     'Supplier verification documents',
-                    'Quality test reports'
+                    'Quality test reports',
                   ].map((item, idx) => (
                     <label key={idx} className="flex items-center space-x-3">
-                      <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
                       <span className="text-sm text-gray-700">{item}</span>
                     </label>
                   ))}
@@ -435,12 +474,14 @@ export default function QualityAssurance(_props: Props) {
 
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
               <h4 className="font-semibold text-gray-800 mb-4">Quality Summary - {qualityReport.period}</h4>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <div className="text-3xl font-bold text-green-600 mb-2">{qualityReport.overallScore.toFixed(1)}/5</div>
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    {qualityReport.overallScore.toFixed(1)}/5
+                  </div>
                   <div className="text-gray-600 mb-4">Overall Quality Score</div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Items Checked:</span>
@@ -453,12 +494,17 @@ export default function QualityAssurance(_props: Props) {
                     <div className="flex justify-between text-sm">
                       <span>Pass Rate:</span>
                       <span className="font-medium text-green-600">
-                        {Math.round(((qualityReport.itemsChecked - qualityReport.issuesFound) / qualityReport.itemsChecked) * 100)}%
+                        {Math.round(
+                          ((qualityReport.itemsChecked - qualityReport.issuesFound) /
+                            qualityReport.itemsChecked) *
+                            100,
+                        )}
+                        %
                       </span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <h5 className="font-medium text-gray-800 mb-3">Key Improvements</h5>
                   <ul className="space-y-2">
@@ -491,7 +537,7 @@ export default function QualityAssurance(_props: Props) {
         {activeTab === 'standards' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Quality Standards & Guidelines</h3>
-            
+
             <div className="grid gap-6">
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-4">🥬 Fresh Produce Standards</h4>

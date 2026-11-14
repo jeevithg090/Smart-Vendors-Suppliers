@@ -58,7 +58,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
     targetQuantity: 50,
     pricePerUnit: 0,
     supplierId: '',
-    deadlineDays: 5
+    deadlineDays: 5,
   });
 
   const negotiationTips: NegotiationTip[] = [
@@ -69,18 +69,18 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
         'Start with smaller orders to build trust before negotiating larger deals',
         'Pay on time consistently to establish creditworthiness',
         'Provide honest feedback about product quality',
-        'Share your business plans to show growth potential'
-      ]
+        'Share your business plans to show growth potential',
+      ],
     },
     {
       category: 'Timing Your Negotiations',
       icon: '⏰',
       tips: [
-        'Negotiate during supplier\'s slower seasons',
+        "Negotiate during supplier's slower seasons",
         'Plan negotiations around your renewal periods',
         'Consider market price fluctuations in your timing',
-        'Avoid peak demand periods for better rates'
-      ]
+        'Avoid peak demand periods for better rates',
+      ],
     },
     {
       category: 'Volume-Based Negotiation',
@@ -89,8 +89,8 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
         'Commit to minimum monthly volumes for better rates',
         'Bundle multiple items in your negotiation',
         'Consider joining bulk purchase groups',
-        'Offer longer-term contracts for better pricing'
-      ]
+        'Offer longer-term contracts for better pricing',
+      ],
     },
     {
       category: 'Market Research',
@@ -98,10 +98,10 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
       tips: [
         'Research competitor pricing before negotiating',
         'Understand seasonal price variations',
-        'Know your supplier\'s cost structure',
-        'Stay informed about market trends'
-      ]
-    }
+        "Know your supplier's cost structure",
+        'Stay informed about market trends',
+      ],
+    },
   ];
 
   const [newNegotiation, setNewNegotiation] = useState({
@@ -111,14 +111,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
     requestedPrice: 0,
     quantity: 0,
     unit: 'kg',
-    justification: ''
+    justification: '',
   });
 
   const suppliers = useQuery(api.suppliers.listAllSuppliers);
   const negotiations = useQuery(api.negotiations.getNegotiationsByVendor, { vendorId }) as any[] | undefined;
   const bulkOrders = useQuery(api.groupOrders.getGroupOrdersByLocation, {
     location: vendorCity,
-    status: "open",
+    status: 'open',
   }) as BulkOrder[] | undefined;
 
   const createNegotiation = useMutation(api.negotiations.createNegotiation);
@@ -132,7 +132,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
       map.set(String(supplier._id), {
         businessName: supplier.businessName,
         trustScore: supplier.trustScore ?? 0,
-      })
+      }),
     );
     return map;
   }, [suppliers]);
@@ -176,7 +176,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
         requestedPrice: 0,
         quantity: 0,
         unit: 'kg',
-        justification: ''
+        justification: '',
       });
     } catch (error) {
       console.error('Failed to create negotiation:', error);
@@ -209,7 +209,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
         : negotiation.requestedPrice,
       quantity: negotiation.quantity,
       unit: negotiation.unit,
-      justification: `Following up on counter offer: ${negotiation.counterMessage || negotiation.justification}`
+      justification: `Following up on counter offer: ${negotiation.counterMessage || negotiation.justification}`,
     });
     showActionMessage('Counter negotiation draft prepared.');
   };
@@ -230,7 +230,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
 
   const viewBulkOrderDetails = (orderId: Id<'groupOrders'>) => {
     setSelectedBulkOrderId(orderId);
-    const order = bulkOrders?.find(o => o._id === orderId);
+    const order = bulkOrders?.find((o) => o._id === orderId);
     if (order) {
       showActionMessage(`Viewing details for ${order.itemName}.`);
     }
@@ -262,7 +262,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
         targetQuantity: 50,
         pricePerUnit: 0,
         supplierId: '',
-        deadlineDays: 5
+        deadlineDays: 5,
       });
       showActionMessage('Group order created.');
     } catch (error) {
@@ -274,20 +274,25 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
   const applyTemplate = (templateName: string, templateText: string) => {
     setShowNewNegotiation(true);
     setActiveTab('negotiations');
-    setNewNegotiation(prev => ({
+    setNewNegotiation((prev) => ({
       ...prev,
-      justification: templateText
+      justification: templateText,
     }));
     showActionMessage(`${templateName} template loaded into negotiation form.`);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'counter': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'accepted':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      case 'counter':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -301,7 +306,9 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
             <p className="opacity-90">Negotiate better prices and join bulk purchase groups</p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold">{negotiationList.filter(n => n.status === 'accepted').length}</div>
+            <div className="text-3xl font-bold">
+              {negotiationList.filter((n) => n.status === 'accepted').length}
+            </div>
             <div className="text-sm opacity-90">Successful Negotiations</div>
           </div>
         </div>
@@ -321,8 +328,8 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
               { id: 'negotiations', label: 'My Negotiations', icon: '💬' },
               { id: 'bulk', label: 'Bulk Orders', icon: '📦' },
               { id: 'templates', label: 'Templates', icon: '📝' },
-              { id: 'tips', label: 'Negotiation Tips', icon: '💡' }
-            ].map(tab => (
+              { id: 'tips', label: 'Negotiation Tips', icon: '💡' },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -356,29 +363,33 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
             <div className="grid md:grid-cols-4 gap-4 mb-6">
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <div className="text-2xl font-bold text-yellow-600">
-                  {negotiationList.filter(n => n.status === 'pending').length}
+                  {negotiationList.filter((n) => n.status === 'pending').length}
                 </div>
                 <div className="text-yellow-700 text-sm">Pending</div>
               </div>
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <div className="text-2xl font-bold text-blue-600">
-                  {negotiationList.filter(n => n.status === 'counter').length}
+                  {negotiationList.filter((n) => n.status === 'counter').length}
                 </div>
                 <div className="text-blue-700 text-sm">Counter Offers</div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <div className="text-2xl font-bold text-green-600">
-                  {negotiationList.filter(n => n.status === 'accepted').length}
+                  {negotiationList.filter((n) => n.status === 'accepted').length}
                 </div>
                 <div className="text-green-700 text-sm">Accepted</div>
               </div>
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="text-2xl font-bold text-gray-600">
                   {Math.round(
-                    negotiationList.filter(n => n.status === 'accepted').reduce((sum, n) => 
-                      sum + ((n.currentPrice - n.requestedPrice) / n.currentPrice * 100), 0
-                    ) / Math.max(negotiationList.filter(n => n.status === 'accepted').length, 1)
-                  )}%
+                    negotiationList
+                      .filter((n) => n.status === 'accepted')
+                      .reduce(
+                        (sum, n) => sum + ((n.currentPrice - n.requestedPrice) / n.currentPrice) * 100,
+                        0,
+                      ) / Math.max(negotiationList.filter((n) => n.status === 'accepted').length, 1),
+                  )}
+                  %
                 </div>
                 <div className="text-gray-700 text-sm">Avg Savings</div>
               </div>
@@ -386,107 +397,131 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
 
             {/* Negotiations List */}
             <div className="space-y-4">
-              {negotiationList.map(negotiation => {
+              {negotiationList.map((negotiation) => {
                 const supplierInfo = supplierLookup.get(String(negotiation.supplierId));
                 return (
-                <div key={negotiation._id} className="border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="font-semibold text-gray-900">{negotiation.itemName}</h4>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(negotiation.status)}`}>
-                          {negotiation.status.charAt(0).toUpperCase() + negotiation.status.slice(1)}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600 mb-2">
-                        <span className="font-medium">{supplierInfo?.businessName || 'Unknown supplier'}</span>
-                        <span className="ml-2">⭐ {(supplierInfo?.trustScore ?? 0).toFixed(1)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">
-                        {Math.max(0, Math.ceil((negotiation.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))} days left
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6 mb-4">
-                    <div>
-                      <h5 className="font-medium text-gray-800 mb-2">Price Comparison</h5>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Current Price:</span>
-                          <span className="font-medium">₹{negotiation.currentPrice}/{negotiation.unit}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Requested Price:</span>
-                          <span className="font-medium text-green-600">₹{negotiation.requestedPrice}/{negotiation.unit}</span>
-                        </div>
-                        {negotiation.counterOffer && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Counter Offer:</span>
-                            <span className="font-medium text-blue-600">₹{negotiation.counterOffer}/{negotiation.unit}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Potential Savings:</span>
-                          <span className="font-medium text-green-600">
-                            ₹{((negotiation.currentPrice - (negotiation.counterOffer || negotiation.requestedPrice)) * negotiation.quantity).toFixed(2)}
+                  <div key={negotiation._id} className="border border-gray-200 rounded-lg p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h4 className="font-semibold text-gray-900">{negotiation.itemName}</h4>
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(negotiation.status)}`}
+                          >
+                            {negotiation.status.charAt(0).toUpperCase() + negotiation.status.slice(1)}
                           </span>
                         </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          <span className="font-medium">
+                            {supplierInfo?.businessName || 'Unknown supplier'}
+                          </span>
+                          <span className="ml-2">⭐ {(supplierInfo?.trustScore ?? 0).toFixed(1)}</span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-sm text-gray-500">
+                          {Math.max(
+                            0,
+                            Math.ceil((negotiation.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)),
+                          )}{' '}
+                          days left
+                        </div>
                       </div>
                     </div>
 
-                    <div>
-                      <h5 className="font-medium text-gray-800 mb-2">Order Details</h5>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Quantity:</span>
-                          <span className="font-medium">{negotiation.quantity} {negotiation.unit}</span>
+                    <div className="grid md:grid-cols-2 gap-6 mb-4">
+                      <div>
+                        <h5 className="font-medium text-gray-800 mb-2">Price Comparison</h5>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Current Price:</span>
+                            <span className="font-medium">
+                              ₹{negotiation.currentPrice}/{negotiation.unit}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Requested Price:</span>
+                            <span className="font-medium text-green-600">
+                              ₹{negotiation.requestedPrice}/{negotiation.unit}
+                            </span>
+                          </div>
+                          {negotiation.counterOffer && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Counter Offer:</span>
+                              <span className="font-medium text-blue-600">
+                                ₹{negotiation.counterOffer}/{negotiation.unit}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Potential Savings:</span>
+                            <span className="font-medium text-green-600">
+                              ₹
+                              {(
+                                (negotiation.currentPrice -
+                                  (negotiation.counterOffer || negotiation.requestedPrice)) *
+                                negotiation.quantity
+                              ).toFixed(2)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Value:</span>
-                          <span className="font-medium">₹{(negotiation.currentPrice * negotiation.quantity).toLocaleString()}</span>
+                      </div>
+
+                      <div>
+                        <h5 className="font-medium text-gray-800 mb-2">Order Details</h5>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Quantity:</span>
+                            <span className="font-medium">
+                              {negotiation.quantity} {negotiation.unit}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Value:</span>
+                            <span className="font-medium">
+                              ₹{(negotiation.currentPrice * negotiation.quantity).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mb-4">
-                    <h5 className="font-medium text-gray-800 mb-2">Justification</h5>
-                    <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                      {negotiation.justification}
-                    </p>
-                  </div>
-
-                  {negotiation.counterMessage && (
                     <div className="mb-4">
-                      <h5 className="font-medium text-gray-800 mb-2">Supplier Response</h5>
-                      <p className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">
-                        {negotiation.counterMessage}
+                      <h5 className="font-medium text-gray-800 mb-2">Justification</h5>
+                      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                        {negotiation.justification}
                       </p>
                     </div>
-                  )}
 
-                  {negotiation.status === 'counter' && (
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => acceptCounterOffer(negotiation._id)}
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                      >
-                        Accept Counter Offer
-                      </button>
-                      <button
-                        onClick={() => startCounterNegotiation(negotiation)}
-                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                      >
-                        Make New Counter
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )})}
+                    {negotiation.counterMessage && (
+                      <div className="mb-4">
+                        <h5 className="font-medium text-gray-800 mb-2">Supplier Response</h5>
+                        <p className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg">
+                          {negotiation.counterMessage}
+                        </p>
+                      </div>
+                    )}
+
+                    {negotiation.status === 'counter' && (
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => acceptCounterOffer(negotiation._id)}
+                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                        >
+                          Accept Counter Offer
+                        </button>
+                        <button
+                          onClick={() => startCounterNegotiation(negotiation)}
+                          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                        >
+                          Make New Counter
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -510,25 +545,27 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                   No open group orders in your city yet.
                 </div>
               )}
-              {bulkOrderList.map(order => (
+              {bulkOrderList.map((order) => (
                 <div key={order._id} className="border border-gray-200 rounded-lg p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h4 className="font-semibold text-gray-900">{order.itemName}</h4>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          order.status === 'open' ? 'bg-green-100 text-green-800' :
-                          order.status === 'locked' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            order.status === 'open'
+                              ? 'bg-green-100 text-green-800'
+                              : order.status === 'locked'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        Supplier: {order.supplierName || 'Unknown'}
-                      </div>
+                      <div className="text-sm text-gray-500">Supplier: {order.supplierName || 'Unknown'}</div>
                     </div>
-                    
+
                     <div className="text-right">
                       <div className="text-lg font-bold text-green-600">
                         ₹{order.pricePerUnit}/{order.category}
@@ -550,9 +587,11 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                           <span className="font-medium text-blue-600">{order.currentQuantity} units</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-500 h-2 rounded-full" 
-                            style={{ width: `${Math.min((order.currentQuantity / order.targetQuantity) * 100, 100)}%` }}
+                          <div
+                            className="bg-blue-500 h-2 rounded-full"
+                            style={{
+                              width: `${Math.min((order.currentQuantity / order.targetQuantity) * 100, 100)}%`,
+                            }}
                           ></div>
                         </div>
                         <div className="text-xs text-gray-500">
@@ -571,7 +610,8 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                         <div className="flex justify-between text-sm">
                           <span>Deadline:</span>
                           <span className="font-medium">
-                            {Math.max(0, Math.ceil((order.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))} days
+                            {Math.max(0, Math.ceil((order.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))}{' '}
+                            days
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
@@ -613,12 +653,13 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
             {selectedBulkOrderId && (
               <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
                 {bulkOrderList
-                  .filter(order => order._id === selectedBulkOrderId)
-                  .map(order => (
+                  .filter((order) => order._id === selectedBulkOrderId)
+                  .map((order) => (
                     <div key={order._id}>
                       <h4 className="font-semibold text-blue-900 mb-2">{order.itemName}</h4>
                       <div className="text-sm text-blue-700">
-                        Deadline: {new Date(order.expiresAt).toLocaleDateString()} • Category: {order.category} • Supplier: {order.supplierName || 'Unknown'}
+                        Deadline: {new Date(order.expiresAt).toLocaleDateString()} • Category:{' '}
+                        {order.category} • Supplier: {order.supplierName || 'Unknown'}
                       </div>
                     </div>
                   ))}
@@ -631,18 +672,23 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
         {activeTab === 'templates' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Negotiation Templates</h3>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-3">Volume Discount Request</h4>
                 <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 mb-4">
-                  "I've been consistently ordering [quantity] of [item] for the past [duration]. Given my volume and reliable payment history, I'd like to discuss a volume discount. My current cost is ₹[current price] per [unit], and I'm hoping we can work towards ₹[target price]. This would help me maintain competitive pricing while ensuring steady business for you."
+                  "I've been consistently ordering [quantity] of [item] for the past [duration]. Given my
+                  volume and reliable payment history, I'd like to discuss a volume discount. My current cost
+                  is ₹[current price] per [unit], and I'm hoping we can work towards ₹[target price]. This
+                  would help me maintain competitive pricing while ensuring steady business for you."
                 </div>
                 <button
-                  onClick={() => applyTemplate(
-                    'Volume Discount Request',
-                    "I've been consistently ordering [quantity] of [item] for the past [duration]. Given my volume and reliable payment history, I'd like to discuss a volume discount. My current cost is ₹[current price] per [unit], and I'm hoping we can work towards ₹[target price]. This would help me maintain competitive pricing while ensuring steady business for you."
-                  )}
+                  onClick={() =>
+                    applyTemplate(
+                      'Volume Discount Request',
+                      "I've been consistently ordering [quantity] of [item] for the past [duration]. Given my volume and reliable payment history, I'd like to discuss a volume discount. My current cost is ₹[current price] per [unit], and I'm hoping we can work towards ₹[target price]. This would help me maintain competitive pricing while ensuring steady business for you.",
+                    )
+                  }
                   className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                 >
                   Use This Template
@@ -652,13 +698,18 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
               <div className="border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-3">Market Price Alignment</h4>
                 <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 mb-4">
-                  "I've noticed that the current market rate for [item] is around ₹[market price] per [unit]. Your current price is ₹[current price]. While I value our partnership and your quality, I'd appreciate if we could align closer to market rates. Could we discuss pricing at ₹[target price] to maintain our business relationship?"
+                  "I've noticed that the current market rate for [item] is around ₹[market price] per [unit].
+                  Your current price is ₹[current price]. While I value our partnership and your quality, I'd
+                  appreciate if we could align closer to market rates. Could we discuss pricing at ₹[target
+                  price] to maintain our business relationship?"
                 </div>
                 <button
-                  onClick={() => applyTemplate(
-                    'Market Price Alignment',
-                    "I've noticed that the current market rate for [item] is around ₹[market price] per [unit]. Your current price is ₹[current price]. While I value our partnership and your quality, I'd appreciate if we could align closer to market rates. Could we discuss pricing at ₹[target price] to maintain our business relationship?"
-                  )}
+                  onClick={() =>
+                    applyTemplate(
+                      'Market Price Alignment',
+                      "I've noticed that the current market rate for [item] is around ₹[market price] per [unit]. Your current price is ₹[current price]. While I value our partnership and your quality, I'd appreciate if we could align closer to market rates. Could we discuss pricing at ₹[target price] to maintain our business relationship?",
+                    )
+                  }
                   className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                 >
                   Use This Template
@@ -668,13 +719,18 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
               <div className="border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-3">Long-term Partnership</h4>
                 <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 mb-4">
-                  "I'm planning to expand my business and will significantly increase my orders over the next [timeframe]. To secure a long-term partnership, I'd like to lock in favorable pricing. If you can offer ₹[target price] per [unit], I can commit to minimum monthly orders of [quantity] for [duration]."
+                  "I'm planning to expand my business and will significantly increase my orders over the next
+                  [timeframe]. To secure a long-term partnership, I'd like to lock in favorable pricing. If
+                  you can offer ₹[target price] per [unit], I can commit to minimum monthly orders of
+                  [quantity] for [duration]."
                 </div>
                 <button
-                  onClick={() => applyTemplate(
-                    'Long-term Partnership',
-                    "I'm planning to expand my business and will significantly increase my orders over the next [timeframe]. To secure a long-term partnership, I'd like to lock in favorable pricing. If you can offer ₹[target price] per [unit], I can commit to minimum monthly orders of [quantity] for [duration]."
-                  )}
+                  onClick={() =>
+                    applyTemplate(
+                      'Long-term Partnership',
+                      "I'm planning to expand my business and will significantly increase my orders over the next [timeframe]. To secure a long-term partnership, I'd like to lock in favorable pricing. If you can offer ₹[target price] per [unit], I can commit to minimum monthly orders of [quantity] for [duration].",
+                    )
+                  }
                   className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                 >
                   Use This Template
@@ -684,13 +740,18 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
               <div className="border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-3">Quality Concerns</h4>
                 <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 mb-4">
-                  "I've been satisfied with your service, but I've noticed some quality variations in recent orders. Given this situation and my loyalty as a customer, I'd appreciate if we could adjust the pricing to ₹[target price] until quality consistency improves. This would be fair for both parties."
+                  "I've been satisfied with your service, but I've noticed some quality variations in recent
+                  orders. Given this situation and my loyalty as a customer, I'd appreciate if we could adjust
+                  the pricing to ₹[target price] until quality consistency improves. This would be fair for
+                  both parties."
                 </div>
                 <button
-                  onClick={() => applyTemplate(
-                    'Quality Concerns',
-                    "I've been satisfied with your service, but I've noticed some quality variations in recent orders. Given this situation and my loyalty as a customer, I'd appreciate if we could adjust the pricing to ₹[target price] until quality consistency improves. This would be fair for both parties."
-                  )}
+                  onClick={() =>
+                    applyTemplate(
+                      'Quality Concerns',
+                      "I've been satisfied with your service, but I've noticed some quality variations in recent orders. Given this situation and my loyalty as a customer, I'd appreciate if we could adjust the pricing to ₹[target price] until quality consistency improves. This would be fair for both parties.",
+                    )
+                  }
                   className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                 >
                   Use This Template
@@ -704,9 +765,9 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
         {activeTab === 'tips' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Negotiation Tips & Best Practices</h3>
-            
+
             <div className="grid gap-6">
-              {negotiationTips.map(tipCategory => (
+              {negotiationTips.map((tipCategory) => (
                 <div key={tipCategory.category} className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <span className="text-2xl mr-3">{tipCategory.icon}</span>
@@ -749,17 +810,17 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                   ✕
                 </button>
               </div>
-              
+
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
                   <select
                     value={newNegotiation.supplierId}
-                    onChange={(e) => setNewNegotiation(prev => ({ ...prev, supplierId: e.target.value }))}
+                    onChange={(e) => setNewNegotiation((prev) => ({ ...prev, supplierId: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select Supplier</option>
-                    {suppliers?.map(supplier => (
+                    {suppliers?.map((supplier) => (
                       <option key={supplier._id} value={supplier._id}>
                         {supplier.businessName}
                       </option>
@@ -773,7 +834,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     <input
                       type="text"
                       value={newNegotiation.itemName}
-                      onChange={(e) => setNewNegotiation(prev => ({ ...prev, itemName: e.target.value }))}
+                      onChange={(e) => setNewNegotiation((prev) => ({ ...prev, itemName: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="e.g., Fresh Tomatoes"
                     />
@@ -782,7 +843,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
                     <select
                       value={newNegotiation.unit}
-                      onChange={(e) => setNewNegotiation(prev => ({ ...prev, unit: e.target.value }))}
+                      onChange={(e) => setNewNegotiation((prev) => ({ ...prev, unit: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="kg">Kilogram</option>
@@ -801,18 +862,24 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                       min="0"
                       step="0.01"
                       value={newNegotiation.currentPrice}
-                      onChange={(e) => setNewNegotiation(prev => ({ ...prev, currentPrice: Number(e.target.value) }))}
+                      onChange={(e) =>
+                        setNewNegotiation((prev) => ({ ...prev, currentPrice: Number(e.target.value) }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Requested Price (₹)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Requested Price (₹)
+                    </label>
                     <input
                       type="number"
                       min="0"
                       step="0.01"
                       value={newNegotiation.requestedPrice}
-                      onChange={(e) => setNewNegotiation(prev => ({ ...prev, requestedPrice: Number(e.target.value) }))}
+                      onChange={(e) =>
+                        setNewNegotiation((prev) => ({ ...prev, requestedPrice: Number(e.target.value) }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -822,7 +889,9 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                       type="number"
                       min="1"
                       value={newNegotiation.quantity}
-                      onChange={(e) => setNewNegotiation(prev => ({ ...prev, quantity: Number(e.target.value) }))}
+                      onChange={(e) =>
+                        setNewNegotiation((prev) => ({ ...prev, quantity: Number(e.target.value) }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -832,7 +901,9 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                   <label className="block text-sm font-medium text-gray-700 mb-2">Justification</label>
                   <textarea
                     value={newNegotiation.justification}
-                    onChange={(e) => setNewNegotiation(prev => ({ ...prev, justification: e.target.value }))}
+                    onChange={(e) =>
+                      setNewNegotiation((prev) => ({ ...prev, justification: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows={4}
                     placeholder="Explain why you're requesting this price reduction..."
@@ -878,7 +949,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                   <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
                   <select
                     value={bulkOrderDraft.supplierId}
-                    onChange={(e) => setBulkOrderDraft(prev => ({ ...prev, supplierId: e.target.value }))}
+                    onChange={(e) => setBulkOrderDraft((prev) => ({ ...prev, supplierId: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select supplier</option>
@@ -895,7 +966,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                   <input
                     type="text"
                     value={bulkOrderDraft.itemName}
-                    onChange={(e) => setBulkOrderDraft(prev => ({ ...prev, itemName: e.target.value }))}
+                    onChange={(e) => setBulkOrderDraft((prev) => ({ ...prev, itemName: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g., Tomatoes"
                   />
@@ -907,7 +978,9 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     type="number"
                     min="1"
                     value={bulkOrderDraft.targetQuantity}
-                    onChange={(e) => setBulkOrderDraft(prev => ({ ...prev, targetQuantity: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setBulkOrderDraft((prev) => ({ ...prev, targetQuantity: Number(e.target.value) }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -918,7 +991,9 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     type="number"
                     min="0"
                     value={bulkOrderDraft.pricePerUnit}
-                    onChange={(e) => setBulkOrderDraft(prev => ({ ...prev, pricePerUnit: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setBulkOrderDraft((prev) => ({ ...prev, pricePerUnit: Number(e.target.value) }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -927,7 +1002,7 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                   <select
                     value={bulkOrderDraft.category}
-                    onChange={(e) => setBulkOrderDraft(prev => ({ ...prev, category: e.target.value }))}
+                    onChange={(e) => setBulkOrderDraft((prev) => ({ ...prev, category: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="Vegetables">Vegetables</option>
@@ -945,7 +1020,9 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     min="1"
                     max="30"
                     value={bulkOrderDraft.deadlineDays}
-                    onChange={(e) => setBulkOrderDraft(prev => ({ ...prev, deadlineDays: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setBulkOrderDraft((prev) => ({ ...prev, deadlineDays: Number(e.target.value) }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>

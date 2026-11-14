@@ -27,14 +27,14 @@ export class BusinessLogicValidator {
     const warnings: string[] = [];
 
     // Check supplier availability
-    if (!await this.isSupplierAvailable(orderData.supplierId)) {
+    if (!(await this.isSupplierAvailable(orderData.supplierId))) {
       errors.push({
         type: 'BUSINESS_ERROR',
         code: 'SUPPLIER_UNAVAILABLE',
         message: 'Selected supplier is currently unavailable',
         timestamp: Date.now(),
         suggestions: ['Try a different supplier', 'Contact supplier directly'],
-        actionable: true
+        actionable: true,
       });
     }
 
@@ -47,17 +47,13 @@ export class BusinessLogicValidator {
           code: 'INSUFFICIENT_STOCK',
           message: `Insufficient stock for ${item.itemName}. Available: ${stockCheck.available}, Requested: ${item.quantity}`,
           timestamp: Date.now(),
-          suggestions: [
-            'Reduce quantity',
-            'Split order across multiple suppliers',
-            'Join a group order'
-          ],
+          suggestions: ['Reduce quantity', 'Split order across multiple suppliers', 'Join a group order'],
           actionable: true,
           context: {
             itemName: item.itemName,
             availableStock: stockCheck.available,
-            requestedQuantity: item.quantity
-          }
+            requestedQuantity: item.quantity,
+          },
         });
       } else if (stockCheck.available < item.quantity * 1.2) {
         warnings.push(`Low stock for ${item.itemName}. Consider ordering soon.`);
@@ -72,39 +68,31 @@ export class BusinessLogicValidator {
         code: 'MINIMUM_ORDER_NOT_MET',
         message: `Order value ₹${orderData.totalCost} is below minimum ₹${minOrderValue}`,
         timestamp: Date.now(),
-        suggestions: [
-          'Add more items to reach minimum',
-          'Join a group order',
-          'Choose a different supplier'
-        ],
+        suggestions: ['Add more items to reach minimum', 'Join a group order', 'Choose a different supplier'],
         actionable: true,
         context: {
           currentValue: orderData.totalCost,
-          minimumValue: minOrderValue
-        }
+          minimumValue: minOrderValue,
+        },
       });
     }
 
     // Check delivery area
-    if (!await this.isDeliveryAreaSupported(orderData.supplierId, orderData.deliveryAddress)) {
+    if (!(await this.isDeliveryAreaSupported(orderData.supplierId, orderData.deliveryAddress))) {
       errors.push({
         type: 'BUSINESS_ERROR',
         code: 'DELIVERY_AREA_NOT_SUPPORTED',
         message: 'Delivery not available to your area',
         timestamp: Date.now(),
-        suggestions: [
-          'Choose pickup option',
-          'Select a different supplier',
-          'Update delivery address'
-        ],
-        actionable: true
+        suggestions: ['Choose pickup option', 'Select a different supplier', 'Update delivery address'],
+        actionable: true,
       });
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -120,7 +108,7 @@ export class BusinessLogicValidator {
         message: 'This group order is no longer accepting participants',
         timestamp: Date.now(),
         suggestions: ['Find another group order', 'Create your own group order'],
-        actionable: true
+        actionable: true,
       });
     }
 
@@ -133,7 +121,7 @@ export class BusinessLogicValidator {
         message: 'This group order is already full',
         timestamp: Date.now(),
         suggestions: ['Find another group order', 'Create your own group order'],
-        actionable: true
+        actionable: true,
       });
     }
 
@@ -145,20 +133,21 @@ export class BusinessLogicValidator {
         message: `Requested quantity ${groupOrderData.requestedQuantity} exceeds remaining capacity ${remainingCapacity}`,
         timestamp: Date.now(),
         suggestions: [`Reduce quantity to ${remainingCapacity} or less`],
-        actionable: true
+        actionable: true,
       });
     }
 
     // Check expiry time
     const timeUntilExpiry = groupOrderData.expiresAt - Date.now();
-    if (timeUntilExpiry < 30 * 60 * 1000) { // 30 minutes
+    if (timeUntilExpiry < 30 * 60 * 1000) {
+      // 30 minutes
       warnings.push('Group order expires soon. Complete your participation quickly.');
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -174,7 +163,7 @@ export class BusinessLogicValidator {
         message: 'Payment amount must be greater than zero',
         timestamp: Date.now(),
         suggestions: ['Check order total'],
-        actionable: true
+        actionable: true,
       });
     }
 
@@ -186,7 +175,7 @@ export class BusinessLogicValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -201,7 +190,10 @@ export class BusinessLogicValidator {
     }
   }
 
-  private async checkInventoryStock(_supplierId: string, _item: any): Promise<{ available: number; reserved: number }> {
+  private async checkInventoryStock(
+    _supplierId: string,
+    _item: any,
+  ): Promise<{ available: number; reserved: number }> {
     try {
       // This would be a real API call to check inventory
       return { available: 100, reserved: 10 }; // Placeholder
@@ -236,7 +228,7 @@ export class BusinessLogicValidator {
       // Add more patterns as needed
     ];
 
-    return suspiciousPatterns.some(pattern => pattern);
+    return suspiciousPatterns.some((pattern) => pattern);
   }
 }
 
@@ -244,7 +236,7 @@ export class BusinessLogicValidator {
 export const businessValidator = new BusinessLogicValidator();
 
 // Business error codes that need to be added to types
-export type BusinessErrorCode = 
+export type BusinessErrorCode =
   | 'SUPPLIER_UNAVAILABLE'
   | 'INSUFFICIENT_STOCK'
   | 'MINIMUM_ORDER_NOT_MET'

@@ -28,233 +28,235 @@ export function useComprehensiveErrorHandling(options: ErrorHandlingOptions = {}
     enablePerformanceTracking = true,
     maxRetries = 3,
     retryDelay = 1000,
-    throwOnError = false
+    throwOnError = false,
   } = options;
 
   const [state, setState] = useState<ErrorHandlingState>({
     isLoading: false,
     error: null,
     retryCount: 0,
-    canRetry: false
+    canRetry: false,
   });
 
   const { handleError, handleBusinessError, handleValidationError } = useErrorHandler();
   const { executeWithRetry, isRetrying } = useRetryableOperation();
 
   // Enhanced error handling with context and recovery suggestions
-  const handleErrorWithContext = useCallback(async (
-    error: Error | AppError,
-    context?: Record<string, any>,
-    recoveryActions?: string[]
-  ) => {
-    const startTime = performance.now();
+  const handleErrorWithContext = useCallback(
+    async (error: Error | AppError, context?: Record<string, any>, recoveryActions?: string[]) => {
+      const startTime = performance.now();
 
-    try {
-      // Track error performance impact
-      if (enablePerformanceTracking) {
-        performanceMonitoring.trackError(error as Error, context);
+      try {
+        // Track error performance impact
+        if (enablePerformanceTracking) {
+          performanceMonitoring.trackError(error as Error, context);
+        }
+
+        // Convert to AppError if needed
+        let appError: AppError;
+        if ('type' in error) {
+          appError = error as AppError;
+        } else {
+          appError = {
+            type: 'SYSTEM_ERROR',
+            code: 'UNKNOWN',
+            message: error.message,
+            timestamp: Date.now(),
+            context,
+          };
+        }
+
+        // Add recovery suggestions
+        if (recoveryActions) {
+          appError.context = { ...appError.context, recoveryActions };
+        }
+
+        setState((prev) => ({
+          ...prev,
+          error: appError,
+          canRetry: enableRetry && isRetryableError(appError),
+        }));
+
+        await handleError(appError, context);
+
+        // Track error handling performance
+        if (enablePerformanceTracking) {
+          const duration = performance.now() - startTime;
+          performanceMonitoring.recordMetric('Error Handling Duration', duration, {
+            errorType: appError.type,
+            errorCode: (appError as any).code,
+          });
+        }
+
+        return appError;
+      } catch (handlingError) {
+        console.error('Error in error handling:', handlingError);
+        throw handlingError;
       }
-
-      // Convert to AppError if needed
-      let appError: AppError;
-      if ('type' in error) {
-        appError = error as AppError;
-      } else {
-        appError = {
-          type: 'SYSTEM_ERROR',
-          code: 'UNKNOWN',
-          message: error.message,
-          timestamp: Date.now(),
-          context
-        };
-      }
-
-      // Add recovery suggestions
-      if (recoveryActions) {
-        appError.context = { ...appError.context, recoveryActions };
-      }
-
-      setState(prev => ({
-        ...prev,
-        error: appError,
-        canRetry: enableRetry && isRetryableError(appError)
-      }));
-
-      await handleError(appError, context);
-
-      // Track error handling performance
-      if (enablePerformanceTracking) {
-        const duration = performance.now() - startTime;
-        performanceMonitoring.recordMetric('Error Handling Duration', duration, {
-          errorType: appError.type,
-          errorCode: (appError as any).code
-        });
-      }
-
-      return appError;
-    } catch (handlingError) {
-      console.error('Error in error handling:', handlingError);
-      throw handlingError;
-    }
-  }, [handleError, enablePerformanceTracking, enableRetry]);
+    },
+    [handleError, enablePerformanceTracking, enableRetry],
+  );
 
   // Execute operation with comprehensive error handling
-  const executeOperation = useCallback(async <T>(
-    operation: () => Promise<T>,
-    operationName?: string,
-    context?: Record<string, any>
-  ): Promise<T> => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+  const executeOperation = useCallback(
+    async <T>(
+      operation: () => Promise<T>,
+      operationName?: string,
+      context?: Record<string, any>,
+    ): Promise<T> => {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    try {
-      let result: T;
+      try {
+        let result: T;
 
-      if (enableRetry) {
-        result = await executeWithRetry(operation, {
-          maxRetries,
-          baseDelay: retryDelay,
-          onRetry: (attempt, error) => {
-            setState(prev => ({ ...prev, retryCount: attempt }));
-            
-            if (enablePerformanceTracking && operationName) {
-              performanceMonitoring.recordMetric(`${operationName} Retry`, attempt, {
-                error: error.message,
-                context
-              });
-            }
-          }
-        });
-      } else {
-        result = await operation();
+        if (enableRetry) {
+          result = await executeWithRetry(operation, {
+            maxRetries,
+            baseDelay: retryDelay,
+            onRetry: (attempt, error) => {
+              setState((prev) => ({ ...prev, retryCount: attempt }));
+
+              if (enablePerformanceTracking && operationName) {
+                performanceMonitoring.recordMetric(`${operationName} Retry`, attempt, {
+                  error: error.message,
+                  context,
+                });
+              }
+            },
+          });
+        } else {
+          result = await operation();
+        }
+
+        // Success - reset error state
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: null,
+          retryCount: 0,
+          canRetry: false,
+        }));
+
+        return result;
+      } catch (error) {
+        setState((prev) => ({ ...prev, isLoading: false }));
+
+        await handleErrorWithContext(
+          error as Error,
+          { ...context, operationName },
+          getRecoveryActions(error as Error, operationName),
+        );
+
+        if (throwOnError) {
+          throw error;
+        }
+
+        return undefined as T;
       }
-
-      // Success - reset error state
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: null,
-        retryCount: 0,
-        canRetry: false
-      }));
-
-      return result;
-    } catch (error) {
-      setState(prev => ({ ...prev, isLoading: false }));
-      
-      await handleErrorWithContext(
-        error as Error,
-        { ...context, operationName },
-        getRecoveryActions(error as Error, operationName)
-      );
-
-      if (throwOnError) {
-        throw error;
-      }
-
-      return undefined as T;
-    }
-  }, [
-    executeWithRetry,
-    enableRetry,
-    maxRetries,
-    retryDelay,
-    throwOnError,
-    enablePerformanceTracking,
-    handleErrorWithContext
-  ]);
+    },
+    [
+      executeWithRetry,
+      enableRetry,
+      maxRetries,
+      retryDelay,
+      throwOnError,
+      enablePerformanceTracking,
+      handleErrorWithContext,
+    ],
+  );
 
   // Business logic validation with error handling
-  const validateBusinessLogic = useCallback(async (
-    validationType: 'orderPlacement' | 'groupOrderParticipation' | 'payment',
-    data: any
-  ) => {
-    if (!enableBusinessValidation) return { isValid: true, errors: [], warnings: [] };
+  const validateBusinessLogic = useCallback(
+    async (validationType: 'orderPlacement' | 'groupOrderParticipation' | 'payment', data: any) => {
+      if (!enableBusinessValidation) return { isValid: true, errors: [], warnings: [] };
 
-    try {
-      let result;
-      
-      switch (validationType) {
-        case 'orderPlacement':
-          result = await businessValidator.validateOrderPlacement(data);
-          break;
-        case 'groupOrderParticipation':
-          result = await businessValidator.validateGroupOrderParticipation(data);
-          break;
-        case 'payment':
-          result = await businessValidator.validatePayment(data);
-          break;
-        default:
-          throw new Error(`Unknown validation type: ${validationType}`);
-      }
+      try {
+        let result;
 
-      // Handle business errors
-      if (!result.isValid) {
-        for (const error of result.errors) {
-          await handleBusinessError(error.code, error.message, error.suggestions);
+        switch (validationType) {
+          case 'orderPlacement':
+            result = await businessValidator.validateOrderPlacement(data);
+            break;
+          case 'groupOrderParticipation':
+            result = await businessValidator.validateGroupOrderParticipation(data);
+            break;
+          case 'payment':
+            result = await businessValidator.validatePayment(data);
+            break;
+          default:
+            throw new Error(`Unknown validation type: ${validationType}`);
         }
-      }
 
-      return result;
-    } catch (error) {
-      await handleErrorWithContext(error as Error, { validationType, data });
-      throw error;
-    }
-  }, [enableBusinessValidation, handleBusinessError, handleErrorWithContext]);
+        // Handle business errors
+        if (!result.isValid) {
+          for (const error of result.errors) {
+            await handleBusinessError(error.code, error.message, error.suggestions);
+          }
+        }
+
+        return result;
+      } catch (error) {
+        await handleErrorWithContext(error as Error, { validationType, data });
+        throw error;
+      }
+    },
+    [enableBusinessValidation, handleBusinessError, handleErrorWithContext],
+  );
 
   // Form validation with error handling
-  const validateForm = useCallback(async (
-    formData: Record<string, any>,
-    validationRules: Record<string, any>
-  ) => {
-    try {
-      const errors: ValidationError[] = [];
-      
-      // Perform validation (this would use your validation utility)
-      for (const [field, rules] of Object.entries(validationRules)) {
-        const value = formData[field];
-        
-        if (rules.required && (!value || value === '')) {
-          const error: ValidationError = {
-            type: 'VALIDATION_ERROR',
-            field,
-            value,
-            message: `${field} is required`,
-            timestamp: Date.now(),
-            constraints: ['required']
-          };
-          
-          errors.push(error);
-          await handleValidationError(field, value, error.message, error.constraints);
-        }
-      }
+  const validateForm = useCallback(
+    async (formData: Record<string, any>, validationRules: Record<string, any>) => {
+      try {
+        const errors: ValidationError[] = [];
 
-      return {
-        isValid: errors.length === 0,
-        errors
-      };
-    } catch (error) {
-      await handleErrorWithContext(error as Error, { formData, validationRules });
-      throw error;
-    }
-  }, [handleValidationError, handleErrorWithContext]);
+        // Perform validation (this would use your validation utility)
+        for (const [field, rules] of Object.entries(validationRules)) {
+          const value = formData[field];
+
+          if (rules.required && (!value || value === '')) {
+            const error: ValidationError = {
+              type: 'VALIDATION_ERROR',
+              field,
+              value,
+              message: `${field} is required`,
+              timestamp: Date.now(),
+              constraints: ['required'],
+            };
+
+            errors.push(error);
+            await handleValidationError(field, value, error.message, error.constraints);
+          }
+        }
+
+        return {
+          isValid: errors.length === 0,
+          errors,
+        };
+      } catch (error) {
+        await handleErrorWithContext(error as Error, { formData, validationRules });
+        throw error;
+      }
+    },
+    [handleValidationError, handleErrorWithContext],
+  );
 
   // Retry current operation
   const retry = useCallback(async () => {
     if (!state.canRetry || !state.error) return;
 
-    setState(prev => ({ ...prev, error: null, retryCount: 0 }));
-    
+    setState((prev) => ({ ...prev, error: null, retryCount: 0 }));
+
     // This would need to be implemented based on your specific retry logic
     // For now, we'll just clear the error state
   }, [state.canRetry, state.error]);
 
   // Clear error state
   const clearError = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       error: null,
       canRetry: false,
-      retryCount: 0
+      retryCount: 0,
     }));
   }, []);
 
@@ -265,13 +267,13 @@ export function useComprehensiveErrorHandling(options: ErrorHandlingOptions = {}
         filename: event.filename,
         lineno: event.lineno,
         colno: event.colno,
-        unhandled: true
+        unhandled: true,
       });
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       handleErrorWithContext(new Error(event.reason), {
-        unhandledRejection: true
+        unhandledRejection: true,
       });
     };
 
@@ -300,7 +302,7 @@ export function useComprehensiveErrorHandling(options: ErrorHandlingOptions = {}
     // Utilities
     isRetryableError: (error: AppError) => isRetryableError(error),
     getErrorSeverity: (error: AppError) => getErrorSeverity(error),
-    getRecoveryActions: (error: Error, context?: string) => getRecoveryActions(error, context)
+    getRecoveryActions: (error: Error, context?: string) => getRecoveryActions(error, context),
   };
 }
 

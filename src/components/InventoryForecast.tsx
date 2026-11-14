@@ -4,13 +4,13 @@ import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface InventoryForecastProps {
-  supplierId: Id<"suppliers">;
+  supplierId: Id<'suppliers'>;
 }
 
 export default function InventoryForecast({ supplierId }: InventoryForecastProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  
+
   const forecasts = useQuery(api.suppliers.getSupplierForecasts, { supplierId });
   const generateForecast = useAction(api.suppliers.generateForecastForSupplier);
 
@@ -25,7 +25,7 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
       setGenerateError(
         message.includes('Insufficient data')
           ? 'Not enough recent orders or inventory to build a forecast yet.'
-          : 'Could not generate a forecast right now. Please try again later.'
+          : 'Could not generate a forecast right now. Please try again later.',
       );
     } finally {
       setIsGenerating(false);
@@ -50,7 +50,7 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -78,7 +78,12 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
             ) : (
               <>
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
                 </svg>
                 Generate New Forecast
               </>
@@ -86,7 +91,10 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
           </button>
         </div>
         {generateError && (
-          <p role="alert" className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p
+            role="alert"
+            className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          >
             {generateError}
           </p>
         )}
@@ -100,7 +108,11 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
               <div className="flex items-center mb-3">
                 <svg className="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <h3 className="text-lg font-semibold text-blue-800">Forecast Summary</h3>
               </div>
@@ -127,36 +139,39 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
             {/* Forecasts Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {forecasts.map((forecast: any, index: number) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 transition-colors">
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 transition-colors"
+                >
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold text-gray-800 truncate">{forecast.item}</h4>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getConfidenceColor(forecast.confidence)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getConfidenceColor(forecast.confidence)}`}
+                    >
                       {getConfidenceLabel(forecast.confidence)}
                     </span>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Predicted Demand:</span>
-                      <span className="font-semibold text-gray-800">
-                        {forecast.predictedQty} units
-                      </span>
+                      <span className="font-semibold text-gray-800">{forecast.predictedQty} units</span>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Confidence:</span>
                       <span className="font-semibold text-gray-800">
                         {Math.round(forecast.confidence * 100)}%
                       </span>
                     </div>
-                    
+
                     {forecast.reason && (
                       <div className="mt-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
                         <strong>Reasoning:</strong> {forecast.reason}
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Action Buttons */}
                   <div className="mt-4 flex space-x-2">
                     <button className="flex-1 bg-green-50 text-green-600 py-1 px-2 rounded text-xs hover:bg-green-100 transition-colors">
@@ -174,7 +189,11 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <div>
                   <h4 className="text-yellow-800 font-medium mb-2">AI Insights & Recommendations</h4>
@@ -191,9 +210,7 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
         ) : (
           <div className="text-center py-12">
             <div className="text-4xl mb-4">🤖</div>
-            <h3 className="text-lg font-medium text-gray-700 mb-2">
-              No Forecasts Available
-            </h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-2">No Forecasts Available</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               Generate AI-powered demand forecasts to optimize your inventory management and reduce stockouts.
             </p>

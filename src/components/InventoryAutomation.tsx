@@ -37,7 +37,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
       action: 'Auto-reorder from preferred supplier',
       isActive: true,
       triggerThreshold: 10,
-      lastTriggered: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+      lastTriggered: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     },
     {
       id: '2',
@@ -45,7 +45,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
       condition: 'Market price changes by >15%',
       action: 'Update pricing automatically',
       isActive: false,
-      triggerThreshold: 15
+      triggerThreshold: 15,
     },
     {
       id: '3',
@@ -53,7 +53,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
       condition: 'Items expire within 3 days',
       action: 'Apply 20% discount automatically',
       isActive: true,
-      triggerThreshold: 3
+      triggerThreshold: 3,
     },
     {
       id: '4',
@@ -61,8 +61,8 @@ export default function InventoryAutomation({ supplierId }: Props) {
       condition: 'Quality rating drops below 3.5',
       action: 'Remove from catalog temporarily',
       isActive: true,
-      triggerThreshold: 3.5
-    }
+      triggerThreshold: 3.5,
+    },
   ]);
 
   const inventory = useQuery(api.inventory.getInventoryBySupplier, { supplierId });
@@ -74,7 +74,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
 
     const alerts: InventoryAlert[] = [];
 
-    inventory.forEach(item => {
+    inventory.forEach((item) => {
       // Low stock alerts
       if (item.currentStock < 15) {
         alerts.push({
@@ -84,7 +84,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
           message: `Only ${item.currentStock} ${item.unit} remaining`,
           severity: item.currentStock < 5 ? 'high' : 'medium',
           timestamp: new Date(),
-          action: 'Reorder now'
+          action: 'Reorder now',
         });
       }
 
@@ -99,7 +99,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
             message: `Expires in ${daysToExpiry} days`,
             severity: daysToExpiry <= 2 ? 'high' : 'medium',
             timestamp: new Date(),
-            action: 'Apply discount'
+            action: 'Apply discount',
           });
         }
       }
@@ -114,7 +114,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
           message: `Market price ${randomMarketChange > 0 ? 'increased' : 'decreased'} by ${Math.abs(randomMarketChange).toFixed(1)}%`,
           severity: 'low',
           timestamp: new Date(),
-          action: 'Adjust pricing'
+          action: 'Adjust pricing',
         });
       }
     });
@@ -128,15 +128,13 @@ export default function InventoryAutomation({ supplierId }: Props) {
   const alerts = generateAlerts();
 
   const toggleRule = (ruleId: string) => {
-    setAutomationRules(prev =>
-      prev.map(rule =>
-        rule.id === ruleId ? { ...rule, isActive: !rule.isActive } : rule
-      )
+    setAutomationRules((prev) =>
+      prev.map((rule) => (rule.id === ruleId ? { ...rule, isActive: !rule.isActive } : rule)),
     );
   };
 
   const handleAlertAction = async (alert: InventoryAlert) => {
-    const item = inventory?.find(inv => alert.itemName === inv.itemName);
+    const item = inventory?.find((inv) => alert.itemName === inv.itemName);
     if (!item) return;
 
     try {
@@ -146,7 +144,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
           const discountedPrice = item.pricePerUnit * 0.8;
           await updateInventoryItem({
             id: item._id as Id<'inventory'>,
-            pricePerUnit: discountedPrice
+            pricePerUnit: discountedPrice,
           });
           break;
         }
@@ -174,7 +172,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
             <p className="opacity-90">Intelligent automation to manage your inventory efficiently</p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold">{automationRules.filter(r => r.isActive).length}</div>
+            <div className="text-3xl font-bold">{automationRules.filter((r) => r.isActive).length}</div>
             <div className="text-sm opacity-90">Active Rules</div>
           </div>
         </div>
@@ -186,9 +184,14 @@ export default function InventoryAutomation({ supplierId }: Props) {
           <nav className="-mb-px flex space-x-8 px-6">
             {[
               { id: 'alerts', label: 'Active Alerts', icon: '🚨', count: alerts.length },
-              { id: 'rules', label: 'Automation Rules', icon: '⚙️', count: automationRules.filter(r => r.isActive).length },
-              { id: 'insights', label: 'Smart Insights', icon: '💡' }
-            ].map(tab => (
+              {
+                id: 'rules',
+                label: 'Automation Rules',
+                icon: '⚙️',
+                count: automationRules.filter((r) => r.isActive).length,
+              },
+              { id: 'insights', label: 'Smart Insights', icon: '💡' },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -201,11 +204,11 @@ export default function InventoryAutomation({ supplierId }: Props) {
                 <span className="mr-2">{tab.icon}</span>
                 {tab.label}
                 {tab.count !== undefined && (
-                  <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-                    activeTab === tab.id
-                      ? 'bg-purple-100 text-purple-800'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
+                  <span
+                    className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+                      activeTab === tab.id ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
                     {tab.count}
                   </span>
                 )}
@@ -221,10 +224,10 @@ export default function InventoryAutomation({ supplierId }: Props) {
               <h3 className="text-lg font-semibold text-gray-800">Active Alerts</h3>
               <div className="flex space-x-2">
                 <span className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded-full">
-                  {alerts.filter(a => a.severity === 'high').length} High
+                  {alerts.filter((a) => a.severity === 'high').length} High
                 </span>
                 <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full">
-                  {alerts.filter(a => a.severity === 'medium').length} Medium
+                  {alerts.filter((a) => a.severity === 'medium').length} Medium
                 </span>
               </div>
             </div>
@@ -237,46 +240,56 @@ export default function InventoryAutomation({ supplierId }: Props) {
                   <p className="text-gray-500">Your inventory is running smoothly!</p>
                 </div>
               ) : (
-                alerts.map(alert => (
+                alerts.map((alert) => (
                   <div
                     key={alert.id}
                     className={`border rounded-lg p-4 ${
-                      alert.severity === 'high' ? 'border-red-200 bg-red-50' :
-                      alert.severity === 'medium' ? 'border-yellow-200 bg-yellow-50' :
-                      'border-blue-200 bg-blue-50'
+                      alert.severity === 'high'
+                        ? 'border-red-200 bg-red-50'
+                        : alert.severity === 'medium'
+                          ? 'border-yellow-200 bg-yellow-50'
+                          : 'border-blue-200 bg-blue-50'
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
                           <span className="text-lg">
-                            {alert.type === 'lowStock' ? '📦' :
-                             alert.type === 'expiringSoon' ? '⏰' :
-                             alert.type === 'qualityIssue' ? '⚠️' : '💰'}
+                            {alert.type === 'lowStock'
+                              ? '📦'
+                              : alert.type === 'expiringSoon'
+                                ? '⏰'
+                                : alert.type === 'qualityIssue'
+                                  ? '⚠️'
+                                  : '💰'}
                           </span>
                           <div>
                             <h4 className="font-medium text-gray-900">{alert.itemName}</h4>
-                            <p className={`text-sm ${
-                              alert.severity === 'high' ? 'text-red-700' :
-                              alert.severity === 'medium' ? 'text-yellow-700' :
-                              'text-blue-700'
-                            }`}>
+                            <p
+                              className={`text-sm ${
+                                alert.severity === 'high'
+                                  ? 'text-red-700'
+                                  : alert.severity === 'medium'
+                                    ? 'text-yellow-700'
+                                    : 'text-blue-700'
+                              }`}
+                            >
                               {alert.message}
                             </p>
                           </div>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {alert.timestamp.toLocaleTimeString()}
-                        </div>
+                        <div className="text-xs text-gray-500">{alert.timestamp.toLocaleTimeString()}</div>
                       </div>
-                      
+
                       {alert.action && (
                         <button
                           onClick={() => handleAlertAction(alert)}
                           className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                            alert.severity === 'high' ? 'bg-red-500 hover:bg-red-600 text-white' :
-                            alert.severity === 'medium' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
-                            'bg-blue-500 hover:bg-blue-600 text-white'
+                            alert.severity === 'high'
+                              ? 'bg-red-500 hover:bg-red-600 text-white'
+                              : alert.severity === 'medium'
+                                ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                : 'bg-blue-500 hover:bg-blue-600 text-white'
                           }`}
                         >
                           {alert.action}
@@ -301,21 +314,27 @@ export default function InventoryAutomation({ supplierId }: Props) {
             </div>
 
             <div className="space-y-4">
-              {automationRules.map(rule => (
+              {automationRules.map((rule) => (
                 <div key={rule.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       <span className="text-lg">
-                        {rule.type === 'restock' ? '📦' :
-                         rule.type === 'priceUpdate' ? '💰' :
-                         rule.type === 'expiryAlert' ? '⏰' : '⚠️'}
+                        {rule.type === 'restock'
+                          ? '📦'
+                          : rule.type === 'priceUpdate'
+                            ? '💰'
+                            : rule.type === 'expiryAlert'
+                              ? '⏰'
+                              : '⚠️'}
                       </span>
                       <div>
-                        <h4 className="font-medium text-gray-900 capitalize">{rule.type.replace(/([A-Z])/g, ' $1')}</h4>
+                        <h4 className="font-medium text-gray-900 capitalize">
+                          {rule.type.replace(/([A-Z])/g, ' $1')}
+                        </h4>
                         <p className="text-sm text-gray-600">{rule.condition}</p>
                       </div>
                     </div>
-                    
+
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -326,13 +345,16 @@ export default function InventoryAutomation({ supplierId }: Props) {
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                     </label>
                   </div>
-                  
+
                   <div className="text-sm text-gray-600 mb-2">
                     <strong>Action:</strong> {rule.action}
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div>Threshold: {rule.triggerThreshold}{rule.type === 'priceUpdate' ? '%' : rule.type === 'expiryAlert' ? ' days' : ' units'}</div>
+                    <div>
+                      Threshold: {rule.triggerThreshold}
+                      {rule.type === 'priceUpdate' ? '%' : rule.type === 'expiryAlert' ? ' days' : ' units'}
+                    </div>
                     {rule.lastTriggered && (
                       <div>Last triggered: {rule.lastTriggered.toLocaleDateString()}</div>
                     )}
@@ -347,7 +369,7 @@ export default function InventoryAutomation({ supplierId }: Props) {
         {activeTab === 'insights' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Smart Insights</h3>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
                 <div className="flex items-center mb-4">
@@ -355,7 +377,8 @@ export default function InventoryAutomation({ supplierId }: Props) {
                   <h4 className="font-semibold text-green-800">Optimization Opportunity</h4>
                 </div>
                 <p className="text-green-700 text-sm mb-3">
-                  By enabling auto-restock rules, you could reduce stockouts by 85% and increase revenue by ₹15,000/month.
+                  By enabling auto-restock rules, you could reduce stockouts by 85% and increase revenue by
+                  ₹15,000/month.
                 </p>
                 <button className="text-green-800 hover:text-green-900 font-medium text-sm underline">
                   Enable auto-restock →
@@ -368,7 +391,8 @@ export default function InventoryAutomation({ supplierId }: Props) {
                   <h4 className="font-semibold text-blue-800">Demand Pattern</h4>
                 </div>
                 <p className="text-blue-700 text-sm mb-3">
-                  Vegetables show 40% higher demand on weekends. Consider adjusting your restocking schedule accordingly.
+                  Vegetables show 40% higher demand on weekends. Consider adjusting your restocking schedule
+                  accordingly.
                 </p>
                 <button className="text-blue-800 hover:text-blue-900 font-medium text-sm underline">
                   Adjust schedule →
@@ -381,7 +405,8 @@ export default function InventoryAutomation({ supplierId }: Props) {
                   <h4 className="font-semibold text-purple-800">Waste Reduction</h4>
                 </div>
                 <p className="text-purple-700 text-sm mb-3">
-                  Implementing expiry alerts could reduce waste by 30% and save ₹8,000/month on spoiled inventory.
+                  Implementing expiry alerts could reduce waste by 30% and save ₹8,000/month on spoiled
+                  inventory.
                 </p>
                 <button className="text-purple-800 hover:text-purple-900 font-medium text-sm underline">
                   Set up alerts →
@@ -394,7 +419,8 @@ export default function InventoryAutomation({ supplierId }: Props) {
                   <h4 className="font-semibold text-orange-800">Quick Wins</h4>
                 </div>
                 <p className="text-orange-700 text-sm mb-3">
-                  3 items are currently priced 20% below market rate. Adjusting prices could increase profit by ₹5,000/week.
+                  3 items are currently priced 20% below market rate. Adjusting prices could increase profit
+                  by ₹5,000/week.
                 </p>
                 <button className="text-orange-800 hover:text-orange-900 font-medium text-sm underline">
                   Review pricing →

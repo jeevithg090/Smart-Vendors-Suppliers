@@ -1,15 +1,15 @@
-import React from 'react'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, waitFor, fireEvent, renderHook } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { ConvexProvider } from 'convex/react'
-import { ConvexReactClient } from 'convex/react'
-import App from '../../App'
-import WorkflowIntegration from '../../components/WorkflowIntegration'
-import { SECURITY_CONFIG } from '../../config/security'
+import React from 'react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, waitFor, fireEvent, renderHook } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { ConvexProvider } from 'convex/react';
+import { ConvexReactClient } from 'convex/react';
+import App from '../../App';
+import WorkflowIntegration from '../../components/WorkflowIntegration';
+import { SECURITY_CONFIG } from '../../config/security';
 
 // Mock Convex client
-const mockConvexClient = new ConvexReactClient('https://test.convex.cloud')
+const mockConvexClient = new ConvexReactClient('https://test.convex.cloud');
 
 const convexMockData = vi.hoisted(() => ({
   emptyQueryCallCount: 0,
@@ -25,7 +25,7 @@ const convexMockData = vi.hoisted(() => ({
       city: 'Mumbai',
       state: 'Maharashtra',
       pincode: '400001',
-      coordinates: { lat: 19.0760, lng: 72.8777 }
+      coordinates: { lat: 19.076, lng: 72.8777 },
     },
     businessType: 'Street Food',
     isVerified: true,
@@ -35,10 +35,10 @@ const convexMockData = vi.hoisted(() => ({
       preferredCategories: ['Vegetables', 'Spices'],
       budgetRange: { min: 1000, max: 10000 },
       qualityPreference: 'High',
-      deliveryTimePreference: 'Same Day'
+      deliveryTimePreference: 'Same Day',
     },
     createdAt: Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   },
   workflowState: {
     discoveryCompleted: false,
@@ -50,7 +50,7 @@ const convexMockData = vi.hoisted(() => ({
     financialAnalyticsViewed: false,
     communicationUsed: false,
     currentStep: 'discover',
-    lastActivity: Date.now()
+    lastActivity: Date.now(),
   },
   inventory: [
     {
@@ -61,7 +61,7 @@ const convexMockData = vi.hoisted(() => ({
       currentStock: 120,
       unit: 'kg',
       pricePerUnit: 30,
-      quality: 'Grade A'
+      quality: 'Grade A',
     },
     {
       _id: 'inv-2',
@@ -71,279 +71,275 @@ const convexMockData = vi.hoisted(() => ({
       currentStock: 200,
       unit: 'kg',
       pricePerUnit: 55,
-      quality: 'Premium'
-    }
+      quality: 'Premium',
+    },
   ],
   suppliers: [
     { _id: 'sup-1', businessName: 'Fresh Hub' },
-    { _id: 'sup-2', businessName: 'Grain Masters' }
-  ]
+    { _id: 'sup-2', businessName: 'Grain Masters' },
+  ],
 }));
 
 // Mock Convex queries
 vi.mock('convex/react', async () => {
-  const actual = await vi.importActual('convex/react')
+  const actual = await vi.importActual('convex/react');
   return {
     ...actual,
     useQuery: vi.fn((_query, args) => {
-      if (args === 'skip') return null
+      if (args === 'skip') return null;
 
       if (args && typeof args === 'object' && 'userId' in args) {
-        return convexMockData.vendor
+        return convexMockData.vendor;
       }
 
       if (args && typeof args === 'object' && 'vendorId' in args) {
-        return convexMockData.workflowState
+        return convexMockData.workflowState;
       }
 
       if (args && typeof args === 'object' && Object.keys(args).length === 0) {
-        convexMockData.emptyQueryCallCount += 1
+        convexMockData.emptyQueryCallCount += 1;
         return convexMockData.emptyQueryCallCount % 2 === 1
           ? convexMockData.inventory
-          : convexMockData.suppliers
+          : convexMockData.suppliers;
       }
 
-      return null
+      return null;
     }),
-    useMutation: vi.fn(() => vi.fn())
-  }
-})
+    useMutation: vi.fn(() => vi.fn()),
+  };
+});
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ConvexProvider client={mockConvexClient}>
-    <BrowserRouter>
-      {children}
-    </BrowserRouter>
+    <BrowserRouter>{children}</BrowserRouter>
   </ConvexProvider>
-)
+);
 
 describe('Final Integration Tests', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    convexMockData.emptyQueryCallCount = 0
+    vi.clearAllMocks();
+    convexMockData.emptyQueryCallCount = 0;
     // Reset localStorage
-    localStorage.clear()
-  })
+    localStorage.clear();
+  });
 
   describe('Application Initialization', () => {
     it('should initialize with all security measures', async () => {
       render(
         <TestWrapper>
           <App />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       // Check if security headers are configured
-      expect(SECURITY_CONFIG.headers['X-Frame-Options']).toBe('DENY')
-      expect(SECURITY_CONFIG.headers['X-Content-Type-Options']).toBe('nosniff')
-      
+      expect(SECURITY_CONFIG.headers['X-Frame-Options']).toBe('DENY');
+      expect(SECURITY_CONFIG.headers['X-Content-Type-Options']).toBe('nosniff');
+
       // Check if CSP is configured
-      expect(SECURITY_CONFIG.csp.directives['default-src']).toContain("'self'")
-      expect(SECURITY_CONFIG.csp.directives['script-src']).toContain('https://api.convex.cloud')
-    })
+      expect(SECURITY_CONFIG.csp.directives['default-src']).toContain("'self'");
+      expect(SECURITY_CONFIG.csp.directives['script-src']).toContain('https://api.convex.cloud');
+    });
 
     it('should load performance optimizations', async () => {
-      const performanceSpy = vi.spyOn(performance, 'mark')
-      
+      const performanceSpy = vi.spyOn(performance, 'mark');
+
       render(
         <TestWrapper>
           <App />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       // Performance monitoring should be active
-      expect(performanceSpy).toHaveBeenCalled()
-    })
-  })
+      expect(performanceSpy).toHaveBeenCalled();
+    });
+  });
 
   describe('Workflow Integration', () => {
     it('should render workflow integration component', async () => {
       render(
         <TestWrapper>
           <WorkflowIntegration />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       await waitFor(() => {
-        expect(screen.getByText('Vendor Sourcing Workflow')).toBeInTheDocument()
-      })
+        expect(screen.getByText('Vendor Sourcing Workflow')).toBeInTheDocument();
+      });
 
       // Check if workflow steps are rendered
-      expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument()
-      expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument()
-      expect(screen.getByText(/Group Orders/i)).toBeInTheDocument()
-    })
+      expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument();
+      expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument();
+      expect(screen.getByText(/Group Orders/i)).toBeInTheDocument();
+    });
 
     it('should handle workflow navigation', async () => {
       render(
         <TestWrapper>
           <WorkflowIntegration />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       await waitFor(() => {
-        expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument()
-      })
+        expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument();
+      });
 
       // Click on AI Recommendations step
-      const recommendationsButton = screen.getByText(/AI Recommendations/i)
-      fireEvent.click(recommendationsButton)
+      const recommendationsButton = screen.getByText(/AI Recommendations/i);
+      fireEvent.click(recommendationsButton);
 
       // Should navigate to recommendations step
       await waitFor(() => {
-        expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument()
-      })
-    })
-  })
+        expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument();
+      });
+    });
+  });
 
   describe('Security Features', () => {
     it('should sanitize user input', async () => {
-      const { sanitizeUserInput } = await import('../../config/security')
-      
-      const maliciousInput = '<script>alert("xss")</script>Hello'
-      const sanitized = sanitizeUserInput(maliciousInput)
-      
-      expect(sanitized).not.toContain('<script>')
-      expect(sanitized).not.toContain('alert')
-      expect(sanitized).toBe('Hello')
-    })
+      const { sanitizeUserInput } = await import('../../config/security');
+
+      const maliciousInput = '<script>alert("xss")</script>Hello';
+      const sanitized = sanitizeUserInput(maliciousInput);
+
+      expect(sanitized).not.toContain('<script>');
+      expect(sanitized).not.toContain('alert');
+      expect(sanitized).toBe('Hello');
+    });
 
     it('should validate file uploads', async () => {
-      const { validateFileUpload } = await import('../../config/security')
-      
+      const { validateFileUpload } = await import('../../config/security');
+
       // Valid file
-      const validFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
-      const validResult = validateFileUpload(validFile)
-      expect(validResult.valid).toBe(true)
-      
+      const validFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+      const validResult = validateFileUpload(validFile);
+      expect(validResult.valid).toBe(true);
+
       // Invalid file type
-      const invalidFile = new File(['test'], 'test.exe', { type: 'application/exe' })
-      const invalidResult = validateFileUpload(invalidFile)
-      expect(invalidResult.valid).toBe(false)
-      expect(invalidResult.error).toContain('not allowed')
-    })
+      const invalidFile = new File(['test'], 'test.exe', { type: 'application/exe' });
+      const invalidResult = validateFileUpload(invalidFile);
+      expect(invalidResult.valid).toBe(false);
+      expect(invalidResult.error).toContain('not allowed');
+    });
 
     it('should enforce rate limiting', async () => {
-      const { rateLimiter } = await import('../../utils/security')
-      
-      const identifier = 'test-user'
-      
+      const { rateLimiter } = await import('../../utils/security');
+
+      const identifier = 'test-user';
+
       // Should allow initial requests
-      expect(rateLimiter.isAllowed(identifier)).toBe(true)
-      
+      expect(rateLimiter.isAllowed(identifier)).toBe(true);
+
       // Should track remaining requests
-      const remaining = rateLimiter.getRemainingRequests(identifier)
-      expect(remaining).toBeLessThan(100)
-    })
-  })
+      const remaining = rateLimiter.getRemainingRequests(identifier);
+      expect(remaining).toBeLessThan(100);
+    });
+  });
 
   describe('Performance Features', () => {
     it('should implement lazy loading', async () => {
-      const { loadComponentAsync } = await import('../../utils/performance')
-      
-      const LazyComponent = loadComponentAsync(() => 
-        Promise.resolve({ default: () => <div>Lazy Component</div> })
-      )
-      
-      expect(LazyComponent).toBeDefined()
-    })
+      const { loadComponentAsync } = await import('../../utils/performance');
+
+      const LazyComponent = loadComponentAsync(() =>
+        Promise.resolve({ default: () => <div>Lazy Component</div> }),
+      );
+
+      expect(LazyComponent).toBeDefined();
+    });
 
     it('should optimize images', async () => {
-      const { optimizeImage } = await import('../../utils/performance')
-      
-      const originalSrc = 'https://example.com/image.jpg'
-      const optimized = optimizeImage(originalSrc, 300, 200, 80)
-      
-      expect(optimized).toContain('w=300')
-      expect(optimized).toContain('h=200')
-      expect(optimized).toContain('q=80')
-    })
+      const { optimizeImage } = await import('../../utils/performance');
+
+      const originalSrc = 'https://example.com/image.jpg';
+      const optimized = optimizeImage(originalSrc, 300, 200, 80);
+
+      expect(optimized).toContain('w=300');
+      expect(optimized).toContain('h=200');
+      expect(optimized).toContain('q=80');
+    });
 
     it('should implement virtual scrolling', async () => {
-      const { useVirtualScrolling } = await import('../../utils/performance')
-      
-      const items = Array.from({ length: 1000 }, (_, i) => ({ id: i, name: `Item ${i}` }))
-      const itemHeight = 50
-      const containerHeight = 400
-      
-      const { result } = renderHook(() =>
-        useVirtualScrolling(items, itemHeight, containerHeight)
-      )
-      
-      expect(result.current.visibleItems.length).toBeLessThan(items.length)
-      expect(result.current.totalHeight).toBe(items.length * itemHeight)
-    })
-  })
+      const { useVirtualScrolling } = await import('../../utils/performance');
+
+      const items = Array.from({ length: 1000 }, (_, i) => ({ id: i, name: `Item ${i}` }));
+      const itemHeight = 50;
+      const containerHeight = 400;
+
+      const { result } = renderHook(() => useVirtualScrolling(items, itemHeight, containerHeight));
+
+      expect(result.current.visibleItems.length).toBeLessThan(items.length);
+      expect(result.current.totalHeight).toBe(items.length * itemHeight);
+    });
+  });
 
   describe('UI/UX Enhancements', () => {
     it('should render enhanced UI components', async () => {
-      const { EnhancedButton, LoadingSpinner } = await import('../../components/EnhancedUI')
-      
+      const { EnhancedButton, LoadingSpinner } = await import('../../components/EnhancedUI');
+
       render(
         <TestWrapper>
           <div>
             <EnhancedButton variant="primary">Test Button</EnhancedButton>
             <LoadingSpinner size="md" text="Loading..." />
           </div>
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
-      expect(screen.getByText('Test Button')).toBeInTheDocument()
-      expect(screen.getByText('Loading...')).toBeInTheDocument()
-    })
+      expect(screen.getByText('Test Button')).toBeInTheDocument();
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
+    });
 
     it('should handle loading states', async () => {
-      const { EnhancedButton } = await import('../../components/EnhancedUI')
-      
+      const { EnhancedButton } = await import('../../components/EnhancedUI');
+
       render(
         <TestWrapper>
           <EnhancedButton loading={true}>Submit</EnhancedButton>
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
-      expect(screen.getByText('Loading...')).toBeInTheDocument()
-      expect(screen.queryByText('Submit')).not.toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      expect(screen.queryByText('Submit')).not.toBeInTheDocument();
+    });
+  });
 
   describe('Error Handling', () => {
     it('should handle network errors gracefully', async () => {
       // Mock a network error
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       render(
         <TestWrapper>
           <App />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       // Should not crash the application
-      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0)
-      
-      consoleSpy.mockRestore()
-    })
-  })
+      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0);
+
+      consoleSpy.mockRestore();
+    });
+  });
 
   describe('Accessibility', () => {
     it('should have proper ARIA labels', async () => {
       render(
         <TestWrapper>
           <App />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       // Check for accessibility features
-      const buttons = screen.queryAllByRole('button')
-      const links = screen.queryAllByRole('link')
-      const interactiveElements = [...buttons, ...links]
-      expect(interactiveElements.length).toBeGreaterThan(0)
-      
+      const buttons = screen.queryAllByRole('button');
+      const links = screen.queryAllByRole('link');
+      const interactiveElements = [...buttons, ...links];
+      expect(interactiveElements.length).toBeGreaterThan(0);
+
       // Should have proper focus management
-      buttons.forEach(button => {
-        expect(button).toHaveAttribute('type')
-      })
-    })
-  })
+      buttons.forEach((button) => {
+        expect(button).toHaveAttribute('type');
+      });
+    });
+  });
 
   describe('Mobile Responsiveness', () => {
     it('should adapt to mobile viewport', async () => {
@@ -352,18 +348,18 @@ describe('Final Integration Tests', () => {
         writable: true,
         configurable: true,
         value: 375,
-      })
-      
+      });
+
       render(
         <TestWrapper>
           <App />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       // Should render mobile-friendly interface
-      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0)
-    })
-  })
+      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0);
+    });
+  });
 
   describe('Offline Capability', () => {
     it('should handle offline state', async () => {
@@ -372,43 +368,43 @@ describe('Final Integration Tests', () => {
         writable: true,
         configurable: true,
         value: false,
-      })
+      });
 
       render(
         <TestWrapper>
           <App />
-        </TestWrapper>
-      )
+        </TestWrapper>,
+      );
 
       // Should still render the application
-      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0)
-    })
-  })
-})
+      expect(screen.getAllByText(/Smart Street/i).length).toBeGreaterThan(0);
+    });
+  });
+});
 
 describe('End-to-End Workflow Tests', () => {
   it('should complete a full vendor workflow', async () => {
     render(
       <TestWrapper>
         <WorkflowIntegration />
-      </TestWrapper>
-    )
+      </TestWrapper>,
+    );
 
     await waitFor(() => {
-      expect(screen.getByText('Vendor Sourcing Workflow')).toBeInTheDocument()
-    })
+      expect(screen.getByText('Vendor Sourcing Workflow')).toBeInTheDocument();
+    });
 
     // Should show progress
-    expect(screen.getByText(/Progress:/)).toBeInTheDocument()
-    
+    expect(screen.getByText(/Progress:/)).toBeInTheDocument();
+
     // Should show workflow steps
-    expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument()
-    expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument()
-    expect(screen.getByText(/Group Orders/i)).toBeInTheDocument()
-    
+    expect(screen.getByText(/Discover Suppliers/i)).toBeInTheDocument();
+    expect(screen.getByText(/AI Recommendations/i)).toBeInTheDocument();
+    expect(screen.getByText(/Group Orders/i)).toBeInTheDocument();
+
     // Should have quick actions
-    expect(screen.getByText('Quick Order')).toBeInTheDocument()
-    expect(screen.getByText('Join Group Order')).toBeInTheDocument()
-    expect(screen.getByText('Messages')).toBeInTheDocument()
-  })
-})
+    expect(screen.getByText('Quick Order')).toBeInTheDocument();
+    expect(screen.getByText('Join Group Order')).toBeInTheDocument();
+    expect(screen.getByText('Messages')).toBeInTheDocument();
+  });
+});

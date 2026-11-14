@@ -9,96 +9,104 @@ interface UseErrorHandlerOptions {
 }
 
 export function useErrorHandler(options: UseErrorHandlerOptions = {}) {
-  const {
-    showNotification = true,
-    logToConsole = true,
-    reportToService = true
-  } = options;
+  const { showNotification = true, logToConsole = true, reportToService = true } = options;
 
-  const handleError = useCallback(async (error: AppError | Error, context?: Record<string, any>) => {
-    let appError: AppError;
+  const handleError = useCallback(
+    async (error: AppError | Error, context?: Record<string, any>) => {
+      let appError: AppError;
 
-    // Convert generic Error to AppError
-    if (!(error as AppError).type) {
-      appError = {
-        type: 'SYSTEM_ERROR',
-        code: 'UNKNOWN',
+      // Convert generic Error to AppError
+      if (!(error as AppError).type) {
+        appError = {
+          type: 'SYSTEM_ERROR',
+          code: 'UNKNOWN',
+          message: error.message,
+          timestamp: Date.now(),
+          context,
+        };
+      } else {
+        appError = error as AppError;
+        if (context) {
+          appError.context = { ...appError.context, ...context };
+        }
+      }
+
+      // Log to console if enabled
+      if (logToConsole) {
+        console.error('Error handled:', appError);
+      }
+
+      // Report to error service if enabled
+      if (reportToService) {
+        try {
+          await errorReporting.reportError(appError, undefined);
+        } catch (reportingError) {
+          console.warn('Failed to report error:', reportingError);
+        }
+      }
+
+      // Show user notification if enabled
+      if (showNotification) {
+        showErrorNotification(appError);
+      }
+
+      return appError;
+    },
+    [showNotification, logToConsole, reportToService],
+  );
+
+  const handleNetworkError = useCallback(
+    async (error: Error, retryable = true) => {
+      const networkError: NetworkError = {
+        type: 'NETWORK_ERROR',
+        code: 'CONNECTION_FAILED',
         message: error.message,
         timestamp: Date.now(),
-        context
+        retryable,
       };
-    } else {
-      appError = error as AppError;
-      if (context) {
-        appError.context = { ...appError.context, ...context };
-      }
-    }
 
-    // Log to console if enabled
-    if (logToConsole) {
-      console.error('Error handled:', appError);
-    }
+      return handleError(networkError);
+    },
+    [handleError],
+  );
 
-    // Report to error service if enabled
-    if (reportToService) {
-      try {
-        await errorReporting.reportError(appError, undefined);
-      } catch (reportingError) {
-        console.warn('Failed to report error:', reportingError);
-      }
-    }
+  const handleValidationError = useCallback(
+    async (field: string, value: any, message: string, constraints: string[] = []) => {
+      const validationError: ValidationError = {
+        type: 'VALIDATION_ERROR',
+        field,
+        value,
+        message,
+        timestamp: Date.now(),
+        constraints,
+      };
 
-    // Show user notification if enabled
-    if (showNotification) {
-      showErrorNotification(appError);
-    }
+      return handleError(validationError);
+    },
+    [handleError],
+  );
 
-    return appError;
-  }, [showNotification, logToConsole, reportToService]);
+  const handleBusinessError = useCallback(
+    async (code: BusinessError['code'], message: string, suggestions: string[] = []) => {
+      const businessError: BusinessError = {
+        type: 'BUSINESS_ERROR',
+        code,
+        message,
+        timestamp: Date.now(),
+        suggestions,
+        actionable: suggestions.length > 0,
+      };
 
-  const handleNetworkError = useCallback(async (error: Error, retryable = true) => {
-    const networkError: NetworkError = {
-      type: 'NETWORK_ERROR',
-      code: 'CONNECTION_FAILED',
-      message: error.message,
-      timestamp: Date.now(),
-      retryable
-    };
-
-    return handleError(networkError);
-  }, [handleError]);
-
-  const handleValidationError = useCallback(async (field: string, value: any, message: string, constraints: string[] = []) => {
-    const validationError: ValidationError = {
-      type: 'VALIDATION_ERROR',
-      field,
-      value,
-      message,
-      timestamp: Date.now(),
-      constraints
-    };
-
-    return handleError(validationError);
-  }, [handleError]);
-
-  const handleBusinessError = useCallback(async (code: BusinessError['code'], message: string, suggestions: string[] = []) => {
-    const businessError: BusinessError = {
-      type: 'BUSINESS_ERROR',
-      code,
-      message,
-      timestamp: Date.now(),
-      suggestions,
-      actionable: suggestions.length > 0
-    };
-
-    return handleError(businessError);
-  }, [handleError]);
+      return handleError(businessError);
+    },
+    [handleError],
+  );
 
   return {
     handleError,
     handleNetworkError,
     handleValidationError,
-    handleBusinessError
+    handleBusinessError,
   };
 }
 
@@ -106,7 +114,7 @@ function showErrorNotification(error: AppError) {
   // This would integrate with your notification system
   // For now, we'll use a simple approach
   const message = getUserFriendlyMessage(error);
-  
+
   // You could integrate with a toast library here
   if (typeof window === 'undefined') {
     console.warn('User notification:', message);
@@ -115,7 +123,8 @@ function showErrorNotification(error: AppError) {
 
   const hasNotificationApi = 'Notification' in window;
   const isConstructable = typeof Notification === 'function';
-  const permissionGranted = hasNotificationApi && (Notification as typeof globalThis.Notification).permission === 'granted';
+  const permissionGranted =
+    hasNotificationApi && (Notification as typeof globalThis.Notification).permission === 'granted';
 
   if (hasNotificationApi && isConstructable && permissionGranted) {
     try {
@@ -137,13 +146,13 @@ function getUserFriendlyMessage(error: AppError): string {
         case 'SESSION_EXPIRED':
           return 'Your session has expired. Please log in again.';
         case 'UNAUTHORIZED':
-          return 'You don\'t have permission to perform this action.';
+          return "You don't have permission to perform this action.";
         case 'INVALID_CREDENTIALS':
           return 'Invalid email or password. Please try again.';
         default:
           return 'Authentication error occurred.';
       }
-    
+
     case 'NETWORK_ERROR':
       switch (error.code) {
         case 'CONNECTION_FAILED':
@@ -155,7 +164,7 @@ function getUserFriendlyMessage(error: AppError): string {
         default:
           return 'Network error occurred.';
       }
-    
+
     case 'BUSINESS_ERROR':
       switch (error.code) {
         case 'INSUFFICIENT_STOCK':
@@ -171,10 +180,10 @@ function getUserFriendlyMessage(error: AppError): string {
         default:
           return error.message;
       }
-    
+
     case 'VALIDATION_ERROR':
       return `${error.field}: ${error.message}`;
-    
+
     default:
       return error.message || 'An unexpected error occurred.';
   }

@@ -73,7 +73,10 @@ export class EnhancedVoiceProcessor {
   /**
    * Backward-compatible search pipeline used by legacy UI/tests.
    */
-  async processVoiceSearch(audioData: Uint8Array, userContext?: any): Promise<{
+  async processVoiceSearch(
+    audioData: Uint8Array,
+    userContext?: any,
+  ): Promise<{
     originalQuery: string;
     translatedQuery: string;
     language: string;
@@ -86,7 +89,7 @@ export class EnhancedVoiceProcessor {
     const parsed = await this.parseSearchQuery(
       transcription.transcription,
       transcription.language,
-      userContext
+      userContext,
     );
 
     return {
@@ -106,13 +109,13 @@ export class EnhancedVoiceProcessor {
   async processVoiceFilter(
     audioData: Uint8Array,
     currentFilters: VoiceFilters = {},
-    userContext?: any
+    userContext?: any,
   ): Promise<VoiceFilters> {
     const transcription = await this.processAudioToText(audioData, userContext?.preferences?.language);
     const parsed = await this.parseSearchQuery(
       transcription.transcription,
       transcription.language,
-      userContext
+      userContext,
     );
 
     return {
@@ -127,13 +130,12 @@ export class EnhancedVoiceProcessor {
   async generateVoiceResponse(
     query: string,
     context: any,
-    targetLanguage = 'en'
+    targetLanguage = 'en',
   ): Promise<{ answer: string; language: string; confidence: number; processingTime: number }> {
     const startTime = Date.now();
     const ai = await aiServiceIntegration.generateAIResponse(query, context);
-    const translatedAnswer = targetLanguage === 'en'
-      ? ai.response
-      : await this.translateText(ai.response, 'en', targetLanguage);
+    const translatedAnswer =
+      targetLanguage === 'en' ? ai.response : await this.translateText(ai.response, 'en', targetLanguage);
 
     return {
       answer: translatedAnswer,
@@ -150,31 +152,31 @@ export class EnhancedVoiceProcessor {
     try {
       // Translate to English if needed
       const translatedText = language === 'en' ? text : await this.translateText(text, language, 'en');
-      
+
       // Extract search terms using NLP
       const searchTerms = this.extractSearchTerms(translatedText);
-      
+
       // Try AI-powered filter extraction first, fallback to rule-based
       let filters: VoiceFilters;
       try {
         const aiResult = await openRouterFilterService.parseFilters({
           text: translatedText,
           language,
-          userContext
+          userContext,
         });
         filters = this.sanitizeFilters(aiResult.filters);
       } catch (aiError) {
         console.warn('AI filter parsing failed, using rule-based fallback:', aiError);
         filters = this.sanitizeFilters(this.extractFilters(translatedText));
       }
-      
+
       return {
         originalText: text,
         translatedText,
         language,
         confidence: 0.85, // Mock confidence
         searchTerms,
-        filters
+        filters,
       };
     } catch (error) {
       console.error('Error parsing search query:', error);
@@ -230,12 +232,7 @@ export class EnhancedVoiceProcessor {
   /**
    * Generate contextual AI response using OpenRouter
    */
-  async generateResponse(
-    query: string, 
-    context: any, 
-    userRole: string, 
-    queryType: string
-  ): Promise<string> {
+  async generateResponse(query: string, context: any, userRole: string, queryType: string): Promise<string> {
     try {
       // In a real implementation, this would call OpenRouter API
       return this.simulateOpenRouterResponse(query, context, userRole, queryType);
@@ -291,15 +288,32 @@ export class EnhancedVoiceProcessor {
    * Extract search terms from translated text
    */
   private extractSearchTerms(text: string): string[] {
-    const commonWords = ['i', 'need', 'want', 'find', 'show', 'get', 'buy', 'for', 'the', 'a', 'an', 'and', 'or'];
-    const words = text.toLowerCase().split(/\s+/).filter(word => 
-      word.length > 2 && !commonWords.includes(word)
-    );
+    const commonWords = [
+      'i',
+      'need',
+      'want',
+      'find',
+      'show',
+      'get',
+      'buy',
+      'for',
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+    ];
+    const words = text
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 2 && !commonWords.includes(word));
 
     // Map alternative names to standard terms
-    const mappedTerms = words.map(word => {
+    const mappedTerms = words.map((word) => {
       for (const [standard, alternatives] of Object.entries(INGREDIENT_ALTERNATIVES)) {
-        if (alternatives.some(alt => alt.toLowerCase().includes(word) || word.includes(alt.toLowerCase()))) {
+        if (
+          alternatives.some((alt) => alt.toLowerCase().includes(word) || word.includes(alt.toLowerCase()))
+        ) {
           return standard;
         }
       }
@@ -341,7 +355,7 @@ export class EnhancedVoiceProcessor {
       /under.*?(\d+)\s*(rupees?|rs)/,
       /below.*?(\d+)\s*(rupees?|rs)/,
       /above.*?(\d+)\s*(rupees?|rs)/,
-      /over.*?(\d+)\s*(rupees?|rs)/
+      /over.*?(\d+)\s*(rupees?|rs)/,
     ];
 
     for (const pattern of pricePatterns) {
@@ -367,11 +381,11 @@ export class EnhancedVoiceProcessor {
       premium: ['premium', 'high quality', 'best quality', 'top quality', 'excellent'],
       organic: ['organic', 'natural', 'chemical free'],
       fresh: ['fresh', 'new', 'recently harvested'],
-      grade_a: ['grade a', 'a grade', 'first grade', 'top grade']
+      grade_a: ['grade a', 'a grade', 'first grade', 'top grade'],
     };
 
     for (const [quality, keywords] of Object.entries(qualityPatterns)) {
-      if (keywords.some(keyword => lowerText.includes(keyword))) {
+      if (keywords.some((keyword) => lowerText.includes(keyword))) {
         filters.quality = quality;
         break;
       }
@@ -379,10 +393,16 @@ export class EnhancedVoiceProcessor {
 
     // FSSAI filters - enhanced patterns
     const fssaiKeywords = [
-      'fssai', 'certified', 'licensed', 'verified', 'approved', 
-      'food safety', 'food license', 'government approved'
+      'fssai',
+      'certified',
+      'licensed',
+      'verified',
+      'approved',
+      'food safety',
+      'food license',
+      'government approved',
     ];
-    if (fssaiKeywords.some(keyword => lowerText.includes(keyword))) {
+    if (fssaiKeywords.some((keyword) => lowerText.includes(keyword))) {
       filters.fssaiRequired = true;
     }
 
@@ -392,11 +412,11 @@ export class EnhancedVoiceProcessor {
       next_day: ['next day', 'tomorrow', '24 hours', 'one day'],
       express: ['express', 'fast', 'quick', 'urgent'],
       standard: ['standard', 'normal', 'regular'],
-      scheduled: ['scheduled', 'planned', 'specific time']
+      scheduled: ['scheduled', 'planned', 'specific time'],
     };
 
     for (const [deliveryType, keywords] of Object.entries(deliveryPatterns)) {
-      if (keywords.some(keyword => lowerText.includes(keyword))) {
+      if (keywords.some((keyword) => lowerText.includes(keyword))) {
         filters.deliveryTime = deliveryType;
         break;
       }
@@ -405,34 +425,52 @@ export class EnhancedVoiceProcessor {
     // Category filters - enhanced patterns with multilingual support
     const categoryPatterns = {
       vegetables: [
-        'vegetable', 'sabzi', 'sabji', 'காய்கறி', 'కూరగాయలు', 'সবজি',
-        'tomato', 'onion', 'potato', 'carrot', 'cabbage'
+        'vegetable',
+        'sabzi',
+        'sabji',
+        'காய்கறி',
+        'కూరగాయలు',
+        'সবজি',
+        'tomato',
+        'onion',
+        'potato',
+        'carrot',
+        'cabbage',
       ],
-      fruits: [
-        'fruit', 'phal', 'फल', 'பழம்', 'పండు', 'ফল',
-        'apple', 'banana', 'orange', 'mango', 'grapes'
-      ],
+      fruits: ['fruit', 'phal', 'फल', 'பழம்', 'పండు', 'ফল', 'apple', 'banana', 'orange', 'mango', 'grapes'],
       spices: [
-        'spice', 'masala', 'मसाला', 'மசாலா', 'మసాలా', 'মসলা',
-        'turmeric', 'chili', 'coriander', 'cumin', 'cardamom'
+        'spice',
+        'masala',
+        'मसाला',
+        'மசாலா',
+        'మసాలా',
+        'মসলা',
+        'turmeric',
+        'chili',
+        'coriander',
+        'cumin',
+        'cardamom',
       ],
       grains: [
-        'grain', 'anaj', 'अनाज', 'தானியம்', 'ధాన్యాలు', 'শস্য',
-        'rice', 'wheat', 'barley', 'millet', 'quinoa'
+        'grain',
+        'anaj',
+        'अनाज',
+        'தானியம்',
+        'ధాన్యాలు',
+        'শস্য',
+        'rice',
+        'wheat',
+        'barley',
+        'millet',
+        'quinoa',
       ],
-      pulses: [
-        'pulse', 'dal', 'दाल', 'பருப்பு', 'పప్పు', 'ডাল',
-        'lentils', 'chickpeas', 'kidney beans'
-      ],
-      dairy: [
-        'dairy', 'milk', 'दूध', 'பால்', 'పాలు', 'দুধ',
-        'yogurt', 'cheese', 'butter', 'ghee'
-      ]
+      pulses: ['pulse', 'dal', 'दाल', 'பருப்பு', 'పప్పు', 'ডাল', 'lentils', 'chickpeas', 'kidney beans'],
+      dairy: ['dairy', 'milk', 'दूध', 'பால்', 'పాలు', 'দুধ', 'yogurt', 'cheese', 'butter', 'ghee'],
     };
 
     const detectedCategories = [];
     for (const [category, keywords] of Object.entries(categoryPatterns)) {
-      if (keywords.some(keyword => lowerText.includes(keyword.toLowerCase()))) {
+      if (keywords.some((keyword) => lowerText.includes(keyword.toLowerCase()))) {
         detectedCategories.push(category);
       }
     }
@@ -468,41 +506,44 @@ export class EnhancedVoiceProcessor {
   /**
    * Simulate Sarvam AI STT response
    */
-  private async simulateSarvamSTT(audioData: Uint8Array, targetLanguage?: string): Promise<Omit<VoiceProcessingResult, 'processingTime'>> {
+  private async simulateSarvamSTT(
+    audioData: Uint8Array,
+    targetLanguage?: string,
+  ): Promise<Omit<VoiceProcessingResult, 'processingTime'>> {
     // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const mockResponses = [
       {
         transcription: 'मुझे सब्जियों के लिए सप्लायर चाहिए',
         language: 'hi',
         confidence: 0.87,
-        alternatives: ['मुझे सब्जी सप्लायर चाहिए', 'सब्जियों के लिए दुकान चाहिए']
+        alternatives: ['मुझे सब्जी सप्लायर चाहिए', 'सब्जियों के लिए दुकान चाहिए'],
       },
       {
         transcription: 'Show me vegetable suppliers near me',
         language: 'en',
         confidence: 0.92,
-        alternatives: ['Show vegetable suppliers nearby', 'Find vegetable suppliers near me']
+        alternatives: ['Show vegetable suppliers nearby', 'Find vegetable suppliers near me'],
       },
       {
         transcription: 'காய்கறி சப்ளையர்களை காட்டு',
         language: 'ta',
         confidence: 0.84,
-        alternatives: ['காய்கறி விற்பனையாளர்களை காட்டு']
+        alternatives: ['காய்கறி விற்பனையாளர்களை காட்டு'],
       },
       {
         transcription: 'What is the price of tomatoes today?',
         language: 'en',
         confidence: 0.95,
-        alternatives: ['What are tomato prices today?', 'How much do tomatoes cost?']
+        alternatives: ['What are tomato prices today?', 'How much do tomatoes cost?'],
       },
       {
         transcription: 'केवल प्रमाणित सप्लायर दिखाएं',
         language: 'hi',
         confidence: 0.89,
-        alternatives: ['सिर्फ सर्टिफाइड सप्लायर दिखाएं']
-      }
+        alternatives: ['सिर्फ सर्टिफाइड सप्लायर दिखाएं'],
+      },
     ];
 
     const languageFiltered = targetLanguage
@@ -516,35 +557,40 @@ export class EnhancedVoiceProcessor {
   /**
    * Simulate OpenRouter AI response
    */
-  private simulateOpenRouterResponse(query: string, context: any, userRole: string, queryType: string): string {
+  private simulateOpenRouterResponse(
+    query: string,
+    context: any,
+    userRole: string,
+    queryType: string,
+  ): string {
     const responses = {
       search: {
         vendor: [
-          "I found 3 suppliers near you with fresh vegetables. Fresh Vegetables Hub is closest at 2.3km with tomatoes at ₹35/kg and onions at ₹25/kg. All suppliers are FSSAI certified.",
-          "Found 2 spice suppliers with competitive prices. Spice Palace has turmeric at ₹180/kg and red chili at ₹220/kg. Quality Spices offers bulk discounts.",
-          "Located 4 grain suppliers in your area. Best prices: Rice ₹45/kg, Wheat flour ₹35/kg. Premium Grains offers same-day delivery."
+          'I found 3 suppliers near you with fresh vegetables. Fresh Vegetables Hub is closest at 2.3km with tomatoes at ₹35/kg and onions at ₹25/kg. All suppliers are FSSAI certified.',
+          'Found 2 spice suppliers with competitive prices. Spice Palace has turmeric at ₹180/kg and red chili at ₹220/kg. Quality Spices offers bulk discounts.',
+          'Located 4 grain suppliers in your area. Best prices: Rice ₹45/kg, Wheat flour ₹35/kg. Premium Grains offers same-day delivery.',
         ],
         supplier: [
-          "Based on demand patterns, vendors in your area are looking for tomatoes, onions, and green chilies. Consider stocking these items for better sales.",
-          "High demand for spices this week. Turmeric and red chili powder are most requested. Consider competitive pricing to attract more orders."
-        ]
+          'Based on demand patterns, vendors in your area are looking for tomatoes, onions, and green chilies. Consider stocking these items for better sales.',
+          'High demand for spices this week. Turmeric and red chili powder are most requested. Consider competitive pricing to attract more orders.',
+        ],
       },
       filter: {
         vendor: [
-          "Applied filters: FSSAI certified suppliers only, within 5km radius, price range ₹20-50/kg. Found 4 matching suppliers.",
-          "Filtered results: Premium quality suppliers, same-day delivery available. 6 suppliers match your criteria."
-        ]
+          'Applied filters: FSSAI certified suppliers only, within 5km radius, price range ₹20-50/kg. Found 4 matching suppliers.',
+          'Filtered results: Premium quality suppliers, same-day delivery available. 6 suppliers match your criteria.',
+        ],
       },
       general: {
         vendor: [
           "You can search for suppliers by speaking item names, set price alerts, join group orders, or ask about market trends. Try saying 'Find tomato suppliers' or 'Set price alert for onions'.",
-          "I can help you find suppliers, compare prices, join group orders, and track your expenses. What would you like to do?"
+          'I can help you find suppliers, compare prices, join group orders, and track your expenses. What would you like to do?',
         ],
         supplier: [
           "You can check inventory status, view new orders, update stock levels, or get demand forecasts. Try saying 'Show new orders' or 'What needs restocking?'.",
-          "I can help you manage inventory, process orders, analyze demand, and improve your business performance. How can I assist you today?"
-        ]
-      }
+          'I can help you manage inventory, process orders, analyze demand, and improve your business performance. How can I assist you today?',
+        ],
+      },
     };
 
     const modeResponses = responses[queryType as keyof typeof responses] || responses.general;
@@ -559,15 +605,15 @@ export class EnhancedVoiceProcessor {
     if (duration < 500) {
       return { isValid: false, error: 'Audio too short. Please speak for at least 1 second.' };
     }
-    
+
     if (duration > VOICE_QUERY_CONFIG.MAX_RECORDING_TIME) {
       return { isValid: false, error: 'Audio too long. Maximum recording time is 30 seconds.' };
     }
-    
+
     if (audioData.length === 0) {
       return { isValid: false, error: 'No audio data received.' };
     }
-    
+
     return { isValid: true };
   }
 
@@ -585,21 +631,24 @@ export class EnhancedVoiceProcessor {
    * Calculate confidence score based on various factors
    */
   calculateConfidence(
-    transcription: string, 
-    audioQuality: number, 
-    languageDetectionConfidence: number
+    transcription: string,
+    audioQuality: number,
+    languageDetectionConfidence: number,
   ): number {
     // Combine different confidence factors
     const transcriptionLength = Math.min(transcription.length / 50, 1); // Longer text = higher confidence
     const wordCount = transcription.split(' ').length;
     const wordCountFactor = Math.min(wordCount / 5, 1); // 5+ words = full confidence
-    
-    return Math.round(
-      (audioQuality * 0.4 + 
-       languageDetectionConfidence * 0.3 + 
-       transcriptionLength * 0.2 + 
-       wordCountFactor * 0.1) * 100
-    ) / 100;
+
+    return (
+      Math.round(
+        (audioQuality * 0.4 +
+          languageDetectionConfidence * 0.3 +
+          transcriptionLength * 0.2 +
+          wordCountFactor * 0.1) *
+          100,
+      ) / 100
+    );
   }
 }
 

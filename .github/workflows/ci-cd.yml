@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   NODE_VERSION: '18'
@@ -97,7 +97,7 @@ jobs:
 
       - name: Start preview server
         run: npm run preview &
-        
+
       - name: Wait for server
         run: npx wait-on http://localhost:4173
 
@@ -284,7 +284,7 @@ jobs:
         run: |
           npm install -g lighthouse
           lighthouse https://smart-street.vercel.app --output=json --output-path=./lighthouse-report.json
-          
+
       - name: Upload performance report
         uses: actions/upload-artifact@v3
         with:
@@ -352,10 +352,10 @@ jobs:
         run: |
           # Check main application
           curl -f https://smart-street.vercel.app || exit 1
-          
+
           # Check API endpoints
           curl -f https://smart-street.vercel.app/api/health || echo "Health endpoint not available"
-          
+
           # Check critical user flows
           curl -f https://smart-street.vercel.app/vendor/auth || exit 1
           curl -f https://smart-street.vercel.app/supplier/auth || exit 1
@@ -363,7 +363,7 @@ jobs:
       - name: Run smoke tests
         run: |
           npx playwright test --grep="@smoke" --reporter=json > smoke-test-results.json || true
-          
+
           # Check if critical tests passed
           node -e "
             const results = require('./smoke-test-results.json');
@@ -383,7 +383,7 @@ jobs:
           # Basic uptime check
           response_time=$(curl -o /dev/null -s -w '%{time_total}' https://smart-street.vercel.app)
           echo "Response time: ${response_time}s"
-          
+
           # Check if response time is acceptable (< 3 seconds)
           node -e "
             const responseTime = parseFloat('$response_time');

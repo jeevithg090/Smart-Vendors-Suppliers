@@ -48,10 +48,13 @@ export default function SupplierProfileMedia({ supplierId, businessName }: Suppl
   const [url, setUrl] = useState('');
 
   const mediaSummary = useMemo(() => {
-    const byType = mediaItems.reduce((acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byType = mediaItems.reduce(
+      (acc, item) => {
+        acc[item.type] = (acc[item.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     return byType;
   }, [mediaItems]);
 
@@ -126,7 +129,10 @@ export default function SupplierProfileMedia({ supplierId, businessName }: Suppl
 
       <div className="mt-4 flex flex-wrap gap-2">
         {Object.entries(mediaSummary).map(([mediaType, count]) => (
-          <span key={mediaType} className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+          <span
+            key={mediaType}
+            className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700"
+          >
             {mediaType}: {count}
           </span>
         ))}
@@ -134,7 +140,9 @@ export default function SupplierProfileMedia({ supplierId, businessName }: Suppl
 
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {mediaItems.length === 0 && (
-          <p className="text-sm text-slate-500">No media yet. Add storefront or product URLs to improve buyer trust.</p>
+          <p className="text-sm text-slate-500">
+            No media yet. Add storefront or product URLs to improve buyer trust.
+          </p>
         )}
         {mediaItems.map((item) => (
           <article key={item.id} className="rounded-lg border border-slate-200 p-3">
@@ -173,4 +181,3 @@ export default function SupplierProfileMedia({ supplierId, businessName }: Suppl
     </div>
   );
 }
-

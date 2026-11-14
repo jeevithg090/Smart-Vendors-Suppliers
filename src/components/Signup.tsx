@@ -49,7 +49,9 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
             Join Smart Street as {preSelectedRole === 'vendor' ? 'Vendor' : 'Supplier'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {preSelectedRole === 'vendor' ? 'Start buying from suppliers in your area' : 'Start selling to vendors in your area'}
+            {preSelectedRole === 'vendor'
+              ? 'Start buying from suppliers in your area'
+              : 'Start selling to vendors in your area'}
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -123,9 +125,7 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
 
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
             <div className="flex items-center justify-center">
-              <div className="text-lg mr-2">
-                {preSelectedRole === 'vendor' ? '🏪' : '🚚'}
-              </div>
+              <div className="text-lg mr-2">{preSelectedRole === 'vendor' ? '🏪' : '🚚'}</div>
               <div className="text-sm">
                 <span className="font-medium text-orange-800">
                   Creating account as {preSelectedRole === 'vendor' ? 'Vendor' : 'Supplier'}
@@ -179,7 +179,8 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
         <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Mode</h3>
           <p className="text-xs text-blue-700">
-            This is a demo. Your account will be created locally and will persist until you clear browser storage.
+            This is a demo. Your account will be created locally and will persist until you clear browser
+            storage.
           </p>
         </div>
       </div>

@@ -7,18 +7,15 @@ import GroupOrderCreation from './GroupOrderCreation';
 import GroupOrderParticipation from './GroupOrderParticipation';
 
 interface GroupOrderManagerProps {
-  vendorId: Id<"vendors">;
+  vendorId: Id<'vendors'>;
   vendorLocation: string;
 }
 
 type ViewMode = 'list' | 'create' | 'participate' | 'myOrders';
 
-const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
-  vendorId,
-  vendorLocation,
-}) => {
+const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({ vendorId, vendorLocation }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('list');
-  const [selectedGroupOrderId, setSelectedGroupOrderId] = useState<Id<"groupOrders"> | null>(null);
+  const [selectedGroupOrderId, setSelectedGroupOrderId] = useState<Id<'groupOrders'> | null>(null);
   const [pendingJoinQuantity, setPendingJoinQuantity] = useState<number>(1);
   const [successMessage, setSuccessMessage] = useState<string>('');
 
@@ -27,13 +24,13 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
     vendorId,
   });
 
-  const handleJoinOrder = (_groupOrderId: Id<"groupOrders">, _quantity: number) => {
+  const handleJoinOrder = (_groupOrderId: Id<'groupOrders'>, _quantity: number) => {
     setSelectedGroupOrderId(_groupOrderId);
     setPendingJoinQuantity(_quantity > 0 ? _quantity : 1);
     setCurrentView('participate');
   };
 
-  const handleOrderCreated = (_groupOrderId: Id<"groupOrders">) => {
+  const handleOrderCreated = (_groupOrderId: Id<'groupOrders'>) => {
     setSuccessMessage('Group order created successfully!');
     setCurrentView('list');
     setTimeout(() => setSuccessMessage(''), 5000);
@@ -64,7 +61,7 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
             onCancel={handleCancel}
           />
         );
-      
+
       case 'participate':
         return selectedGroupOrderId ? (
           <GroupOrderParticipation
@@ -76,7 +73,7 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
             onCancel={handleCancel}
           />
         ) : null;
-      
+
       case 'myOrders':
         return (
           <div className="space-y-6">
@@ -89,33 +86,28 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
                 ← Back to All Orders
               </button>
             </div>
-            
+
             {vendorGroupOrders && vendorGroupOrders.length > 0 ? (
               <div className="grid gap-6">
                 {vendorGroupOrders.map((order) => (
-                  <div
-                    key={order._id}
-                    className="bg-white rounded-lg shadow-md border border-gray-200 p-6"
-                  >
+                  <div key={order._id} className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                          {order.itemName}
-                        </h3>
-                        <p className="text-gray-600">
-                          Supplier: {order.supplierName}
-                        </p>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-1">{order.itemName}</h3>
+                        <p className="text-gray-600">Supplier: {order.supplierName}</p>
                       </div>
                       <div className="text-right">
-                        <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                          order.status === 'open' 
-                            ? 'bg-green-100 text-green-800'
-                            : order.status === 'locked'
-                            ? 'bg-orange-100 text-orange-800'
-                            : order.status === 'completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <div
+                          className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                            order.status === 'open'
+                              ? 'bg-green-100 text-green-800'
+                              : order.status === 'locked'
+                                ? 'bg-orange-100 text-orange-800'
+                                : order.status === 'completed'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </div>
                         {order.isInitiator && (
@@ -140,8 +132,8 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
                     {order.vendorParticipation && (
                       <div className="bg-blue-50 rounded-lg p-3">
                         <p className="text-sm text-blue-800">
-                          Your participation: {order.vendorParticipation.quantity} kg 
-                          (₹{(order.vendorParticipation.quantity * order.pricePerUnit).toFixed(2)})
+                          Your participation: {order.vendorParticipation.quantity} kg (₹
+                          {(order.vendorParticipation.quantity * order.pricePerUnit).toFixed(2)})
                         </p>
                       </div>
                     )}
@@ -151,12 +143,14 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
             ) : (
               <div className="text-center py-12">
                 <div className="text-gray-500 text-lg mb-2">No group orders found</div>
-                <p className="text-gray-400">You haven't initiated or participated in any group orders yet.</p>
+                <p className="text-gray-400">
+                  You haven't initiated or participated in any group orders yet.
+                </p>
               </div>
             )}
           </div>
         );
-      
+
       default:
         return (
           <GroupOrderList
@@ -174,7 +168,12 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
       {successMessage && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center">
-            <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5 text-green-600 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-green-800">{successMessage}</p>
@@ -206,14 +205,25 @@ const GroupOrderManager: React.FC<GroupOrderManagerProps> = ({
           {/* Info Banner */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-blue-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-5 h-5 text-blue-600 mr-3 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <div>
                 <h3 className="font-medium text-blue-900 mb-1">How Group Orders Work</h3>
                 <p className="text-blue-800 text-sm">
-                  Join with other vendors to reach bulk quantities and get better prices. 
-                  Orders automatically lock when the target quantity is reached, and individual orders are created for each participant.
+                  Join with other vendors to reach bulk quantities and get better prices. Orders automatically
+                  lock when the target quantity is reached, and individual orders are created for each
+                  participant.
                 </p>
               </div>
             </div>

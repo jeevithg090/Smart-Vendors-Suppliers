@@ -19,14 +19,14 @@ export const handlers = [
   http.post('/api/auth/login', () => {
     return HttpResponse.json({
       user: { id: 'test-user', email: 'test@example.com' },
-      token: 'test-token'
+      token: 'test-token',
     });
   }),
 
   http.post('/api/auth/register', () => {
     return HttpResponse.json({
       user: { id: 'test-user', email: 'test@example.com' },
-      token: 'test-token'
+      token: 'test-token',
     });
   }),
 
@@ -38,8 +38,8 @@ export const handlers = [
         businessName: 'Test Supplier',
         location: 'Mumbai',
         trustScore: 4.5,
-        categories: ['vegetables']
-      }
+        categories: ['vegetables'],
+      },
     ]);
   }),
 
@@ -48,7 +48,7 @@ export const handlers = [
     return HttpResponse.json({
       id: 'order-1',
       status: 'pending',
-      totalCost: 100
+      totalCost: 100,
     });
   }),
 

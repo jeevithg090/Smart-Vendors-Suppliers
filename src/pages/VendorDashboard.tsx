@@ -20,18 +20,30 @@ import RoleOnboardingWizard from '../components/RoleOnboardingWizard';
 
 export default function VendorDashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflow' | 'profile' | 'suppliers' | 'groupOrders' | 'orders' | 'analytics' | 'recipes' | 'negotiations' | 'market' | 'planner' | 'growth'>('dashboard');
+  const [activeTab, setActiveTab] = useState<
+    | 'dashboard'
+    | 'workflow'
+    | 'profile'
+    | 'suppliers'
+    | 'groupOrders'
+    | 'orders'
+    | 'analytics'
+    | 'recipes'
+    | 'negotiations'
+    | 'market'
+    | 'planner'
+    | 'growth'
+  >('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<string | null>(null);
 
   // Get vendor data or create if doesn't exist
-  const vendorQuery = useQuery(api.vendors.getByUserId,
-    user ? { userId: user.id } : "skip"
-  );
+  const vendorQuery = useQuery(api.vendors.getByUserId, user ? { userId: user.id } : 'skip');
   const vendor = vendorQuery;
 
-  const vendorStats = useQuery(api.vendors.getVendorStats,
-    vendorQuery ? { vendorId: vendorQuery._id } : "skip"
+  const vendorStats = useQuery(
+    api.vendors.getVendorStats,
+    vendorQuery ? { vendorId: vendorQuery._id } : 'skip',
   );
 
   // Onboarding effect for first-time users
@@ -52,9 +64,7 @@ export default function VendorDashboard() {
               <h1 className="text-xl font-semibold text-gray-800">Smart Street</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Welcome, {user?.firstName || 'User'}!
-              </span>
+              <span className="text-sm text-gray-600">Welcome, {user?.firstName || 'User'}!</span>
               <VoiceQuery userRole="vendor" className="mr-4" />
               <button
                 onClick={logout}
@@ -135,11 +145,11 @@ export default function VendorDashboard() {
               Back to Dashboard
             </button>
           </div>
-          <SupplierSearch 
+          <SupplierSearch
             vendorLocation={{
               lat: vendor.location.coordinates.lat,
               lng: vendor.location.coordinates.lng,
-              city: vendor.location.city
+              city: vendor.location.city,
             }}
           />
         </div>
@@ -185,10 +195,7 @@ export default function VendorDashboard() {
               Back to Dashboard
             </button>
           </div>
-          <GroupOrderManager
-            vendorId={vendor._id}
-            vendorLocation={vendor.location.city}
-          />
+          <GroupOrderManager vendorId={vendor._id} vendorLocation={vendor.location.city} />
         </div>
       </PageLayout>
     );
@@ -365,7 +372,8 @@ export default function VendorDashboard() {
               <div>
                 <h3 className="text-blue-800 font-medium">Welcome to Smart Vendors!</h3>
                 <p className="text-blue-700 text-sm">
-                  Get started by searching for suppliers, placing your first order, or joining a group order. Need help? Click the <span className="font-bold">Help</span> button in the menu.
+                  Get started by searching for suppliers, placing your first order, or joining a group order.
+                  Need help? Click the <span className="font-bold">Help</span> button in the menu.
                 </p>
                 <button
                   onClick={() => setShowOnboarding(false)}
@@ -397,12 +405,8 @@ export default function VendorDashboard() {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                  Vendor Dashboard
-                </h1>
-                <p className="text-gray-600">
-                  Welcome back, {vendor.ownerName}!
-                </p>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Vendor Dashboard</h1>
+                <p className="text-gray-600">Welcome back, {vendor.ownerName}!</p>
                 <p className="text-sm text-gray-500 mt-1">
                   {vendor.businessName} • {vendor.location.city}, {vendor.location.state}
                 </p>
@@ -412,7 +416,12 @@ export default function VendorDashboard() {
                 className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors font-medium flex items-center"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
                 Manage Profile
               </button>
@@ -450,7 +459,7 @@ export default function VendorDashboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-blue-50 p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -459,17 +468,13 @@ export default function VendorDashboard() {
                   </div>
                   <div className="text-gray-600">Verification Status</div>
                   {!vendor.isVerified && (
-                    <div className="text-xs text-blue-600 mt-1">
-                      Complete profile to verify
-                    </div>
+                    <div className="text-xs text-blue-600 mt-1">Complete profile to verify</div>
                   )}
                 </div>
-                <div className="text-3xl">
-                  {vendor.isVerified ? '✅' : '⏳'}
-                </div>
+                <div className="text-3xl">{vendor.isVerified ? '✅' : '⏳'}</div>
               </div>
             </div>
-            
+
             <div className="bg-green-50 p-6 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -492,12 +497,17 @@ export default function VendorDashboard() {
             <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-yellow-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <div>
                   <h3 className="text-yellow-800 font-medium">Improve Your Trust Score</h3>
                   <p className="text-yellow-700 text-sm mt-1">
-                    Complete your profile and add FSSAI license to increase your trust score and get better supplier recommendations.
+                    Complete your profile and add FSSAI license to increase your trust score and get better
+                    supplier recommendations.
                   </p>
                   <button
                     onClick={() => setActiveTab('profile')}
@@ -625,19 +635,15 @@ export default function VendorDashboard() {
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Performance</h2>
               <div className="grid md:grid-cols-4 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-gray-800 mb-1">
-                    {vendorStats.totalOrders}
-                  </div>
+                  <div className="text-2xl font-bold text-gray-800 mb-1">{vendorStats.totalOrders}</div>
                   <div className="text-sm text-gray-600">Total Orders</div>
                 </div>
-                
+
                 <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-gray-800 mb-1">
-                    {vendorStats.completedOrders}
-                  </div>
+                  <div className="text-2xl font-bold text-gray-800 mb-1">{vendorStats.completedOrders}</div>
                   <div className="text-sm text-gray-600">Completed Orders</div>
                 </div>
-                
+
                 {vendorStats.averageRating > 0 && (
                   <div className="bg-gray-50 p-4 rounded-lg text-center">
                     <div className="text-2xl font-bold text-gray-800 mb-1 flex items-center justify-center">
@@ -649,7 +655,7 @@ export default function VendorDashboard() {
                     <div className="text-sm text-gray-600">Average Rating</div>
                   </div>
                 )}
-                
+
                 {vendorStats.onTimeDeliveryRate > 0 && (
                   <div className="bg-gray-50 p-4 rounded-lg text-center">
                     <div className="text-2xl font-bold text-gray-800 mb-1">
@@ -667,12 +673,10 @@ export default function VendorDashboard() {
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
             <div className="bg-gray-50 rounded-lg p-8 text-center">
               <div className="text-4xl mb-4">📈</div>
-              <h3 className="text-lg font-medium text-gray-700 mb-2">
-                Your sourcing journey starts here
-              </h3>
+              <h3 className="text-lg font-medium text-gray-700 mb-2">Your sourcing journey starts here</h3>
               <p className="text-gray-600 max-w-md mx-auto">
-                Once you start placing orders and interacting with suppliers, 
-                your recent activity will appear here.
+                Once you start placing orders and interacting with suppliers, your recent activity will appear
+                here.
               </p>
             </div>
           </div>
@@ -691,7 +695,6 @@ export default function VendorDashboard() {
           </div>
         </div>
       )}
-
     </PageLayout>
   );
 }

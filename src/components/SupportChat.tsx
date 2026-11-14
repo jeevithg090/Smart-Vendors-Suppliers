@@ -19,11 +19,7 @@ export const SupportChat: React.FC<SupportChatProps> = ({ isOpen, onClose }) => 
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
       <div className="absolute right-4 bottom-4 w-96 h-[600px] bg-white rounded-lg shadow-xl flex flex-col">
         {activeTicket ? (
-          <SupportTicketChat
-            ticketId={activeTicket}
-            onBack={() => setActiveTicket(null)}
-            onClose={onClose}
-          />
+          <SupportTicketChat ticketId={activeTicket} onBack={() => setActiveTicket(null)} onClose={onClose} />
         ) : showTicketForm ? (
           <CreateTicketForm
             onBack={() => setShowTicketForm(false)}
@@ -58,10 +54,7 @@ const SupportTicketList: React.FC<{
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">Support</h3>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -93,8 +86,18 @@ const SupportTicketList: React.FC<{
           </div>
         ) : tickets.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+            <svg
+              className="w-12 h-12 mx-auto mb-4 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
+              />
             </svg>
             <p>No support tickets</p>
             <p className="text-sm">Create a ticket to get help</p>
@@ -108,30 +111,24 @@ const SupportTicketList: React.FC<{
                 className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900 truncate">
-                    {ticket.subject}
-                  </h4>
+                  <h4 className="font-medium text-gray-900 truncate">{ticket.subject}</h4>
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
                       ticket.status === 'open'
                         ? 'bg-green-100 text-green-800'
                         : ticket.status === 'in_progress'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : ticket.status === 'resolved'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : ticket.status === 'resolved'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
                     }`}
                   >
                     {ticket.status.replace('_', ' ')}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 truncate">
-                  {ticket.description}
-                </p>
+                <p className="text-sm text-gray-600 truncate">{ticket.description}</p>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-gray-500 capitalize">
-                    {ticket.category}
-                  </span>
+                  <span className="text-xs text-gray-500 capitalize">{ticket.category}</span>
                   <span className="text-xs text-gray-500">
                     {new Date(ticket.createdAt).toLocaleDateString()}
                   </span>
@@ -186,20 +183,14 @@ const CreateTicketForm: React.FC<{
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-2">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <h3 className="text-lg font-semibold text-gray-900">Create Ticket</h3>
         </div>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -209,9 +200,7 @@ const CreateTicketForm: React.FC<{
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Subject
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
           <input
             type="text"
             value={formData.subject}
@@ -223,9 +212,7 @@ const CreateTicketForm: React.FC<{
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -239,9 +226,7 @@ const CreateTicketForm: React.FC<{
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Priority
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
           <select
             value={formData.priority}
             onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
@@ -255,9 +240,7 @@ const CreateTicketForm: React.FC<{
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -333,21 +316,14 @@ const SupportTicketChat: React.FC<{
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-2">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 truncate">
-              {ticket?.subject}
-            </h3>
-            <p className="text-xs text-gray-500">
-              Ticket #{ticketId.slice(-8)}
-            </p>
+            <h3 className="text-sm font-semibold text-gray-900 truncate">{ticket?.subject}</h3>
+            <p className="text-xs text-gray-500">Ticket #{ticketId.slice(-8)}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -356,18 +332,15 @@ const SupportTicketChat: React.FC<{
               ticket?.status === 'open'
                 ? 'bg-green-100 text-green-800'
                 : ticket?.status === 'in_progress'
-                ? 'bg-yellow-100 text-yellow-800'
-                : ticket?.status === 'resolved'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-gray-100 text-gray-800'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : ticket?.status === 'resolved'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
             }`}
           >
             {ticket?.status.replace('_', ' ')}
           </span>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -384,17 +357,11 @@ const SupportTicketChat: React.FC<{
           >
             <div
               className={`max-w-xs px-4 py-2 rounded-lg ${
-                msg.senderType === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-900'
+                msg.senderType === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-900'
               }`}
             >
               <p className="text-sm">{msg.content}</p>
-              <p
-                className={`text-xs mt-1 ${
-                  msg.senderType === 'user' ? 'text-blue-100' : 'text-gray-500'
-                }`}
-              >
+              <p className={`text-xs mt-1 ${msg.senderType === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>
                 {new Date(msg.createdAt).toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit',

@@ -5,8 +5,8 @@ import { BusinessLogicValidator } from '../../utils/businessErrorHandler';
 vi.mock('../../hooks/useErrorHandler', () => ({
   useErrorHandler: () => ({
     handleError: vi.fn(),
-    handleBusinessError: vi.fn()
-  })
+    handleBusinessError: vi.fn(),
+  }),
 }));
 
 describe('BusinessLogicValidator', () => {
@@ -20,11 +20,9 @@ describe('BusinessLogicValidator', () => {
     it('should validate successful order placement', async () => {
       const orderData = {
         supplierId: 'supplier-1',
-        items: [
-          { itemName: 'Tomatoes', quantity: 10 }
-        ],
+        items: [{ itemName: 'Tomatoes', quantity: 10 }],
         totalCost: 1000,
-        deliveryAddress: 'Mumbai, Maharashtra'
+        deliveryAddress: 'Mumbai, Maharashtra',
       };
 
       const result = await validator.validateOrderPlacement(orderData);
@@ -37,16 +35,14 @@ describe('BusinessLogicValidator', () => {
       // Mock the checkInventoryStock method to return insufficient stock
       vi.spyOn(validator as any, 'checkInventoryStock').mockResolvedValue({
         available: 5,
-        reserved: 0
+        reserved: 0,
       });
 
       const orderData = {
         supplierId: 'supplier-1',
-        items: [
-          { itemName: 'Tomatoes', quantity: 10 }
-        ],
+        items: [{ itemName: 'Tomatoes', quantity: 10 }],
         totalCost: 1000,
-        deliveryAddress: 'Mumbai, Maharashtra'
+        deliveryAddress: 'Mumbai, Maharashtra',
       };
 
       const result = await validator.validateOrderPlacement(orderData);
@@ -63,11 +59,9 @@ describe('BusinessLogicValidator', () => {
 
       const orderData = {
         supplierId: 'supplier-1',
-        items: [
-          { itemName: 'Tomatoes', quantity: 2 }
-        ],
+        items: [{ itemName: 'Tomatoes', quantity: 2 }],
         totalCost: 200,
-        deliveryAddress: 'Mumbai, Maharashtra'
+        deliveryAddress: 'Mumbai, Maharashtra',
       };
 
       const result = await validator.validateOrderPlacement(orderData);
@@ -83,11 +77,9 @@ describe('BusinessLogicValidator', () => {
 
       const orderData = {
         supplierId: 'supplier-1',
-        items: [
-          { itemName: 'Tomatoes', quantity: 10 }
-        ],
+        items: [{ itemName: 'Tomatoes', quantity: 10 }],
         totalCost: 1000,
-        deliveryAddress: 'Remote Area'
+        deliveryAddress: 'Remote Area',
       };
 
       const result = await validator.validateOrderPlacement(orderData);
@@ -105,7 +97,7 @@ describe('BusinessLogicValidator', () => {
         targetQuantity: 100,
         currentQuantity: 50,
         requestedQuantity: 20,
-        expiresAt: Date.now() + 2 * 60 * 60 * 1000 // 2 hours from now
+        expiresAt: Date.now() + 2 * 60 * 60 * 1000, // 2 hours from now
       };
 
       const result = await validator.validateGroupOrderParticipation(groupOrderData);
@@ -120,7 +112,7 @@ describe('BusinessLogicValidator', () => {
         targetQuantity: 100,
         currentQuantity: 50,
         requestedQuantity: 20,
-        expiresAt: Date.now() - 1000 // Already expired
+        expiresAt: Date.now() - 1000, // Already expired
       };
 
       const result = await validator.validateGroupOrderParticipation(groupOrderData);
@@ -136,7 +128,7 @@ describe('BusinessLogicValidator', () => {
         targetQuantity: 100,
         currentQuantity: 100, // Already full
         requestedQuantity: 20,
-        expiresAt: Date.now() + 2 * 60 * 60 * 1000
+        expiresAt: Date.now() + 2 * 60 * 60 * 1000,
       };
 
       const result = await validator.validateGroupOrderParticipation(groupOrderData);
@@ -152,7 +144,7 @@ describe('BusinessLogicValidator', () => {
         targetQuantity: 100,
         currentQuantity: 90,
         requestedQuantity: 20, // Exceeds remaining capacity of 10
-        expiresAt: Date.now() + 2 * 60 * 60 * 1000
+        expiresAt: Date.now() + 2 * 60 * 60 * 1000,
       };
 
       const result = await validator.validateGroupOrderParticipation(groupOrderData);
@@ -168,7 +160,7 @@ describe('BusinessLogicValidator', () => {
         targetQuantity: 100,
         currentQuantity: 50,
         requestedQuantity: 20,
-        expiresAt: Date.now() + 15 * 60 * 1000 // 15 minutes from now
+        expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutes from now
       };
 
       const result = await validator.validateGroupOrderParticipation(groupOrderData);
@@ -183,7 +175,7 @@ describe('BusinessLogicValidator', () => {
     it('should validate successful payment', async () => {
       const paymentData = {
         amount: 1000,
-        attempts: 1
+        attempts: 1,
       };
 
       const result = await validator.validatePayment(paymentData);
@@ -195,7 +187,7 @@ describe('BusinessLogicValidator', () => {
     it('should detect invalid payment amount', async () => {
       const paymentData = {
         amount: 0,
-        attempts: 1
+        attempts: 1,
       };
 
       const result = await validator.validatePayment(paymentData);
@@ -208,7 +200,7 @@ describe('BusinessLogicValidator', () => {
     it('should warn about suspicious payment', async () => {
       const paymentData = {
         amount: 60000, // Large amount
-        attempts: 1
+        attempts: 1,
       };
 
       const result = await validator.validatePayment(paymentData);

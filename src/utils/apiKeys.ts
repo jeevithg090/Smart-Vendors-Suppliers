@@ -9,8 +9,8 @@ interface APIKeys {
 // Read API keys from Vite environment variables (never hardcode them)
 export const getAPIKeys = (): APIKeys => {
   return {
-    sarvam: import.meta.env.VITE_SARVAM_API_KEY || "",
-    openRouter: import.meta.env.VITE_OPENROUTER_API_KEY || "",
+    sarvam: import.meta.env.VITE_SARVAM_API_KEY || '',
+    openRouter: import.meta.env.VITE_OPENROUTER_API_KEY || '',
     googleTranslate: import.meta.env.VITE_GOOGLE_TRANSLATE_API_KEY || undefined,
   };
 };
@@ -21,11 +21,11 @@ export const validateAPIKeys = (): { valid: boolean; missing: string[] } => {
   const missing: string[] = [];
 
   if (!keys.sarvam) {
-    missing.push("SARVAM_API_KEY");
+    missing.push('SARVAM_API_KEY');
   }
 
   if (!keys.openRouter) {
-    missing.push("OPENROUTER_API_KEY");
+    missing.push('OPENROUTER_API_KEY');
   }
 
   return {
@@ -42,15 +42,15 @@ export const getAPIKeyStatus = () => {
   return {
     sarvam: {
       configured: !!keys.sarvam,
-      status: keys.sarvam ? "✅ Configured" : "❌ Missing",
+      status: keys.sarvam ? '✅ Configured' : '❌ Missing',
     },
     openRouter: {
       configured: !!keys.openRouter,
-      status: keys.openRouter ? "✅ Configured" : "❌ Missing",
+      status: keys.openRouter ? '✅ Configured' : '❌ Missing',
     },
     googleTranslate: {
       configured: !!keys.googleTranslate,
-      status: keys.googleTranslate ? "✅ Configured" : "⚠️ Optional",
+      status: keys.googleTranslate ? '✅ Configured' : '⚠️ Optional',
     },
     overall: {
       valid: validation.valid,
@@ -61,29 +61,29 @@ export const getAPIKeyStatus = () => {
 
 // Environment variable names for reference
 export const ENV_VAR_NAMES = {
-  SARVAM_API_KEY: "VITE_SARVAM_API_KEY",
-  OPENROUTER_API_KEY: "VITE_OPENROUTER_API_KEY",
-  GOOGLE_TRANSLATE_API_KEY: "VITE_GOOGLE_TRANSLATE_API_KEY",
+  SARVAM_API_KEY: 'VITE_SARVAM_API_KEY',
+  OPENROUTER_API_KEY: 'VITE_OPENROUTER_API_KEY',
+  GOOGLE_TRANSLATE_API_KEY: 'VITE_GOOGLE_TRANSLATE_API_KEY',
 } as const;
 
 // Instructions for setting up API keys
 export const API_KEY_INSTRUCTIONS = {
   sarvam: {
-    name: "Sarvam AI",
-    url: "https://sarvam.ai",
-    description: "Multilingual speech-to-text API",
+    name: 'Sarvam AI',
+    url: 'https://sarvam.ai',
+    description: 'Multilingual speech-to-text API',
     required: true,
   },
   openRouter: {
-    name: "OpenRouter",
-    url: "https://openrouter.ai",
-    description: "AI response generation",
+    name: 'OpenRouter',
+    url: 'https://openrouter.ai',
+    description: 'AI response generation',
     required: true,
   },
   googleTranslate: {
-    name: "Google Translate",
-    url: "https://cloud.google.com/translate",
-    description: "Translation fallback (optional)",
+    name: 'Google Translate',
+    url: 'https://cloud.google.com/translate',
+    description: 'Translation fallback (optional)',
     required: false,
   },
-} as const; 
+} as const;

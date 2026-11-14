@@ -117,7 +117,8 @@ describe('VoiceFilterController', () => {
   });
 
   it('saves current filters as preset', async () => {
-    global.prompt = vi.fn()
+    global.prompt = vi
+      .fn()
       .mockReturnValueOnce('Premium Same Day')
       .mockReturnValueOnce('Apply premium same day filters');
 
