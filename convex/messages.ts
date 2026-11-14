@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
+import { getIdentityByEmail } from "./lib/identity";
 
 // Send a message
 export const sendMessage = mutation({
@@ -14,7 +14,7 @@ export const sendMessage = mutation({
   },
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -56,7 +56,7 @@ export const getConversation = query({
   },
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -87,7 +87,7 @@ export const markAsRead = mutation({
   },
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -113,7 +113,7 @@ export const getConversations = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -162,7 +162,7 @@ export const getUnreadCount = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -185,7 +185,7 @@ export const deleteMessage = mutation({
   },
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.auth.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }

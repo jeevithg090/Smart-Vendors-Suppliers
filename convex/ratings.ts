@@ -1,5 +1,7 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import { calculateTrustScore } from "./lib/trustScore";
 
 // Add a new rating
 export const addRating = mutation({
@@ -185,117 +187,37 @@ export const getTrustScoreBreakdown = query({
       .withIndex("by_supplier", (q) => q.eq("supplierId", args.supplierId))
       .collect();
     
-    // Base score calculation
-    let baseScore = 2.0; // Starting score
-    
-    // Rating-based score (40% weight)
-    let ratingScore = 0;
-    if (ratings.length > 0) {
-      const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
-      ratingScore = avgRating * 0.4;
-    }
-    
-    // Volume bonus (20% weight)
-    const completedOrders = orders.filter(o => o.status === 'delivered').length;
-    const volumeBonus = Math.min(completedOrders * 0.05, 1.0); // Max 1.0 bonus
-    
-    // Consistency bonus (20% weight)
-    const recentOrders = orders.filter(o => 
-      o.createdAt > Date.now() - 30 * 24 * 60 * 60 * 1000 // Last 30 days
-    );
-    const onTimeDeliveries = recentOrders.filter(o => 
-      o.actualDelivery && o.actualDelivery <= o.estimatedDelivery
-    ).length;
-    const consistencyBonus = recentOrders.length > 0 
-      ? (onTimeDeliveries / recentOrders.length) * 0.8 
-      : 0;
-    
-    // Certification bonus (10% weight)
-    const certificationBonus = supplier.fssaiCertified ? 0.5 : 0;
-    
-    // Verification bonus (10% weight)
-    const verificationBonus = supplier.isVerified ? 0.3 : 0;
-    
-    const currentScore = Math.min(
-      baseScore + ratingScore + volumeBonus + consistencyBonus + certificationBonus + verificationBonus,
-      5.0
-    );
-    
-    return {
-      currentScore,
-      factors: {
-        baseScore,
-        ratingScore,
-        volumeBonus,
-        consistencyBonus,
-        certificationBonus,
-        verificationBonus
-      },
-      breakdown: {
-        totalOrders: orders.length,
-        completedOrders,
-        totalRatings: ratings.length,
-        averageRating: ratings.length > 0 
-          ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length 
-          : 0,
-        onTimeDeliveryRate: recentOrders.length > 0 
-          ? (onTimeDeliveries / recentOrders.length) * 100 
-          : 0
-      }
-    };
+    return calculateTrustScore({
+      ratings,
+      orders,
+      fssaiCertified: supplier.fssaiCertified,
+      isVerified: supplier.isVerified,
+    });
   },
 });
 
-// Update supplier trust score (internal function)
-async function updateSupplierTrustScore(ctx: any, supplierId: any) {
+// Recalculate and persist a supplier's trust score
+async function updateSupplierTrustScore(ctx: MutationCtx, supplierId: Id<"suppliers">) {
   const supplier = await ctx.db.get(supplierId);
   if (!supplier) return;
-  
+
   const ratings = await ctx.db
     .query("ratings")
     .withIndex("by_supplier", (q) => q.eq("supplierId", supplierId))
     .collect();
-  
   const orders = await ctx.db
     .query("orders")
     .withIndex("by_supplier", (q) => q.eq("supplierId", supplierId))
     .collect();
-  
-  // Calculate new trust score using the same logic as getTrustScoreBreakdown
-  let baseScore = 2.0;
-  
-  let ratingScore = 0;
-  if (ratings.length > 0) {
-    const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
-    ratingScore = avgRating * 0.4;
-  }
-  
-  const completedOrders = orders.filter(o => o.status === 'delivered').length;
-  const volumeBonus = Math.min(completedOrders * 0.05, 1.0);
-  
-  const recentOrders = orders.filter(o => 
-    o.createdAt > Date.now() - 30 * 24 * 60 * 60 * 1000
-  );
-  const onTimeDeliveries = recentOrders.filter(o => 
-    o.actualDelivery && o.actualDelivery <= o.estimatedDelivery
-  ).length;
-  const consistencyBonus = recentOrders.length > 0 
-    ? (onTimeDeliveries / recentOrders.length) * 0.8 
-    : 0;
-  
-  const certificationBonus = supplier.fssaiCertified ? 0.5 : 0;
-  const verificationBonus = supplier.isVerified ? 0.3 : 0;
-  
-  const newTrustScore = Math.min(
-    baseScore + ratingScore + volumeBonus + consistencyBonus + certificationBonus + verificationBonus,
-    5.0
-  );
-  
-  // Update supplier's trust score
-  await ctx.db.patch(supplierId, {
-    trustScore: newTrustScore,
-    updatedAt: Date.now()
+
+  const { currentScore } = calculateTrustScore({
+    ratings,
+    orders,
+    fssaiCertified: supplier.fssaiCertified,
+    isVerified: supplier.isVerified,
   });
+
+  await ctx.db.patch(supplierId, { trustScore: currentScore, updatedAt: Date.now() });
 }
 
 // Get ratings by vendor
