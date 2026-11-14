@@ -255,8 +255,14 @@ export default function SmartProcurementPlanner({
       <div className="bg-white rounded-xl border shadow-sm p-6 space-y-5">
         <div className="grid md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Weekly Budget (INR)</label>
+            <label
+              htmlFor="smartprocurementplanner-weekly-budget-inr"
+              className="block text-sm text-gray-600 mb-1"
+            >
+              Weekly Budget (INR)
+            </label>
             <input
+              id="smartprocurementplanner-weekly-budget-inr"
               type="number"
               min={1000}
               step={500}
@@ -266,8 +272,14 @@ export default function SmartProcurementPlanner({
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Expected Orders / Day</label>
+            <label
+              htmlFor="smartprocurementplanner-expected-orders-day"
+              className="block text-sm text-gray-600 mb-1"
+            >
+              Expected Orders / Day
+            </label>
             <input
+              id="smartprocurementplanner-expected-orders-day"
               type="number"
               min={20}
               max={2000}
@@ -357,7 +369,7 @@ export default function SmartProcurementPlanner({
             No matched inventory found for selected categories.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Procurement plan table">
             <table className="min-w-full">
               <thead>
                 <tr className="text-left text-xs text-gray-500 uppercase">

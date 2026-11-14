@@ -274,8 +274,14 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
           {!isVendorParticipating && remainingQuantity > 0 && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity to join (kg)</label>
+                <label
+                  htmlFor="grouporderparticipation-quantity-to-join-kg"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Quantity to join (kg)
+                </label>
                 <input
+                  id="grouporderparticipation-quantity-to-join-kg"
                   type="number"
                   min="1"
                   max={maxQuantity}

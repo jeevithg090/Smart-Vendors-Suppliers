@@ -200,8 +200,11 @@ const CreateTicketForm: React.FC<{
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+          <label htmlFor="supportchat-subject" className="block text-sm font-medium text-gray-700 mb-1">
+            Subject
+          </label>
           <input
+            id="supportchat-subject"
             type="text"
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
@@ -212,8 +215,11 @@ const CreateTicketForm: React.FC<{
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label htmlFor="supportchat-category" className="block text-sm font-medium text-gray-700 mb-1">
+            Category
+          </label>
           <select
+            id="supportchat-category"
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -226,8 +232,11 @@ const CreateTicketForm: React.FC<{
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+          <label htmlFor="supportchat-priority" className="block text-sm font-medium text-gray-700 mb-1">
+            Priority
+          </label>
           <select
+            id="supportchat-priority"
             value={formData.priority}
             onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -240,8 +249,11 @@ const CreateTicketForm: React.FC<{
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <label htmlFor="supportchat-description" className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
           <textarea
+            id="supportchat-description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"

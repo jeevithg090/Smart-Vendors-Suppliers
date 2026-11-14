@@ -265,6 +265,24 @@ html {
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Visible keyboard focus everywhere (mouse clicks don't show the ring) */
+  :focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   /* Improve touch targets on mobile */
   @media (max-width: 768px) {
     button,
@@ -292,29 +310,30 @@ html {
   }
 }
 
-/* Google Translate widget placement + cleanup */
+/* Google Translate language bar (static, so it never overlaps page content) */
+.translate-bar {
+  display: flex;
+  justify-content: flex-end;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.25rem 1rem;
+}
+
+/* Stay hidden until the Google widget has rendered its language picker */
+.translate-bar:not(:has(.goog-te-combo)) {
+  display: none;
+}
+
 .translate-toolbar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e5e7eb;
-  border-radius: 9999px;
-  padding: 0.45rem 0.75rem;
-  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-}
-
-@media (max-width: 639px) {
-  .translate-toolbar__label {
-    display: none;
-  }
 }
 
 .translate-toolbar__label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #4b5563;
+  color: #cbd5e1;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -390,16 +409,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .translate-toolbar {
-    right: 0.5rem;
-    top: 0.5rem;
-    padding: 0.35rem 0.6rem;
-  }
-
-  .translate-toolbar__label {
-    display: none;
-  }
-
   #google_translate_element .goog-te-combo {
     min-width: 108px;
     font-size: 0.78rem;

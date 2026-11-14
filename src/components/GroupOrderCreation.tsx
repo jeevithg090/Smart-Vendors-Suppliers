@@ -158,8 +158,14 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Supplier Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Supplier</label>
+          <label
+            htmlFor="groupordercreation-select-supplier"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Select Supplier
+          </label>
           <select
+            id="groupordercreation-select-supplier"
             value={selectedSupplier || ''}
             onChange={(e) => handleSupplierChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -177,8 +183,14 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
         {/* Item Selection */}
         {selectedSupplier && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Select Item</label>
+            <label
+              htmlFor="groupordercreation-select-item"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Select Item
+            </label>
             <select
+              id="groupordercreation-select-item"
               value={selectedItem?._id || ''}
               onChange={(e) => handleItemChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -270,8 +282,14 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
 
         {/* Expiration Time */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Order Expires In (Hours)</label>
+          <label
+            htmlFor="groupordercreation-order-expires-in-hours"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Order Expires In (Hours)
+          </label>
           <select
+            id="groupordercreation-order-expires-in-hours"
             value={expirationHours}
             onChange={(e) => setExpirationHours(parseInt(e.target.value))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

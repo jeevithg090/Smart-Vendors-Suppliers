@@ -144,7 +144,7 @@ export function OfflineManager({ children }: OfflineManagerProps) {
       {/* Offline indicator */}
       {!isOnline && (
         <div
-          className="fixed top-0 left-0 right-0 bg-yellow-500 text-white px-4 py-2 text-center text-sm font-medium z-50 shadow-lg"
+          className="fixed top-0 left-0 right-0 bg-amber-400 text-slate-900 px-4 py-2 text-center text-sm font-medium z-50 shadow-lg"
           data-testid="offline-indicator"
           role="alert"
           aria-live="polite"
@@ -159,8 +159,8 @@ export function OfflineManager({ children }: OfflineManagerProps) {
               />
             </svg>
             <span>You're offline</span>
-            <span className="text-yellow-200">•</span>
-            <span className="text-xs">Actions will be saved and synced later</span>
+            <span aria-hidden="true">•</span>
+            <span className="text-xs">Changes can&apos;t be saved until you reconnect</span>
           </div>
         </div>
       )}
@@ -202,38 +202,27 @@ export function OfflineManager({ children }: OfflineManagerProps) {
         </div>
       )}
 
-      {/* Enhanced Connection Status Indicator */}
-      <div
-        className={`fixed top-16 right-4 sm:top-16 flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium z-50 transition-all duration-300 ${
-          connectionQuality === 'good'
-            ? 'bg-green-100 text-green-800 border border-green-200'
-            : connectionQuality === 'poor'
-              ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-              : 'bg-red-100 text-red-800 border border-red-200'
-        }`}
-        title={
-          connectionQuality === 'good'
-            ? 'Good connection'
-            : connectionQuality === 'poor'
-              ? 'Poor connection'
-              : 'Offline'
-        }
-        data-testid="connection-status"
-      >
+      {/* Connection status: only shown when the connection is degraded */}
+      {connectionQuality !== 'good' && (
         <div
-          className={`w-2 h-2 rounded-full ${
-            connectionQuality === 'good'
-              ? 'bg-green-500'
-              : connectionQuality === 'poor'
-                ? 'bg-yellow-500 animate-pulse'
-                : 'bg-red-500'
+          className={`fixed bottom-4 right-4 flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium z-50 transition-all duration-300 ${
+            connectionQuality === 'poor'
+              ? 'bg-yellow-100 text-yellow-900 border border-yellow-300'
+              : 'bg-red-100 text-red-900 border border-red-300'
           }`}
-        />
-        <span>
-          {connectionQuality === 'good' ? 'Online' : connectionQuality === 'poor' ? 'Slow' : 'Offline'}
-        </span>
-        {lastSyncTime && <span className="text-xs opacity-75">{lastSyncTime.toLocaleTimeString()}</span>}
-      </div>
+          title={connectionQuality === 'poor' ? 'Poor connection' : 'Offline'}
+          data-testid="connection-status"
+          role="status"
+        >
+          <div
+            className={`w-2 h-2 rounded-full ${
+              connectionQuality === 'poor' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+            }`}
+          />
+          <span>{connectionQuality === 'poor' ? 'Slow connection' : 'Offline'}</span>
+          {lastSyncTime && <span className="text-xs opacity-75">{lastSyncTime.toLocaleTimeString()}</span>}
+        </div>
+      )}
     </>
   );
 }

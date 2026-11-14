@@ -219,10 +219,14 @@ const GroupOrderList: React.FC<GroupOrderListProps> = ({ vendorLocation, onJoinO
                   <div className="border-t pt-4">
                     <div className="flex items-center space-x-4">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="grouporderlist-quantity-to-join-kg"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           Quantity to join (kg)
                         </label>
                         <input
+                          id="grouporderlist-quantity-to-join-kg"
                           type="number"
                           min="1"
                           max={maxJoinQuantity}

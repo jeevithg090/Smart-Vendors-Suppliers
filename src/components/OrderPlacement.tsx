@@ -218,8 +218,14 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Item Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Item</label>
+                  <label
+                    htmlFor="orderplacement-item"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Item
+                  </label>
                   <select
+                    id="orderplacement-item"
                     value={item.itemName}
                     onChange={(e) => {
                       const selectedItem = inventory.find((inv) => inv.itemName === e.target.value);
@@ -243,8 +249,14 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
 
                 {/* Quantity */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <label
+                    htmlFor="orderplacement-quantity"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Quantity
+                  </label>
                   <input
+                    id="orderplacement-quantity"
                     type="number"
                     min="1"
                     value={item.quantity}
@@ -258,8 +270,14 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
 
                 {/* Unit */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                  <label
+                    htmlFor="orderplacement-unit"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Unit
+                  </label>
                   <input
+                    id="orderplacement-unit"
                     type="text"
                     value={item.unit}
                     readOnly
@@ -269,8 +287,14 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
 
                 {/* Price per Unit */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price/Unit</label>
+                  <label
+                    htmlFor="orderplacement-price-unit"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Price/Unit
+                  </label>
                   <input
+                    id="orderplacement-price-unit"
                     type="number"
                     step="0.01"
                     value={item.pricePerUnit}
@@ -337,8 +361,14 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
 
         {/* Delivery Address */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+          <label
+            htmlFor="orderplacement-delivery-address"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Delivery Address
+          </label>
           <textarea
+            id="orderplacement-delivery-address"
             value={deliveryAddress}
             onChange={(e) => setDeliveryAddress(e.target.value)}
             rows={3}
@@ -350,8 +380,14 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
 
         {/* Payment Method */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+          <label
+            htmlFor="orderplacement-payment-method"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Payment Method
+          </label>
           <select
+            id="orderplacement-payment-method"
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
             className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -364,8 +400,14 @@ export const OrderPlacement: React.FC<OrderPlacementProps> = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+          <label
+            htmlFor="orderplacement-notes-optional"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Notes (Optional)
+          </label>
           <textarea
+            id="orderplacement-notes-optional"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}

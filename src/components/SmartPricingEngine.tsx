@@ -110,8 +110,11 @@ export default function SmartPricingEngine({ supplierId }: Props) {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">Analysis Period:</label>
+            <label htmlFor="smartpricingengine-analysis-period" className="text-sm font-medium text-gray-700">
+              Analysis Period:
+            </label>
             <select
+              id="smartpricingengine-analysis-period"
               value={selectedTimeframe}
               onChange={(e) => setSelectedTimeframe(e.target.value as any)}
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

@@ -554,8 +554,14 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
 
               <form onSubmit={handleSendMessage} className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Supplier</label>
+                  <label
+                    htmlFor="workflowintegration-supplier"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Supplier
+                  </label>
                   <select
+                    id="workflowintegration-supplier"
                     value={messageSupplierId}
                     onChange={(event) => setMessageSupplierId(event.target.value as Id<'suppliers'>)}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
@@ -571,8 +577,14 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Message</label>
+                  <label
+                    htmlFor="workflowintegration-message"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Message
+                  </label>
                   <textarea
+                    id="workflowintegration-message"
                     value={messageText}
                     onChange={(event) => setMessageText(event.target.value)}
                     rows={4}
@@ -609,6 +621,7 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
                 </div>
                 <div className="mb-2 md:mb-0">
                   <select
+                    aria-label="Filter by category"
                     value={category}
                     onChange={(event) => setCategory(event.target.value)}
                     className="rounded-md border border-gray-300 px-3 py-2 text-sm"
@@ -623,6 +636,7 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
                 </div>
                 <div>
                   <select
+                    aria-label="Filter by supplier"
                     value={supplier}
                     onChange={(event) => setSupplier(event.target.value)}
                     className="rounded-md border border-gray-300 px-3 py-2 text-sm"
