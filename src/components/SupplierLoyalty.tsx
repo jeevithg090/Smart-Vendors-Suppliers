@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { useState } from 'react';
+
+
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface LoyaltyTier {
@@ -41,7 +41,8 @@ interface Props {
   supplierId: Id<'suppliers'>;
 }
 
-export default function SupplierLoyalty({ supplierId }: Props) {
+// Loyalty data is illustrative until loyalty programs are persisted in Convex.
+export default function SupplierLoyalty(_props: Props) {
   const [activeTab, setActiveTab] = useState<'overview' | 'vendors' | 'rewards' | 'analytics'>('overview');
   const [selectedTier, setSelectedTier] = useState<string>('all');
 
@@ -167,17 +168,8 @@ export default function SupplierLoyalty({ supplierId }: Props) {
     }
   ];
 
-  const getTierForOrders = (orders: number): LoyaltyTier => {
-    return [...loyaltyTiers].reverse().find(tier => orders >= tier.minOrders) || loyaltyTiers[0];
-  };
-
   const getNextTier = (currentOrders: number): LoyaltyTier | null => {
     return loyaltyTiers.find(tier => tier.minOrders > currentOrders) || null;
-  };
-
-  const redeemReward = (rewardId: string, vendorId: string) => {
-    // In real app, this would call a Convex mutation
-    console.log(`Redeeming reward ${rewardId} for vendor ${vendorId}`);
   };
 
   const loyaltyStats = {

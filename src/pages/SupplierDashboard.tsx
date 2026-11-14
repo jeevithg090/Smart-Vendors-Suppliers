@@ -378,6 +378,29 @@ export default function SupplierDashboard() {
     }
   }
 
+  const handleSaveProductEdit = async (updates: Pick<InventoryItem, 'pricePerUnit' | 'currentStock' | 'minimumOrder'>) => {
+    if (!editingProduct) return
+    const itemId = editingProduct._id
+    const applyLocally = () =>
+      setLocalInventory((previous) =>
+        previous.map((item) =>
+          item._id === itemId ? { ...item, ...updates, isAvailable: updates.currentStock > 0 } : item
+        )
+      )
+
+    if (itemId.startsWith('local_') || !hasBackendSupplier) {
+      applyLocally()
+    } else {
+      try {
+        await updateInventoryItem({ id: itemId as Id<'inventory'>, ...updates })
+      } catch (error) {
+        console.error('Error updating product:', error)
+        applyLocally()
+      }
+    }
+    setEditingProduct(null)
+  }
+
   const handleToggleAvailability = async (itemId: string, isAvailable: boolean) => {
     if (itemId.startsWith('local_') || !hasBackendSupplier) {
       setLocalInventory((previous) =>
@@ -1509,6 +1532,14 @@ export default function SupplierDashboard() {
         )}
 
         {/* Add Product Modal */}
+        {editingProduct && (
+          <EditProductModal
+            product={editingProduct}
+            onClose={() => setEditingProduct(null)}
+            onSave={handleSaveProductEdit}
+          />
+        )}
+
         {showAddProduct && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -1686,6 +1717,94 @@ export default function SupplierDashboard() {
         </div>
       )}
 
+    </div>
+  )
+}
+
+function EditProductModal({
+  product,
+  onClose,
+  onSave,
+}: {
+  product: InventoryItem
+  onClose: () => void
+  onSave: (updates: Pick<InventoryItem, 'pricePerUnit' | 'currentStock' | 'minimumOrder'>) => Promise<void>
+}) {
+  const [form, setForm] = useState({
+    pricePerUnit: String(product.pricePerUnit),
+    currentStock: String(product.currentStock),
+    minimumOrder: String(product.minimumOrder),
+  })
+  const [error, setError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    const pricePerUnit = Number(form.pricePerUnit)
+    const currentStock = Number(form.currentStock)
+    const minimumOrder = Number(form.minimumOrder)
+    if (![pricePerUnit, currentStock, minimumOrder].every((n) => Number.isFinite(n) && n >= 0) || pricePerUnit === 0) {
+      setError('Enter a price above zero and non-negative stock and minimum order values.')
+      return
+    }
+    setIsSaving(true)
+    await onSave({ pricePerUnit, currentStock, minimumOrder })
+    setIsSaving(false)
+  }
+
+  const fields = [
+    { key: 'pricePerUnit', label: `Price per ${product.unit} (₹)`, step: '0.01' },
+    { key: 'currentStock', label: `Current stock (${product.unit})`, step: '1' },
+    { key: 'minimumOrder', label: `Minimum order (${product.unit})`, step: '1' },
+  ] as const
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-product-title"
+        className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 id="edit-product-title" className="text-xl font-bold text-gray-800">Edit {product.itemName}</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="text-gray-500 hover:text-gray-800 text-xl">
+            ✕
+          </button>
+        </div>
+        <form onSubmit={(event) => { void handleSubmit(event) }} noValidate className="space-y-4">
+          {fields.map((field) => (
+            <div key={field.key}>
+              <label htmlFor={`edit-${field.key}`} className="block text-sm font-medium text-gray-700 mb-1">
+                {field.label}
+              </label>
+              <input
+                id={`edit-${field.key}`}
+                type="number"
+                min="0"
+                step={field.step}
+                inputMode="decimal"
+                value={form[field.key]}
+                onChange={(e) => setForm((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+          ))}
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60"
+            >
+              {isSaving ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
