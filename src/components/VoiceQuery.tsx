@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { VOICE_QUERY_CONFIG, ERROR_MESSAGES, SUCCESS_MESSAGES, LANGUAGE_NAMES } from '../config/voiceQuery';
+import { VOICE_QUERY_CONFIG, ERROR_MESSAGES, LANGUAGE_NAMES } from '../config/voiceQuery';
 import { voiceProcessor } from '../utils/enhancedVoiceProcessor';
 import { useAuth } from '../contexts/AuthContext';
 

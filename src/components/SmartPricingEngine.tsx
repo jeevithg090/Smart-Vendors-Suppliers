@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -25,7 +25,6 @@ export default function SmartPricingEngine({ supplierId }: Props) {
 
   // Get supplier's inventory for pricing analysis
   const inventory = useQuery(api.inventory.getInventoryBySupplier, { supplierId });
-  const marketData = useQuery(api.analytics.getMarketPricingData, { supplierId });
   
   const updatePricing = useMutation(api.inventory.updateInventoryItem);
 

@@ -349,7 +349,7 @@ export const cleanupExpiredData = (): void => {
       if (cached.timestamp && now - cached.timestamp > retentionPeriod) {
         localStorage.removeItem(key)
       }
-    } catch (error) {
+    } catch {
       // Remove invalid cache entries
       localStorage.removeItem(key)
     }
@@ -607,7 +607,7 @@ export const initializeSecurity = (): void => {
   })
   
   // Monitor for developer tools (basic detection)
-  let devtools = { open: false, orientation: null }
+  const devtools = { open: false, orientation: null }
   const threshold = 160
   
   setInterval(() => {

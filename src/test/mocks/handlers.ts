@@ -7,11 +7,11 @@ export const handlers = [
   }),
 
   // Mock Convex endpoints
-  http.post('*/api/query', ({ request }) => {
+  http.post('*/api/query', () => {
     return HttpResponse.json({ result: [] });
   }),
 
-  http.post('*/api/mutation', ({ request }) => {
+  http.post('*/api/mutation', () => {
     return HttpResponse.json({ result: { id: 'test-id' } });
   }),
 

@@ -69,6 +69,7 @@ const fallbackAuthContext: AuthContextType = {
   isAuthenticated: false,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook is colocated with its provider
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

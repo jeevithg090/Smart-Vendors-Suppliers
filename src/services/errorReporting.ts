@@ -102,7 +102,7 @@ class ErrorReportingService {
     for (const errorReport of allErrors) {
       try {
         await this.sendErrorReport(errorReport);
-      } catch (e) {
+      } catch {
         // If sending fails, re-queue the error
         this.queueError(errorReport);
       }
@@ -114,7 +114,7 @@ class ErrorReportingService {
     try {
       const user = (window as any).Clerk?.user;
       return user?.id;
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }

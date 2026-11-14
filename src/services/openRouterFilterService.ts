@@ -89,7 +89,7 @@ export class OpenRouterFilterService {
   async generateFilterResponse(
     appliedFilters: any,
     language: string,
-    userContext?: any
+    _userContext?: any
   ): Promise<string> {
     try {
       if (!this.apiKey) {
@@ -126,7 +126,7 @@ export class OpenRouterFilterService {
   async suggestFilterImprovements(
     originalQuery: string,
     parsedFilters: any,
-    userContext?: any
+    _userContext?: any
   ): Promise<string[]> {
     try {
       if (!this.apiKey) {

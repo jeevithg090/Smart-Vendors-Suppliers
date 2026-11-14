@@ -415,7 +415,7 @@ async function calculateAvailabilityScore(supplier: any, categoryFrequency: Reco
     .collect();
   
   let availabilityScore = 0;
-  let totalCategories = Object.keys(categoryFrequency).length;
+  const totalCategories = Object.keys(categoryFrequency).length;
   
   for (const category of Object.keys(categoryFrequency)) {
     const hasCategory = inventory.some((item: any) => item.category === category);

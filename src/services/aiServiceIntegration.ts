@@ -253,7 +253,7 @@ export class AIServiceIntegration {
   /**
    * Convert text to speech (placeholder for TTS integration)
    */
-  async textToSpeech(text: string, language: string = 'en'): Promise<Blob> {
+  async textToSpeech(text: string, _language: string = 'en'): Promise<Blob> {
     // This is a placeholder implementation
     // In production, integrate with a TTS service like Google TTS, Azure Speech, or ElevenLabs
     

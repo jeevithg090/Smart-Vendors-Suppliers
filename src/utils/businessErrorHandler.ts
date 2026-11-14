@@ -196,7 +196,7 @@ export class BusinessLogicValidator {
     try {
       // This would be a real API call to check supplier availability
       return true; // Placeholder
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -205,7 +205,7 @@ export class BusinessLogicValidator {
     try {
       // This would be a real API call to check inventory
       return { available: 100, reserved: 10 }; // Placeholder
-    } catch (error) {
+    } catch {
       return { available: 0, reserved: 0 };
     }
   }
@@ -214,7 +214,7 @@ export class BusinessLogicValidator {
     try {
       // This would be a real API call to get supplier's minimum order value
       return 500; // Placeholder
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
@@ -223,7 +223,7 @@ export class BusinessLogicValidator {
     try {
       // This would check if supplier delivers to the given address
       return true; // Placeholder
-    } catch (error) {
+    } catch {
       return false;
     }
   }

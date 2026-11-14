@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+
 
 // Get market pricing data for a supplier's items
 export const getMarketPricingData = query({
@@ -192,7 +192,7 @@ export const getMarketInsights = query({
   args: {
     supplierId: v.optional(v.id("suppliers")),
   },
-  handler: async (ctx, args) => {
+  handler: async () => {
     // Generate market insights (can be supplier-specific or general)
     const insights = [
       {

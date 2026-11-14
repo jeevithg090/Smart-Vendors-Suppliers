@@ -157,7 +157,7 @@ export const commonSchemas = {
   },
 
   phone: {
-    pattern: /^[+]?[\d\s\-\(\)]{10,}$/,
+    pattern: /^[+]?[\d\s\-()]{10,}$/,
     custom: (value: string) => {
       const cleaned = value.replace(/\D/g, '');
       if (cleaned.length < 10) {

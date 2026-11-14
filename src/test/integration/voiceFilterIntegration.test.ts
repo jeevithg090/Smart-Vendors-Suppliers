@@ -440,7 +440,6 @@ describe('Voice Filter Integration Tests', () => {
     });
 
     it('should learn from user filter corrections', async () => {
-      const originalQuery = 'Show good suppliers';
       const userCorrection = {
         original: { quality: 'good' },
         corrected: { quality: 'premium', fssaiRequired: true }

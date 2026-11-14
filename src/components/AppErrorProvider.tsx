@@ -56,6 +56,7 @@ export function AppErrorProvider({ children }: AppErrorProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook is colocated with its provider
 export function useAppError() {
   const context = useContext(AppErrorContext);
   if (!context) {
