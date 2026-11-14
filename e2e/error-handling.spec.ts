@@ -39,7 +39,7 @@ test.describe('Error Handling E2E', () => {
     await page.getByLabel(/^password \*/i).fill('123');
     await page.getByRole('button', { name: /create account/i }).click();
 
-    await expect(page.getByText(/password must be at least 4 characters/i)).toBeVisible();
+    await expect(page.getByText(/password must be at least 8 characters/i)).toBeVisible();
 
     await page.getByLabel(/^password \*/i).fill('valid1234');
     await page.getByRole('button', { name: /create account/i }).click();

@@ -1,52 +1,33 @@
-# Multi-stage build for production optimization
-FROM node:18-alpine AS builder
+# syntax=docker/dockerfile:1
 
-# Set working directory
+# ---- Build stage -----------------------------------------------------------
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Dev dependencies are required to build (TypeScript, Vite)
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Copy source code
 COPY . .
 
-# Build the application
+# Public Convex URL baked into the bundle at build time
+ARG VITE_CONVEX_URL
+ENV VITE_CONVEX_URL=${VITE_CONVEX_URL}
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine AS production
+# ---- Runtime stage ---------------------------------------------------------
+FROM nginx:1.27-alpine AS runtime
 
-# Install security updates
-RUN apk update && apk upgrade && apk add --no-cache curl
-
-# Copy built application
+COPY deploy/nginx.conf /etc/nginx/nginx.conf
+COPY deploy/security-headers.conf /etc/nginx/security-headers.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Run as the unprivileged nginx user
+RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx
+USER nginx
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-# Set ownership
-RUN chown -R nextjs:nodejs /usr/share/nginx/html && \
-    chown -R nextjs:nodejs /var/cache/nginx && \
-    chown -R nextjs:nodejs /var/log/nginx && \
-    chown -R nextjs:nodejs /etc/nginx/conf.d
-
-# Switch to non-root user
-USER nextjs
-
-# Expose port
 EXPOSE 8080
-
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/ || exit 1
+  CMD wget -qO- http://127.0.0.1:8080/health || exit 1
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
