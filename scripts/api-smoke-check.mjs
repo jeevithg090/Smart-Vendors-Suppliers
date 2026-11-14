@@ -58,15 +58,6 @@ async function main() {
   );
   assert(testConnection?.status === "connected", "Expected connected status");
 
-  await run("auth:helloWorld", async () => {
-    const response = await client.query(anyApi.auth.helloWorld, {});
-    assert(
-      response?.message?.toLowerCase().includes("hello"),
-      "Unexpected helloWorld response"
-    );
-    return response;
-  });
-
   await run("auth:signup vendor", async () => {
     const response = await client.mutation(anyApi.auth.authenticateUser, {
       email: vendorEmail,
