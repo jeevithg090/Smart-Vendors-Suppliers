@@ -1,11 +1,12 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
+// Factual product capabilities (not usage metrics).
 const PLATFORM_STATS = [
-  { label: 'Active Vendors', value: '18,400+', tone: 'text-orange-600' },
-  { label: 'Trusted Suppliers', value: '2,900+', tone: 'text-emerald-600' },
-  { label: 'Monthly Orders', value: '96K+', tone: 'text-sky-600' },
-  { label: 'Average Savings', value: '22%', tone: 'text-fuchsia-600' },
+  { label: 'User roles: vendor & supplier', value: '2', tone: 'text-orange-600' },
+  { label: 'Voice query languages', value: '11', tone: 'text-emerald-600' },
+  { label: 'Day demand forecasts', value: '7', tone: 'text-sky-600' },
+  { label: 'Point trust score', value: '0–5', tone: 'text-fuchsia-600' },
 ];
 
 const OPERATING_HIGHLIGHTS = [
@@ -158,7 +159,8 @@ export default function HomePage() {
         <div className="pointer-events-none absolute bottom-[-8rem] left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-300/30 blur-3xl"></div>
 
         <nav className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-xl">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          {/* Right padding reserves space for the floating translate control */}
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between pl-4 pr-20 sm:pl-6 sm:pr-48 lg:pl-8">
             <div className="flex items-center gap-3">
               <span className="rounded-xl bg-orange-100 px-2 py-1 text-lg">🏪</span>
               <div>
@@ -177,7 +179,7 @@ export default function HomePage() {
               </Link>
               <Link
                 to="/auth"
-                className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800"
+                className="hidden rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 sm:inline-flex"
               >
                 Launch App
               </Link>
@@ -269,10 +271,10 @@ export default function HomePage() {
                 ))}
               </div>
               <div className="mt-4 rounded-2xl bg-slate-900 p-4 text-white">
-                <div className="text-xs uppercase tracking-[0.12em] text-slate-300">Today&apos;s signal</div>
+                <div className="text-xs uppercase tracking-[0.12em] text-slate-300">Example signal</div>
                 <p className="mt-2 text-sm text-slate-100">
-                  Tomato demand trending +18% in your zone. Suggested action: lock supplier rates before 9:00
-                  AM.
+                  &ldquo;Tomato demand is rising in your area — consider locking supplier rates before the
+                  morning rush.&rdquo;
                 </p>
               </div>
             </div>

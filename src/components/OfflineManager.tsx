@@ -204,7 +204,7 @@ export function OfflineManager({ children }: OfflineManagerProps) {
 
       {/* Enhanced Connection Status Indicator */}
       <div
-        className={`fixed top-4 right-4 flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium z-50 transition-all duration-300 ${
+        className={`fixed top-16 right-4 sm:top-16 flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium z-50 transition-all duration-300 ${
           connectionQuality === 'good'
             ? 'bg-green-100 text-green-800 border border-green-200'
             : connectionQuality === 'poor'
