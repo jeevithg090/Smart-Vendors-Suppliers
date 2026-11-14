@@ -1,6 +1,6 @@
-import { mutation } from './_generated/server';
+import { internalMutation } from './_generated/server';
 
-export const createSampleSuppliers = mutation({
+export const createSampleSuppliers = internalMutation({
   args: {},
   handler: async (ctx) => {
     // Check if suppliers already exist

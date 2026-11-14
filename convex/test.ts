@@ -1,8 +1,8 @@
-import { query, mutation } from './_generated/server';
+import { internalMutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
 
 // Test inventory functionality
-export const testInventorySystem = mutation({
+export const testInventorySystem = internalMutation({
   args: {},
   handler: async (ctx) => {
     console.log('Testing inventory system...');
@@ -44,7 +44,7 @@ export const testInventorySystem = mutation({
 });
 
 // Test price alerts functionality
-export const testPriceAlerts = query({
+export const testPriceAlerts = internalQuery({
   args: {},
   handler: async (ctx) => {
     const alerts = await ctx.db.query('priceAlerts').collect();
@@ -66,7 +66,7 @@ export const testPriceAlerts = query({
 });
 
 // Get inventory stats
-export const getInventoryStats = query({
+export const getInventoryStats = internalQuery({
   args: {},
   handler: async (ctx) => {
     const inventory = await ctx.db.query('inventory').collect();
@@ -89,7 +89,7 @@ export const getInventoryStats = query({
 });
 
 // Test order management system
-export const testOrderManagement = mutation({
+export const testOrderManagement = internalMutation({
   args: {},
   handler: async (ctx) => {
     console.log('Testing order management system...');
@@ -212,7 +212,7 @@ export const testOrderManagement = mutation({
 });
 
 // Test order search functionality
-export const testOrderSearch = query({
+export const testOrderSearch = internalQuery({
   args: {
     vendorId: v.id('vendors'),
     searchTerm: v.string(),
