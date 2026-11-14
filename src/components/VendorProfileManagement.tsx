@@ -21,25 +21,36 @@ export default function VendorProfileManagement() {
     budgetMin: 1000,
     budgetMax: 50000,
     qualityPreference: 'High',
-    deliveryTimePreference: 'Same Day'
+    deliveryTimePreference: 'Same Day',
   });
 
-  const vendor = useQuery(api.vendors.getByUserId, 
-    user ? { userId: user.id } : "skip"
-  );
+  const vendor = useQuery(api.vendors.getByUserId, user ? { userId: user.id } : 'skip');
 
   const updateVendor = useMutation(api.vendors.update);
   const createVendor = useMutation(api.vendors.create);
 
   const categories = [
-    'Vegetables', 'Fruits', 'Grains & Cereals', 'Spices & Condiments',
-    'Dairy Products', 'Meat & Poultry', 'Seafood', 'Oil & Ghee',
-    'Snacks & Beverages', 'Packaging Materials'
+    'Vegetables',
+    'Fruits',
+    'Grains & Cereals',
+    'Spices & Condiments',
+    'Dairy Products',
+    'Meat & Poultry',
+    'Seafood',
+    'Oil & Ghee',
+    'Snacks & Beverages',
+    'Packaging Materials',
   ];
 
   const businessTypes = [
-    'Street Food Stall', 'Restaurant', 'Cafe', 'Food Truck',
-    'Catering Service', 'Cloud Kitchen', 'Bakery', 'Sweet Shop'
+    'Street Food Stall',
+    'Restaurant',
+    'Cafe',
+    'Food Truck',
+    'Catering Service',
+    'Cloud Kitchen',
+    'Bakery',
+    'Sweet Shop',
   ];
 
   const qualityOptions = ['Basic', 'Good', 'High', 'Premium'];
@@ -62,7 +73,7 @@ export default function VendorProfileManagement() {
         budgetMin: vendor.preferences?.budgetRange?.min || 1000,
         budgetMax: vendor.preferences?.budgetRange?.max || 50000,
         qualityPreference: vendor.preferences?.qualityPreference || 'High',
-        deliveryTimePreference: vendor.preferences?.deliveryTimePreference || 'Same Day'
+        deliveryTimePreference: vendor.preferences?.deliveryTimePreference || 'Same Day',
       });
       setIsEditing(false);
     } else if (vendor === null) {
@@ -71,18 +82,18 @@ export default function VendorProfileManagement() {
   }, [vendor]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleCategoryToggle = (category: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       preferredCategories: prev.preferredCategories.includes(category)
-        ? prev.preferredCategories.filter(c => c !== category)
-        : [...prev.preferredCategories, category]
+        ? prev.preferredCategories.filter((c) => c !== category)
+        : [...prev.preferredCategories, category],
     }));
   };
 
@@ -98,9 +109,9 @@ export default function VendorProfileManagement() {
       formData.city,
       formData.state,
       formData.pincode,
-      formData.businessType
+      formData.businessType,
     ];
-    if (requiredFields.some(field => !String(field).trim())) {
+    if (requiredFields.some((field) => !String(field).trim())) {
       console.error('Missing required fields');
       return;
     }
@@ -117,7 +128,7 @@ export default function VendorProfileManagement() {
             city: formData.city,
             state: formData.state,
             pincode: formData.pincode,
-            coordinates: vendor.location.coordinates
+            coordinates: vendor.location.coordinates,
           },
           businessType: formData.businessType,
           fssaiLicense: formData.fssaiLicense || undefined,
@@ -126,11 +137,11 @@ export default function VendorProfileManagement() {
             preferredCategories: formData.preferredCategories,
             budgetRange: {
               min: formData.budgetMin,
-              max: formData.budgetMax
+              max: formData.budgetMax,
             },
             qualityPreference: formData.qualityPreference,
-            deliveryTimePreference: formData.deliveryTimePreference
-          }
+            deliveryTimePreference: formData.deliveryTimePreference,
+          },
         });
       } else {
         await createVendor({
@@ -144,7 +155,7 @@ export default function VendorProfileManagement() {
             city: formData.city,
             state: formData.state,
             pincode: formData.pincode,
-            coordinates: { lat: 0, lng: 0 }
+            coordinates: { lat: 0, lng: 0 },
           },
           businessType: formData.businessType,
           fssaiLicense: formData.fssaiLicense || undefined,
@@ -153,11 +164,11 @@ export default function VendorProfileManagement() {
             preferredCategories: formData.preferredCategories,
             budgetRange: {
               min: formData.budgetMin,
-              max: formData.budgetMax
+              max: formData.budgetMax,
             },
             qualityPreference: formData.qualityPreference,
-            deliveryTimePreference: formData.deliveryTimePreference
-          }
+            deliveryTimePreference: formData.deliveryTimePreference,
+          },
         });
       }
       setIsEditing(false);
@@ -176,11 +187,17 @@ export default function VendorProfileManagement() {
 
   const profileCompleteness = () => {
     const fields = [
-      formData.businessName, formData.ownerName, formData.phone,
-      formData.address, formData.city, formData.state, formData.pincode,
-      formData.businessType, formData.preferredCategories.length > 0
+      formData.businessName,
+      formData.ownerName,
+      formData.phone,
+      formData.address,
+      formData.city,
+      formData.state,
+      formData.pincode,
+      formData.businessType,
+      formData.preferredCategories.length > 0,
     ];
-    const completed = fields.filter(field => field).length;
+    const completed = fields.filter((field) => field).length;
     return Math.round((completed / fields.length) * 100);
   };
 
@@ -192,9 +209,7 @@ export default function VendorProfileManagement() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Vendor Profile</h2>
-              <p className="text-gray-600">
-                Manage your business information and preferences
-              </p>
+              <p className="text-gray-600">Manage your business information and preferences</p>
             </div>
             <button
               onClick={() => setIsEditing(!isEditing)}
@@ -215,7 +230,7 @@ export default function VendorProfileManagement() {
               <span>{profileCompleteness()}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-gradient-to-r from-orange-500 to-green-500 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${profileCompleteness()}%` }}
               ></div>
@@ -230,9 +245,7 @@ export default function VendorProfileManagement() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Business Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
                 <input
                   type="text"
                   value={formData.businessName}
@@ -243,9 +256,7 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Owner Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Owner Name *</label>
                 <input
                   type="text"
                   value={formData.ownerName}
@@ -256,9 +267,7 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                 <input
                   type="tel"
                   value={formData.phone}
@@ -269,9 +278,7 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Business Type *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Type *</label>
                 <select
                   value={formData.businessType}
                   onChange={(e) => handleInputChange('businessType', e.target.value)}
@@ -280,8 +287,10 @@ export default function VendorProfileManagement() {
                   required
                 >
                   <option value="">Select Business Type</option>
-                  {businessTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
+                  {businessTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -293,9 +302,7 @@ export default function VendorProfileManagement() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Location</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
@@ -307,9 +314,7 @@ export default function VendorProfileManagement() {
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
                   <input
                     type="text"
                     value={formData.city}
@@ -320,9 +325,7 @@ export default function VendorProfileManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
                   <input
                     type="text"
                     value={formData.state}
@@ -333,9 +336,7 @@ export default function VendorProfileManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Pincode *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
                   <input
                     type="text"
                     value={formData.pincode}
@@ -352,14 +353,12 @@ export default function VendorProfileManagement() {
           {/* Preferences */}
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Sourcing Preferences</h3>
-            
+
             {/* Preferred Categories */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preferred Categories
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Categories</label>
               <div className="flex flex-wrap gap-2">
-                {categories.map(category => (
+                {categories.map((category) => (
                   <button
                     key={category}
                     type="button"
@@ -394,17 +393,17 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quality Preference
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quality Preference</label>
                 <select
                   value={formData.qualityPreference}
                   onChange={(e) => handleInputChange('qualityPreference', e.target.value)}
                   disabled={!isEditing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:bg-gray-50"
                 >
-                  {qualityOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
+                  {qualityOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -412,9 +411,7 @@ export default function VendorProfileManagement() {
 
             <div className="grid md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Budget Range (₹)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Budget Range (₹)</label>
                 <div className="flex items-center space-x-2">
                   <input
                     type="number"
@@ -445,8 +442,10 @@ export default function VendorProfileManagement() {
                   disabled={!isEditing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:bg-gray-50"
                 >
-                  {deliveryOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
+                  {deliveryOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
                   ))}
                 </select>
               </div>

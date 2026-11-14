@@ -73,7 +73,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
   }) as any[] | undefined;
   const vendorOrders = useQuery(api.orders.getVendorOrders, { vendorId, limit: 150 }) as any[] | undefined;
   const inventory = useQuery(api.inventory.getAvailableInventory, {}) as any[] | undefined;
-  const financialRecords = useQuery(api.financialAnalytics.getFinancialRecords, { vendorId }) as any[] | undefined;
+  const financialRecords = useQuery(api.financialAnalytics.getFinancialRecords, { vendorId }) as
+    | any[]
+    | undefined;
 
   const supplierListStorageKey = `saved_supplier_lists_${vendorId}`;
   const templateStorageKey = `repeat_order_templates_${vendorId}`;
@@ -131,44 +133,52 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
       grouped.get(key)!.push(order);
     });
 
-    return Array.from(grouped.entries()).map(([supplierId, orders]) => {
-      const total = orders.length;
-      const delivered = orders.filter((order) => order.status === 'delivered').length;
-      const cancelled = orders.filter((order) => order.status === 'cancelled').length;
-      const active = orders.filter((order) => !['delivered', 'cancelled'].includes(order.status)).length;
-      const onTime = orders.filter((order) => {
-        if (order.status !== 'delivered' || !order.actualDelivery) return false;
-        return order.actualDelivery <= order.estimatedDelivery;
-      }).length;
-      const fulfillmentRate = total > 0 ? Math.round((delivered / total) * 100) : 0;
-      const cancelRate = total > 0 ? Math.round((cancelled / total) * 100) : 0;
-      const onTimeRate = delivered > 0 ? Math.round((onTime / delivered) * 100) : 0;
-      const reliabilityScore = Math.max(0, Math.min(100, Math.round(0.5 * fulfillmentRate + 0.4 * onTimeRate - 0.5 * cancelRate)));
+    return Array.from(grouped.entries())
+      .map(([supplierId, orders]) => {
+        const total = orders.length;
+        const delivered = orders.filter((order) => order.status === 'delivered').length;
+        const cancelled = orders.filter((order) => order.status === 'cancelled').length;
+        const active = orders.filter((order) => !['delivered', 'cancelled'].includes(order.status)).length;
+        const onTime = orders.filter((order) => {
+          if (order.status !== 'delivered' || !order.actualDelivery) return false;
+          return order.actualDelivery <= order.estimatedDelivery;
+        }).length;
+        const fulfillmentRate = total > 0 ? Math.round((delivered / total) * 100) : 0;
+        const cancelRate = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+        const onTimeRate = delivered > 0 ? Math.round((onTime / delivered) * 100) : 0;
+        const reliabilityScore = Math.max(
+          0,
+          Math.min(100, Math.round(0.5 * fulfillmentRate + 0.4 * onTimeRate - 0.5 * cancelRate)),
+        );
 
-      return {
-        supplierId,
-        supplierName: supplierMap.get(supplierId)?.businessName || `Supplier ${supplierId.slice(-6)}`,
-        total,
-        delivered,
-        active,
-        fulfillmentRate,
-        cancelRate,
-        onTimeRate,
-        reliabilityScore,
-      };
-    }).sort((a, b) => b.reliabilityScore - a.reliabilityScore);
+        return {
+          supplierId,
+          supplierName: supplierMap.get(supplierId)?.businessName || `Supplier ${supplierId.slice(-6)}`,
+          total,
+          delivered,
+          active,
+          fulfillmentRate,
+          cancelRate,
+          onTimeRate,
+          reliabilityScore,
+        };
+      })
+      .sort((a, b) => b.reliabilityScore - a.reliabilityScore);
   }, [supplierMap, vendorOrders]);
 
   const etaAlerts = useMemo(() => {
     const now = Date.now();
-    return (vendorOrders || []).filter((order) => !['delivered', 'cancelled'].includes(order.status)).map((order) => {
-      const remainingMs = order.estimatedDelivery - now;
-      return {
-        ...order,
-        isDelayed: remainingMs < 0,
-        remainingHours: Math.round(remainingMs / (1000 * 60 * 60)),
-      };
-    }).sort((a, b) => a.remainingHours - b.remainingHours);
+    return (vendorOrders || [])
+      .filter((order) => !['delivered', 'cancelled'].includes(order.status))
+      .map((order) => {
+        const remainingMs = order.estimatedDelivery - now;
+        return {
+          ...order,
+          isDelayed: remainingMs < 0,
+          remainingHours: Math.round(remainingMs / (1000 * 60 * 60)),
+        };
+      })
+      .sort((a, b) => a.remainingHours - b.remainingHours);
   }, [vendorOrders]);
 
   const substitutions = useMemo(() => {
@@ -189,9 +199,7 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
       return matchByQuery && matchByCategory;
     });
 
-    return filtered
-      .sort((a, b) => (a.pricePerUnit || 0) - (b.pricePerUnit || 0))
-      .slice(0, 12);
+    return filtered.sort((a, b) => (a.pricePerUnit || 0) - (b.pricePerUnit || 0)).slice(0, 12);
   }, [inventory, substitutionCategory, substitutionQuery]);
 
   const negotiationSuggestions = useMemo(() => {
@@ -203,18 +211,30 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
     const balanced = Math.max(0, Number((base * 0.93).toFixed(2)));
     const aggressive = Math.max(0, Number((base * 0.88).toFixed(2)));
     return [
-      { label: 'Conservative counter', price: conservative, note: 'Best for reliable suppliers and small batches.' },
-      { label: 'Balanced counter', price: Math.min(balanced, targetByBudget), note: 'Balanced rate for repeat monthly orders.' },
-      { label: 'Aggressive counter', price: Math.min(aggressive, targetByBudget), note: 'Use when buying in high quantity or group mode.' },
+      {
+        label: 'Conservative counter',
+        price: conservative,
+        note: 'Best for reliable suppliers and small batches.',
+      },
+      {
+        label: 'Balanced counter',
+        price: Math.min(balanced, targetByBudget),
+        note: 'Balanced rate for repeat monthly orders.',
+      },
+      {
+        label: 'Aggressive counter',
+        price: Math.min(aggressive, targetByBudget),
+        note: 'Use when buying in high quantity or group mode.',
+      },
     ];
   }, [negotiationBudget, negotiationPrice, negotiationQty]);
 
   const toggleSupplierSelection = (supplierId: string) => {
-    setSelectedSuppliers((previous) => (
+    setSelectedSuppliers((previous) =>
       previous.includes(supplierId)
         ? previous.filter((item) => item !== supplierId)
-        : [...previous, supplierId]
-    ));
+        : [...previous, supplierId],
+    );
   };
 
   const createSupplierList = () => {
@@ -269,7 +289,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
       }),
     ];
 
-    const csv = rows.map((row) => row.map((item) => `"${String(item).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csv = rows
+      .map((row) => row.map((item) => `"${String(item).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -291,7 +313,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
 
       <section className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
         <h2 className="text-lg font-semibold text-indigo-900">In-app announcements and market bulletin</h2>
-        <p className="text-sm text-indigo-700">City-specific updates for {vendorCity} procurement planning.</p>
+        <p className="text-sm text-indigo-700">
+          City-specific updates for {vendorCity} procurement planning.
+        </p>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           {cityBulletins.length === 0 && (
             <div className="rounded-lg bg-white p-3 text-sm text-slate-600">
@@ -392,7 +416,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
                     <span className="font-medium text-slate-900">#{String(order._id).slice(-6)}</span>
                     <span className="text-xs text-slate-500">{order.status}</span>
                   </div>
-                  <div className="text-xs text-slate-600">{(order.items || []).length} items • Rs {Number(order.totalCost || 0).toFixed(0)}</div>
+                  <div className="text-xs text-slate-600">
+                    {(order.items || []).length} items • Rs {Number(order.totalCost || 0).toFixed(0)}
+                  </div>
                   <button
                     onClick={() => saveOrderAsTemplate(order)}
                     className="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-700"
@@ -430,7 +456,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
 
       <section className="rounded-xl border border-slate-200 bg-white p-4">
         <h2 className="text-lg font-semibold text-slate-900">Smart substitutions</h2>
-        <p className="text-sm text-slate-500">Find alternatives when your preferred ingredient is unavailable.</p>
+        <p className="text-sm text-slate-500">
+          Find alternatives when your preferred ingredient is unavailable.
+        </p>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <input
             value={substitutionQuery}
@@ -452,7 +480,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
           {substitutions.map((item) => (
             <div key={String(item._id)} className="rounded-md border border-slate-200 p-3">
               <div className="text-sm font-semibold text-slate-900">{item.itemName}</div>
-              <div className="text-xs text-slate-500">{item.category} • Rs {item.pricePerUnit}/{item.unit}</div>
+              <div className="text-xs text-slate-500">
+                {item.category} • Rs {item.pricePerUnit}/{item.unit}
+              </div>
             </div>
           ))}
         </div>
@@ -460,7 +490,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
 
       <section className="rounded-xl border border-slate-200 bg-white p-4">
         <h2 className="text-lg font-semibold text-slate-900">Supplier SLA scorecard</h2>
-        <p className="text-sm text-slate-500">Compare reliability using fulfillment, delay, and cancellation rates.</p>
+        <p className="text-sm text-slate-500">
+          Compare reliability using fulfillment, delay, and cancellation rates.
+        </p>
         <div className="mt-3 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
@@ -476,7 +508,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
             <tbody>
               {slaScorecards.length === 0 && (
                 <tr>
-                  <td className="py-3 text-slate-500" colSpan={6}>No orders yet to compute SLA.</td>
+                  <td className="py-3 text-slate-500" colSpan={6}>
+                    No orders yet to compute SLA.
+                  </td>
                 </tr>
               )}
               {slaScorecards.map((row) => (
@@ -498,9 +532,7 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
         <h2 className="text-lg font-semibold text-slate-900">Delivery ETA and delay alerts</h2>
         <p className="text-sm text-slate-500">Monitor active orders and escalate delayed shipments.</p>
         <div className="mt-3 grid gap-2 md:grid-cols-2">
-          {etaAlerts.length === 0 && (
-            <p className="text-sm text-slate-500">No active deliveries.</p>
-          )}
+          {etaAlerts.length === 0 && <p className="text-sm text-slate-500">No active deliveries.</p>}
           {etaAlerts.map((order) => (
             <div
               key={String(order._id)}
@@ -519,7 +551,9 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
 
       <section className="rounded-xl border border-slate-200 bg-white p-4">
         <h2 className="text-lg font-semibold text-slate-900">Negotiation assistant</h2>
-        <p className="text-sm text-slate-500">Generate data-backed counter-offers before opening supplier negotiations.</p>
+        <p className="text-sm text-slate-500">
+          Generate data-backed counter-offers before opening supplier negotiations.
+        </p>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <label className="text-sm text-slate-600">
             Current unit price
@@ -580,4 +614,3 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
     </div>
   );
 }
-

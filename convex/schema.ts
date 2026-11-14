@@ -1,5 +1,5 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
 
 export default defineSchema({
   // Password credentials for the built-in email/password auth.
@@ -11,7 +11,7 @@ export default defineSchema({
     iterations: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_email", ["email"]),
+  }).index('by_email', ['email']),
 
   // Vendors table (enhanced)
   vendors: defineTable({
@@ -27,8 +27,8 @@ export default defineSchema({
       pincode: v.string(),
       coordinates: v.object({
         lat: v.number(),
-        lng: v.number()
-      })
+        lng: v.number(),
+      }),
     }),
     businessType: v.string(),
     fssaiLicense: v.optional(v.string()),
@@ -39,10 +39,10 @@ export default defineSchema({
       preferredCategories: v.array(v.string()),
       budgetRange: v.object({
         min: v.number(),
-        max: v.number()
+        max: v.number(),
       }),
       qualityPreference: v.string(),
-      deliveryTimePreference: v.string()
+      deliveryTimePreference: v.string(),
     }),
     // --- Workflow Progress Fields ---
     currentWorkflowStep: v.optional(v.string()), // e.g., 'discover', 'recommendations', ...
@@ -57,10 +57,11 @@ export default defineSchema({
     communicationUsed: v.optional(v.boolean()),
     // --- End Workflow Progress Fields ---
     createdAt: v.number(),
-    updatedAt: v.number()
-  }).index("by_user", ["userId"])
-    .index("by_city", ["location.city"])
-    .index("by_trust_score", ["trustScore"]),
+    updatedAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_city', ['location.city'])
+    .index('by_trust_score', ['trustScore']),
 
   // Suppliers table (enhanced)
   suppliers: defineTable({
@@ -76,51 +77,58 @@ export default defineSchema({
       pincode: v.string(),
       coordinates: v.object({
         lat: v.number(),
-        lng: v.number()
-      })
+        lng: v.number(),
+      }),
     }),
     categories: v.array(v.string()),
     fssaiCertified: v.boolean(),
     fssaiLicense: v.optional(v.string()),
     fssaiVerificationStatus: v.optional(v.string()), // "pending", "verified", "rejected", "expired", "invalid"
     fssaiVerificationDate: v.optional(v.number()),
-    fssaiCertificateData: v.optional(v.object({
-      licenseNumber: v.string(),
-      businessName: v.string(),
-      ownerName: v.string(),
-      address: v.string(),
-      validityDate: v.string(),
-      category: v.string(),
-      confidence: v.number()
-    })),
+    fssaiCertificateData: v.optional(
+      v.object({
+        licenseNumber: v.string(),
+        businessName: v.string(),
+        ownerName: v.string(),
+        address: v.string(),
+        validityDate: v.string(),
+        category: v.string(),
+        confidence: v.number(),
+      }),
+    ),
     fssaiVerificationError: v.optional(v.string()),
     isVerified: v.boolean(),
     trustScore: v.number(),
     businessHours: v.object({
       open: v.string(),
       close: v.string(),
-      days: v.array(v.string())
+      days: v.array(v.string()),
     }),
     deliveryRadius: v.number(),
     minimumOrder: v.number(),
-    forecasts: v.optional(v.array(v.object({
-      item: v.string(),
-      predictedQty: v.number(),
-      confidence: v.number(),
-      forecastDate: v.number(),
-      reason: v.optional(v.string())
-    }))),
+    forecasts: v.optional(
+      v.array(
+        v.object({
+          item: v.string(),
+          predictedQty: v.number(),
+          confidence: v.number(),
+          forecastDate: v.number(),
+          reason: v.optional(v.string()),
+        }),
+      ),
+    ),
     lastForecastUpdate: v.optional(v.number()),
     createdAt: v.number(),
-    updatedAt: v.number()
-  }).index("by_user", ["userId"])
-    .index("by_city", ["location.city"])
-    .index("by_category", ["categories"])
-    .index("by_trust_score", ["trustScore"]),
+    updatedAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_city', ['location.city'])
+    .index('by_category', ['categories'])
+    .index('by_trust_score', ['trustScore']),
 
   // Inventory table
   inventory: defineTable({
-    supplierId: v.id("suppliers"),
+    supplierId: v.id('suppliers'),
     itemName: v.string(),
     category: v.string(),
     currentStock: v.number(),
@@ -130,27 +138,30 @@ export default defineSchema({
     quality: v.string(),
     expiryDate: v.optional(v.number()),
     lastUpdated: v.number(),
-    isAvailable: v.boolean()
-  }).index("by_supplier", ["supplierId"])
-    .index("by_category", ["category"])
-    .index("by_item", ["itemName"])
-    .index("by_availability", ["isAvailable"]),
+    isAvailable: v.boolean(),
+  })
+    .index('by_supplier', ['supplierId'])
+    .index('by_category', ['category'])
+    .index('by_item', ['itemName'])
+    .index('by_availability', ['isAvailable']),
 
   // Orders table (enhanced)
   orders: defineTable({
-    vendorId: v.id("vendors"),
-    supplierId: v.id("suppliers"),
-    items: v.array(v.object({
-      itemName: v.string(),
-      quantity: v.number(),
-      unit: v.string(),
-      pricePerUnit: v.number(),
-      totalPrice: v.number()
-    })),
+    vendorId: v.id('vendors'),
+    supplierId: v.id('suppliers'),
+    items: v.array(
+      v.object({
+        itemName: v.string(),
+        quantity: v.number(),
+        unit: v.string(),
+        pricePerUnit: v.number(),
+        totalPrice: v.number(),
+      }),
+    ),
     totalCost: v.number(),
     status: v.string(), // "pending", "confirmed", "processing", "shipped", "delivered", "cancelled"
     orderType: v.string(), // "individual", "group"
-    groupOrderId: v.optional(v.id("groupOrders")),
+    groupOrderId: v.optional(v.id('groupOrders')),
     deliveryAddress: v.string(),
     estimatedDelivery: v.number(),
     actualDelivery: v.optional(v.number()),
@@ -158,72 +169,83 @@ export default defineSchema({
     paymentMethod: v.string(),
     notes: v.optional(v.string()),
     // Enhanced tracking information
-    trackingInfo: v.optional(v.array(v.object({
-      trackingNumber: v.string(),
-      carrier: v.string(),
-      estimatedDelivery: v.optional(v.number()),
-      isThirdParty: v.boolean(),
-      thirdPartyProvider: v.optional(v.string()),
-      delegatedBy: v.optional(v.id("suppliers")),
-      notes: v.optional(v.string()),
-      addedAt: v.number(),
-      status: v.string(), // "shipped", "in_transit", "out_for_delivery", "delivered", "exception"
-      trackingHistory: v.array(v.object({
-        status: v.string(),
-        location: v.optional(v.string()),
-        notes: v.optional(v.string()),
-        timestamp: v.number()
-      }))
-    }))),
+    trackingInfo: v.optional(
+      v.array(
+        v.object({
+          trackingNumber: v.string(),
+          carrier: v.string(),
+          estimatedDelivery: v.optional(v.number()),
+          isThirdParty: v.boolean(),
+          thirdPartyProvider: v.optional(v.string()),
+          delegatedBy: v.optional(v.id('suppliers')),
+          notes: v.optional(v.string()),
+          addedAt: v.number(),
+          status: v.string(), // "shipped", "in_transit", "out_for_delivery", "delivered", "exception"
+          trackingHistory: v.array(
+            v.object({
+              status: v.string(),
+              location: v.optional(v.string()),
+              notes: v.optional(v.string()),
+              timestamp: v.number(),
+            }),
+          ),
+        }),
+      ),
+    ),
     createdAt: v.number(),
-    updatedAt: v.number()
-  }).index("by_vendor", ["vendorId"])
-    .index("by_supplier", ["supplierId"])
-    .index("by_status", ["status"])
-    .index("by_payment_status", ["paymentStatus"]),
+    updatedAt: v.number(),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_supplier', ['supplierId'])
+    .index('by_status', ['status'])
+    .index('by_payment_status', ['paymentStatus']),
 
   // Group Orders table
   groupOrders: defineTable({
-    initiatorId: v.id("vendors"),
+    initiatorId: v.id('vendors'),
     itemName: v.string(),
     category: v.string(),
     targetQuantity: v.number(),
     currentQuantity: v.number(),
     pricePerUnit: v.number(),
-    participants: v.array(v.object({
-      vendorId: v.id("vendors"),
-      quantity: v.number(),
-      joinedAt: v.number()
-    })),
-    supplierId: v.id("suppliers"),
+    participants: v.array(
+      v.object({
+        vendorId: v.id('vendors'),
+        quantity: v.number(),
+        joinedAt: v.number(),
+      }),
+    ),
+    supplierId: v.id('suppliers'),
     status: v.string(), // "open", "locked", "completed", "cancelled"
     location: v.string(),
     expiresAt: v.number(),
-    createdAt: v.number()
-  }).index("by_initiator", ["initiatorId"])
-    .index("by_supplier", ["supplierId"])
-    .index("by_status", ["status"])
-    .index("by_location", ["location"])
-    .index("by_category", ["category"]),
+    createdAt: v.number(),
+  })
+    .index('by_initiator', ['initiatorId'])
+    .index('by_supplier', ['supplierId'])
+    .index('by_status', ['status'])
+    .index('by_location', ['location'])
+    .index('by_category', ['category']),
 
   // Ratings table
   ratings: defineTable({
-    vendorId: v.id("vendors"),
-    supplierId: v.id("suppliers"),
-    orderId: v.id("orders"),
+    vendorId: v.id('vendors'),
+    supplierId: v.id('suppliers'),
+    orderId: v.id('orders'),
     rating: v.number(), // 1-5 scale
     review: v.optional(v.string()),
     categories: v.object({
       quality: v.number(),
       delivery: v.number(),
       communication: v.number(),
-      pricing: v.number()
+      pricing: v.number(),
     }),
-    createdAt: v.number()
-  }).index("by_vendor", ["vendorId"])
-    .index("by_supplier", ["supplierId"])
-    .index("by_order", ["orderId"])
-    .index("by_rating", ["rating"]),
+    createdAt: v.number(),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_supplier', ['supplierId'])
+    .index('by_order', ['orderId'])
+    .index('by_rating', ['rating']),
 
   // Messages table
   messages: defineTable({
@@ -233,18 +255,19 @@ export default defineSchema({
     receiverType: v.string(), // "vendor" or "supplier"
     content: v.string(),
     messageType: v.string(), // "text", "order_inquiry", "support"
-    orderId: v.optional(v.id("orders")),
+    orderId: v.optional(v.id('orders')),
     isRead: v.boolean(),
-    createdAt: v.number()
-  }).index("by_sender", ["senderId"])
-    .index("by_receiver", ["receiverId"])
-    .index("by_conversation", ["senderId", "receiverId"])
-    .index("by_order", ["orderId"]),
+    createdAt: v.number(),
+  })
+    .index('by_sender', ['senderId'])
+    .index('by_receiver', ['receiverId'])
+    .index('by_conversation', ['senderId', 'receiverId'])
+    .index('by_order', ['orderId']),
 
   // AI Recommendations table
   recommendations: defineTable({
-    vendorId: v.id("vendors"),
-    supplierId: v.id("suppliers"),
+    vendorId: v.id('vendors'),
+    supplierId: v.id('suppliers'),
     score: v.number(), // 0-1 recommendation strength
     reasons: v.array(v.string()),
     itemCategories: v.array(v.string()),
@@ -253,61 +276,64 @@ export default defineSchema({
     locationScore: v.number(),
     isActive: v.boolean(),
     createdAt: v.number(),
-    expiresAt: v.number()
-  }).index("by_vendor", ["vendorId"])
-    .index("by_supplier", ["supplierId"])
-    .index("by_score", ["score"])
-    .index("by_active", ["isActive"]),
+    expiresAt: v.number(),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_supplier', ['supplierId'])
+    .index('by_score', ['score'])
+    .index('by_active', ['isActive']),
 
   // Price Alerts table
   priceAlerts: defineTable({
-    vendorId: v.id("vendors"),
+    vendorId: v.id('vendors'),
     itemName: v.string(),
     targetPrice: v.number(),
     currentPrice: v.number(),
-    supplierId: v.optional(v.id("suppliers")),
+    supplierId: v.optional(v.id('suppliers')),
     isActive: v.boolean(),
     lastTriggered: v.optional(v.number()),
-    createdAt: v.number()
-  }).index("by_vendor", ["vendorId"])
-    .index("by_item", ["itemName"])
-    .index("by_active", ["isActive"]),
+    createdAt: v.number(),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_item', ['itemName'])
+    .index('by_active', ['isActive']),
 
   // Financial Analytics table
   financialRecords: defineTable({
-    vendorId: v.id("vendors"),
-    orderId: v.id("orders"),
+    vendorId: v.id('vendors'),
+    orderId: v.id('orders'),
     amount: v.number(),
     category: v.string(),
     itemName: v.string(),
-    supplierId: v.id("suppliers"),
+    supplierId: v.id('suppliers'),
     date: v.number(),
     month: v.string(), // "2024-01" format
-    year: v.number()
+    year: v.number(),
   })
-    .index("by_vendor", ["vendorId"])
-    .index("by_supplier", ["supplierId"])
-    .index("by_month", ["month"])
-    .index("by_year", ["year"])
-    .index("by_category", ["category"]),
+    .index('by_vendor', ['vendorId'])
+    .index('by_supplier', ['supplierId'])
+    .index('by_month', ['month'])
+    .index('by_year', ['year'])
+    .index('by_category', ['category']),
 
   // Recommendation Feedback table
   recommendationFeedback: defineTable({
-    recommendationId: v.id("recommendations"),
-    vendorId: v.id("vendors"),
-    supplierId: v.id("suppliers"),
+    recommendationId: v.id('recommendations'),
+    vendorId: v.id('vendors'),
+    supplierId: v.id('suppliers'),
     feedback: v.string(), // "helpful", "not_helpful", "contacted", "ordered"
     notes: v.optional(v.string()),
     recommendationScore: v.number(),
-    createdAt: v.number()
-  }).index("by_recommendation", ["recommendationId"])
-    .index("by_vendor", ["vendorId"])
-    .index("by_supplier", ["supplierId"])
-    .index("by_feedback", ["feedback"]),
+    createdAt: v.number(),
+  })
+    .index('by_recommendation', ['recommendationId'])
+    .index('by_vendor', ['vendorId'])
+    .index('by_supplier', ['supplierId'])
+    .index('by_feedback', ['feedback']),
 
   // Demand Requests table
   requests: defineTable({
-    vendorId: v.id("vendors"),
+    vendorId: v.id('vendors'),
     itemName: v.string(),
     quantity: v.number(),
     unit: v.string(),
@@ -318,34 +344,39 @@ export default defineSchema({
     notes: v.optional(v.string()),
     requireFssai: v.optional(v.boolean()),
     status: v.string(), // "open", "responded", "fulfilled", "closed"
-    responses: v.array(v.object({
-      supplierId: v.id("suppliers"),
-      quote: v.optional(v.number()),
-      message: v.optional(v.string()),
-      respondedAt: v.number()
-    })),
-    createdAt: v.number()
-  }).index("by_vendor", ["vendorId"])
-    .index("by_status", ["status"])
-    .index("by_item", ["itemName"])
-    .index("by_location", ["location"])
-    .index("by_urgency", ["urgency"]),
+    responses: v.array(
+      v.object({
+        supplierId: v.id('suppliers'),
+        quote: v.optional(v.number()),
+        message: v.optional(v.string()),
+        respondedAt: v.number(),
+      }),
+    ),
+    createdAt: v.number(),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_status', ['status'])
+    .index('by_item', ['itemName'])
+    .index('by_location', ['location'])
+    .index('by_urgency', ['urgency']),
 
   // Recipes table
   recipes: defineTable({
-    vendorId: v.id("vendors"),
+    vendorId: v.id('vendors'),
     name: v.string(),
     description: v.optional(v.string()),
     servings: v.number(),
-    ingredients: v.array(v.object({
-      name: v.string(),
-      quantity: v.number(),
-      unit: v.string(),
-      pricePerUnit: v.number(),
-      category: v.string(),
-      supplierId: v.optional(v.id("suppliers")),
-      supplierName: v.optional(v.string()),
-    })),
+    ingredients: v.array(
+      v.object({
+        name: v.string(),
+        quantity: v.number(),
+        unit: v.string(),
+        pricePerUnit: v.number(),
+        category: v.string(),
+        supplierId: v.optional(v.id('suppliers')),
+        supplierName: v.optional(v.string()),
+      }),
+    ),
     totalCost: v.number(),
     costPerServing: v.number(),
     suggestedSellingPrice: v.number(),
@@ -356,14 +387,15 @@ export default defineSchema({
     tags: v.array(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_vendor", ["vendorId"])
-    .index("by_category", ["category"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_category', ['category'])
+    .index('by_created', ['createdAt']),
 
   // Supplier negotiations table
   negotiations: defineTable({
-    vendorId: v.id("vendors"),
-    supplierId: v.id("suppliers"),
+    vendorId: v.id('vendors'),
+    supplierId: v.id('suppliers'),
     itemName: v.string(),
     currentPrice: v.number(),
     requestedPrice: v.number(),
@@ -378,14 +410,15 @@ export default defineSchema({
     createdAt: v.number(),
     expiresAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_vendor", ["vendorId"])
-    .index("by_supplier", ["supplierId"])
-    .index("by_status", ["status"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_supplier', ['supplierId'])
+    .index('by_status', ['status'])
+    .index('by_created', ['createdAt']),
 
   // Competitor insights (vendor-entered) table
   competitorInsights: defineTable({
-    vendorId: v.id("vendors"),
+    vendorId: v.id('vendors'),
     competitorName: v.string(),
     businessType: v.string(),
     location: v.string(),
@@ -397,12 +430,13 @@ export default defineSchema({
     opportunities: v.array(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_vendor", ["vendorId"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_created', ['createdAt']),
 
   // Seasonal insights (vendor-entered) table
   seasonalInsights: defineTable({
-    vendorId: v.id("vendors"),
+    vendorId: v.id('vendors'),
     period: v.string(),
     peakItems: v.array(v.string()),
     priceIncrease: v.number(),
@@ -411,19 +445,21 @@ export default defineSchema({
     opportunity: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_vendor", ["vendorId"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_created', ['createdAt']),
 
   // Market reports table
   marketReports: defineTable({
-    vendorId: v.id("vendors"),
+    vendorId: v.id('vendors'),
     title: v.string(),
     type: v.string(),
     content: v.string(),
     generatedAt: v.number(),
     createdAt: v.number(),
-  }).index("by_vendor", ["vendorId"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_vendor', ['vendorId'])
+    .index('by_created', ['createdAt']),
 
   // Notifications table
   notifications: defineTable({
@@ -432,22 +468,25 @@ export default defineSchema({
     type: v.string(), // "order_update", "message", "price_alert", "group_order", "system"
     title: v.string(),
     message: v.string(),
-    data: v.optional(v.object({
-      orderId: v.optional(v.id("orders")),
-      messageId: v.optional(v.id("messages")),
-      supplierId: v.optional(v.id("suppliers")),
-      vendorId: v.optional(v.id("vendors")),
-      groupOrderId: v.optional(v.id("groupOrders")),
-    })),
+    data: v.optional(
+      v.object({
+        orderId: v.optional(v.id('orders')),
+        messageId: v.optional(v.id('messages')),
+        supplierId: v.optional(v.id('suppliers')),
+        vendorId: v.optional(v.id('vendors')),
+        groupOrderId: v.optional(v.id('groupOrders')),
+      }),
+    ),
     isRead: v.boolean(),
     priority: v.string(), // "low", "medium", "high", "urgent"
     createdAt: v.number(),
     expiresAt: v.optional(v.number()),
-  }).index("by_user", ["userId"])
-    .index("by_type", ["type"])
-    .index("by_read", ["isRead"])
-    .index("by_priority", ["priority"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_user', ['userId'])
+    .index('by_type', ['type'])
+    .index('by_read', ['isRead'])
+    .index('by_priority', ['priority'])
+    .index('by_created', ['createdAt']),
 
   // Support Tickets table
   supportTickets: defineTable({
@@ -459,33 +498,35 @@ export default defineSchema({
     priority: v.string(), // "low", "medium", "high", "urgent"
     status: v.string(), // "open", "in_progress", "resolved", "closed"
     assignedTo: v.optional(v.string()), // Support agent ID
-    orderId: v.optional(v.id("orders")),
+    orderId: v.optional(v.id('orders')),
     attachments: v.optional(v.array(v.string())), // File URLs
     createdAt: v.number(),
     updatedAt: v.number(),
     resolvedAt: v.optional(v.number()),
-  }).index("by_user", ["userId"])
-    .index("by_status", ["status"])
-    .index("by_priority", ["priority"])
-    .index("by_category", ["category"])
-    .index("by_assigned", ["assignedTo"]),
+  })
+    .index('by_user', ['userId'])
+    .index('by_status', ['status'])
+    .index('by_priority', ['priority'])
+    .index('by_category', ['category'])
+    .index('by_assigned', ['assignedTo']),
 
   // Support Messages table
   supportMessages: defineTable({
-    ticketId: v.id("supportTickets"),
+    ticketId: v.id('supportTickets'),
     senderId: v.string(), // Clerk user ID or support agent ID
     senderType: v.string(), // "user" or "support"
     content: v.string(),
     attachments: v.optional(v.array(v.string())), // File URLs
     isInternal: v.boolean(), // Internal notes for support team
     createdAt: v.number(),
-  }).index("by_ticket", ["ticketId"])
-    .index("by_sender", ["senderId"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_ticket', ['ticketId'])
+    .index('by_sender', ['senderId'])
+    .index('by_created', ['createdAt']),
 
   // Disputes table
   disputes: defineTable({
-    orderId: v.id("orders"),
+    orderId: v.id('orders'),
     initiatorId: v.string(), // Clerk user ID
     initiatorType: v.string(), // "vendor" or "supplier"
     respondentId: v.string(), // Clerk user ID
@@ -499,11 +540,12 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     resolvedAt: v.optional(v.number()),
-  }).index("by_order", ["orderId"])
-    .index("by_initiator", ["initiatorId"])
-    .index("by_respondent", ["respondentId"])
-    .index("by_status", ["status"])
-    .index("by_category", ["category"]),
+  })
+    .index('by_order', ['orderId'])
+    .index('by_initiator', ['initiatorId'])
+    .index('by_respondent', ['respondentId'])
+    .index('by_status', ['status'])
+    .index('by_category', ['category']),
 
   // Enhanced Voice Queries table
   voiceQueries: defineTable({
@@ -514,51 +556,60 @@ export default defineSchema({
     language: v.string(), // Detected language code
     englishText: v.string(), // Translated to English
     confidence: v.number(), // Speech recognition confidence
-    
+
     // Search-specific fields
-    searchResults: v.optional(v.object({
-      items: v.array(v.string()),
-      suppliers: v.array(v.string()),
-      filters: v.object({
+    searchResults: v.optional(
+      v.object({
+        items: v.array(v.string()),
+        suppliers: v.array(v.string()),
+        filters: v.object({
+          location: v.optional(v.string()),
+          priceRange: v.optional(
+            v.object({
+              min: v.number(),
+              max: v.number(),
+            }),
+          ),
+          categories: v.optional(v.array(v.string())),
+          deliveryTime: v.optional(v.string()),
+          quality: v.optional(v.string()),
+          fssaiRequired: v.optional(v.boolean()),
+        }),
+      }),
+    ),
+
+    // Filter-specific fields
+    appliedFilters: v.optional(
+      v.object({
         location: v.optional(v.string()),
-        priceRange: v.optional(v.object({
-          min: v.number(),
-          max: v.number()
-        })),
+        priceRange: v.optional(
+          v.object({
+            min: v.number(),
+            max: v.number(),
+          }),
+        ),
         categories: v.optional(v.array(v.string())),
         deliveryTime: v.optional(v.string()),
         quality: v.optional(v.string()),
-        fssaiRequired: v.optional(v.boolean())
-      })
-    })),
-    
-    // Filter-specific fields
-    appliedFilters: v.optional(v.object({
-      location: v.optional(v.string()),
-      priceRange: v.optional(v.object({
-        min: v.number(),
-        max: v.number()
-      })),
-      categories: v.optional(v.array(v.string())),
-      deliveryTime: v.optional(v.string()),
-      quality: v.optional(v.string()),
-      fssaiRequired: v.optional(v.boolean())
-    })),
-    
+        fssaiRequired: v.optional(v.boolean()),
+      }),
+    ),
+
     // Image-related fields
     imageId: v.optional(v.string()),
     identifiedItems: v.optional(v.array(v.string())),
-    
+
     response: v.string(), // AI response
     responseLanguage: v.string(), // Response language
     processingTime: v.number(), // Processing time in ms
     audioDuration: v.optional(v.number()), // Recording duration in ms
     createdAt: v.number(),
-  }).index("by_user", ["userId"])
-    .index("by_role", ["userRole"])
-    .index("by_language", ["language"])
-    .index("by_query_type", ["queryType"])
-    .index("by_created", ["createdAt"]),
+  })
+    .index('by_user', ['userId'])
+    .index('by_role', ['userRole'])
+    .index('by_language', ['language'])
+    .index('by_query_type', ['queryType'])
+    .index('by_created', ['createdAt']),
 
   // Image Analysis table
   imageAnalysis: defineTable({
@@ -566,36 +617,45 @@ export default defineSchema({
     imageUrl: v.string(),
     imageHash: v.string(), // For duplicate detection
     analysisResults: v.object({
-      identifiedItems: v.array(v.object({
-        name: v.string(),
-        confidence: v.number(),
-        category: v.string(),
-        alternatives: v.optional(v.array(v.string()))
-      })),
-      ingredients: v.array(v.object({
-        name: v.string(),
-        confidence: v.number(),
-        category: v.string(),
-        alternatives: v.optional(v.array(v.string()))
-      })),
-      overallConfidence: v.number()
+      identifiedItems: v.array(
+        v.object({
+          name: v.string(),
+          confidence: v.number(),
+          category: v.string(),
+          alternatives: v.optional(v.array(v.string())),
+        }),
+      ),
+      ingredients: v.array(
+        v.object({
+          name: v.string(),
+          confidence: v.number(),
+          category: v.string(),
+          alternatives: v.optional(v.array(v.string())),
+        }),
+      ),
+      overallConfidence: v.number(),
     }),
-    supplierSuggestions: v.array(v.object({
-      supplierId: v.id("suppliers"),
-      relevantIngredients: v.array(v.string()),
-      matchScore: v.number(),
-      priceEstimate: v.optional(v.number())
-    })),
-    userFeedback: v.optional(v.object({
-      correctIdentification: v.boolean(),
-      actualItems: v.optional(v.array(v.string())),
-      rating: v.number(),
-      comments: v.optional(v.string())
-    })),
-    createdAt: v.number()
-  }).index("by_user", ["userId"])
-    .index("by_hash", ["imageHash"])
-    .index("by_created", ["createdAt"]),
+    supplierSuggestions: v.array(
+      v.object({
+        supplierId: v.id('suppliers'),
+        relevantIngredients: v.array(v.string()),
+        matchScore: v.number(),
+        priceEstimate: v.optional(v.number()),
+      }),
+    ),
+    userFeedback: v.optional(
+      v.object({
+        correctIdentification: v.boolean(),
+        actualItems: v.optional(v.array(v.string())),
+        rating: v.number(),
+        comments: v.optional(v.string()),
+      }),
+    ),
+    createdAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_hash', ['imageHash'])
+    .index('by_created', ['createdAt']),
 
   // Voice Preferences table
   voicePreferences: defineTable({
@@ -608,33 +668,40 @@ export default defineSchema({
     privacySettings: v.object({
       storeAudio: v.boolean(),
       shareForImprovement: v.boolean(),
-      retentionDays: v.number()
+      retentionDays: v.number(),
     }),
     createdAt: v.number(),
-    updatedAt: v.number()
-  }).index("by_user", ["userId"]),
+    updatedAt: v.number(),
+  }).index('by_user', ['userId']),
 
   // Voice Learning Data table (for improving recognition)
   voiceLearningData: defineTable({
     userId: v.string(),
     language: v.string(),
-    commonPhrases: v.array(v.object({
-      phrase: v.string(),
-      frequency: v.number(),
-      context: v.string(),
-      lastUsed: v.number()
-    })),
-    vocabularyPreferences: v.array(v.object({
-      term: v.string(),
-      preferredTranslation: v.string(),
-      category: v.string()
-    })),
-    correctionHistory: v.array(v.object({
-      original: v.string(),
-      corrected: v.string(),
-      timestamp: v.number()
-    })),
-    updatedAt: v.number()
-  }).index("by_user", ["userId"])
-    .index("by_language", ["language"]),
+    commonPhrases: v.array(
+      v.object({
+        phrase: v.string(),
+        frequency: v.number(),
+        context: v.string(),
+        lastUsed: v.number(),
+      }),
+    ),
+    vocabularyPreferences: v.array(
+      v.object({
+        term: v.string(),
+        preferredTranslation: v.string(),
+        category: v.string(),
+      }),
+    ),
+    correctionHistory: v.array(
+      v.object({
+        original: v.string(),
+        corrected: v.string(),
+        timestamp: v.number(),
+      }),
+    ),
+    updatedAt: v.number(),
+  })
+    .index('by_user', ['userId'])
+    .index('by_language', ['language']),
 });

@@ -22,7 +22,11 @@ const ROLE_CHECKLIST: Record<Role, ChecklistItem[]> = {
     { id: 'insights', label: 'Review market bulletin', hint: 'Use city trends for better pricing windows.' },
   ],
   supplier: [
-    { id: 'profile', label: 'Complete supplier profile', hint: 'Visibility improves with richer information.' },
+    {
+      id: 'profile',
+      label: 'Complete supplier profile',
+      hint: 'Visibility improves with richer information.',
+    },
     { id: 'catalog', label: 'Add inventory items', hint: 'Vendors can discover your listings faster.' },
     { id: 'media', label: 'Upload profile media', hint: 'Build buyer trust with storefront proof.' },
     { id: 'sla', label: 'Track order fulfillment SLA', hint: 'Operational reliability boosts trust score.' },
@@ -121,4 +125,3 @@ export default function RoleOnboardingWizard({ role, userId }: RoleOnboardingWiz
     </div>
   );
 }
-

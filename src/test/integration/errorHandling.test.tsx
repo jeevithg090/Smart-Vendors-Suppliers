@@ -67,7 +67,7 @@ describe('Error Handling Integration', () => {
       render(
         <ErrorBoundary>
           <RuntimeErrorTrigger />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       fireEvent.click(screen.getByTestId('trigger-runtime-error'));
@@ -80,7 +80,7 @@ describe('Error Handling Integration', () => {
         expect.objectContaining({
           type: 'SYSTEM_ERROR',
           message: 'Runtime error',
-        })
+        }),
       );
     });
 
@@ -88,7 +88,7 @@ describe('Error Handling Integration', () => {
       const { rerender } = render(
         <ErrorBoundary>
           <RuntimeErrorTrigger />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       fireEvent.click(screen.getByTestId('trigger-runtime-error'));
@@ -102,7 +102,7 @@ describe('Error Handling Integration', () => {
       rerender(
         <ErrorBoundary>
           <div data-testid="content">Normal content</div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       await waitFor(() => {
@@ -174,7 +174,7 @@ describe('Error Handling Integration', () => {
             message: 'Not enough stock',
             actionable: true,
           }),
-          undefined
+          undefined,
         );
       });
     });
@@ -185,7 +185,7 @@ describe('Error Handling Integration', () => {
       render(
         <ErrorBoundary>
           <RuntimeErrorTrigger />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       fireEvent.click(screen.getByTestId('trigger-runtime-error'));
@@ -196,7 +196,7 @@ describe('Error Handling Integration', () => {
           expect.any(Number),
           expect.objectContaining({
             errorMessage: 'Runtime error',
-          })
+          }),
         );
       });
     });
@@ -205,22 +205,20 @@ describe('Error Handling Integration', () => {
       const mockOperation = vi.fn().mockResolvedValue('success');
 
       vi.mocked(performanceMonitoring.measureOperation).mockImplementation(
-        async (_operationName: string, operation: () => Promise<unknown>) => operation()
+        async (_operationName: string, operation: () => Promise<unknown>) => operation(),
       );
 
       await performanceMonitoring.measureOperation('test-operation', mockOperation);
 
       expect(mockOperation).toHaveBeenCalled();
-      expect(performanceMonitoring.measureOperation).toHaveBeenCalledWith(
-        'test-operation',
-        mockOperation
-      );
+      expect(performanceMonitoring.measureOperation).toHaveBeenCalledWith('test-operation', mockOperation);
     });
   });
 
   describe('Error Recovery Scenarios', () => {
     it('should handle cascading errors gracefully', async () => {
-      const mockFailingOperation = vi.fn()
+      const mockFailingOperation = vi
+        .fn()
         .mockRejectedValueOnce(new Error('First error'))
         .mockRejectedValueOnce(new Error('Second error'))
         .mockResolvedValueOnce('success');
@@ -247,17 +245,17 @@ describe('Error Handling Integration', () => {
       expect(errorReporting.reportError).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({ type: 'SYSTEM_ERROR' }),
-        undefined
+        undefined,
       );
       expect(errorReporting.reportError).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({ type: 'NETWORK_ERROR' }),
-        undefined
+        undefined,
       );
       expect(errorReporting.reportError).toHaveBeenNthCalledWith(
         3,
         expect.objectContaining({ type: 'BUSINESS_ERROR' }),
-        undefined
+        undefined,
       );
     });
   });
@@ -282,7 +280,7 @@ describe('Error Handling Integration', () => {
             orderId: 'order-456',
           }),
         }),
-        undefined
+        undefined,
       );
     });
 
@@ -290,7 +288,7 @@ describe('Error Handling Integration', () => {
       render(
         <ErrorBoundary>
           <RuntimeErrorTrigger />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       fireEvent.click(screen.getByTestId('trigger-runtime-error'));
@@ -303,7 +301,7 @@ describe('Error Handling Integration', () => {
               url: expect.any(String),
               userAgent: expect.any(String),
             }),
-          })
+          }),
         );
       });
     });

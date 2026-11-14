@@ -1,11 +1,11 @@
-import { useAuth } from '../contexts/AuthContext'
-import { useQuery, useMutation } from 'convex/react'
-import { api } from '../../convex/_generated/api'
-import { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { useState, useEffect } from 'react';
 import type { Id } from '../../convex/_generated/dataModel';
-import InventoryForecast from '../components/InventoryForecast'
-import FSSAIVerification from '../components/FSSAIVerification'
-import VoiceQuery from '../components/VoiceQuery'
+import InventoryForecast from '../components/InventoryForecast';
+import FSSAIVerification from '../components/FSSAIVerification';
+import VoiceQuery from '../components/VoiceQuery';
 import { NotificationBell, NotificationCenter } from '../components/NotificationCenter';
 import SupplierAnalytics from '../components/SupplierAnalytics';
 import SmartPricingEngine from '../components/SmartPricingEngine';
@@ -81,9 +81,19 @@ const PRODUCT_CATEGORY_OPTIONS = [
 ] as const;
 
 export default function SupplierDashboard() {
-  const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'analytics' | 'profile' | 'pricing' | 'automation' | 'quality' | 'loyalty'>('dashboard')
-  const [isProfileSetup, setIsProfileSetup] = useState(false)
+  const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState<
+    | 'dashboard'
+    | 'products'
+    | 'orders'
+    | 'analytics'
+    | 'profile'
+    | 'pricing'
+    | 'automation'
+    | 'quality'
+    | 'loyalty'
+  >('dashboard');
+  const [isProfileSetup, setIsProfileSetup] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null);
   const [showOrderTracking, setShowOrderTracking] = useState<Id<'orders'> | null>(null);
@@ -104,35 +114,37 @@ export default function SupplierDashboard() {
   });
 
   // Get supplier profile by user ID
-  const supplierQuery = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' })
+  const supplierQuery = useQuery(api.suppliers.getByUserId, { userId: user?.id || '' });
   const supplierProfile = supplierQuery ?? localSupplierFallback;
   const hasBackendSupplier = Boolean(supplierQuery?._id);
-  
+
   // Get supplier inventory if profile exists
-  const inventoryQuery = useQuery(api.inventory.getInventoryBySupplier, 
-    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip'
-  )
-  
+  const inventoryQuery = useQuery(
+    api.inventory.getInventoryBySupplier,
+    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip',
+  );
+
   // Get orders for this supplier
-  const ordersQuery = useQuery(api.orders.getOrdersBySupplier,
-    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip'
-  )
+  const ordersQuery = useQuery(
+    api.orders.getOrdersBySupplier,
+    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip',
+  );
 
   // Get supplier forecasts
-  const forecastsQuery = useQuery(api.suppliers.getSupplierForecasts, 
-    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip'
-  )
+  const forecastsQuery = useQuery(
+    api.suppliers.getSupplierForecasts,
+    supplierQuery?._id ? { supplierId: supplierQuery._id } : 'skip',
+  );
 
-  const inventory =
-    inventoryQuery && inventoryQuery.length > 0 ? inventoryQuery : localInventory;
+  const inventory = inventoryQuery && inventoryQuery.length > 0 ? inventoryQuery : localInventory;
   const orders = ordersQuery ?? [];
   const forecasts = forecastsQuery ?? [];
   const ordersLoading = hasBackendSupplier && ordersQuery === undefined;
 
   // Create supplier profile mutation
-  const createSupplier = useMutation(api.suppliers.create)
-  const addInventoryItem = useMutation(api.inventory.addInventoryItem)
-  const updateInventoryItem = useMutation(api.inventory.updateInventoryItem)
+  const createSupplier = useMutation(api.suppliers.create);
+  const addInventoryItem = useMutation(api.inventory.addInventoryItem);
+  const updateInventoryItem = useMutation(api.inventory.updateInventoryItem);
   const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
   const updateSupplierProfile = useMutation(api.suppliers.update);
   const [updatingOrderId, setUpdatingOrderId] = useState<Id<'orders'> | null>(null);
@@ -181,9 +193,9 @@ export default function SupplierDashboard() {
   // Check if supplier profile exists, if not show setup
   useEffect(() => {
     if (supplierQuery === null && !localSupplierFallback) {
-      setIsProfileSetup(true)
+      setIsProfileSetup(true);
     } else if (supplierProfile) {
-      setIsProfileSetup(false)
+      setIsProfileSetup(false);
       // Initialize edit form with current profile data
       setEditProfileForm({
         businessName: supplierProfile.businessName || '',
@@ -195,19 +207,21 @@ export default function SupplierDashboard() {
         businessDays: supplierProfile.businessHours?.days?.length
           ? supplierProfile.businessHours.days
           : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-      })
+      });
     }
-  }, [localSupplierFallback, supplierProfile, supplierQuery])
+  }, [localSupplierFallback, supplierProfile, supplierQuery]);
 
   // Calculate stats
   const stats = {
-    activeOrders: orders.filter((order: Order) => order.status === 'confirmed' || order.status === 'processing').length,
+    activeOrders: orders.filter(
+      (order: Order) => order.status === 'confirmed' || order.status === 'processing',
+    ).length,
     totalOrders: orders.length,
     availableProducts: inventory.filter((item: InventoryItem) => item.isAvailable).length,
     totalProducts: inventory.length,
     lowStockItems: inventory.filter((item: InventoryItem) => item.currentStock < 10).length,
-    totalRevenue: orders.reduce((sum: number, order: Order) => sum + order.totalAmount, 0)
-  }
+    totalRevenue: orders.reduce((sum: number, order: Order) => sum + order.totalAmount, 0),
+  };
 
   // Onboarding effect for first-time users
   useEffect(() => {
@@ -235,7 +249,7 @@ export default function SupplierDashboard() {
     businessHoursOpen: '09:00',
     businessHoursClose: '18:00',
     businessDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as string[],
-  })
+  });
 
   // Product form state
   const [productForm, setProductForm] = useState({
@@ -247,8 +261,8 @@ export default function SupplierDashboard() {
     minimumOrder: 1,
     quality: 'good',
     description: '',
-    expiryDate: ''
-  })
+    expiryDate: '',
+  });
 
   const resetProductForm = () => {
     setProductForm({
@@ -260,7 +274,7 @@ export default function SupplierDashboard() {
       minimumOrder: 1,
       quality: 'good',
       description: '',
-      expiryDate: ''
+      expiryDate: '',
     });
   };
 
@@ -280,8 +294,8 @@ export default function SupplierDashboard() {
   });
 
   const handleCreateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user?.id) return
+    e.preventDefault();
+    if (!user?.id) return;
 
     try {
       await createSupplier({
@@ -290,34 +304,33 @@ export default function SupplierDashboard() {
         ownerName: profileForm.ownerName,
         email: user.email,
         phone: profileForm.phone,
-          location: {
-            address: profileForm.address,
-            city: profileForm.city,
-            state: profileForm.state,
-            pincode: profileForm.pincode,
-            coordinates: {
-              lat: profileForm.latitude,
-              lng: profileForm.longitude,
-            }
+        location: {
+          address: profileForm.address,
+          city: profileForm.city,
+          state: profileForm.state,
+          pincode: profileForm.pincode,
+          coordinates: {
+            lat: profileForm.latitude,
+            lng: profileForm.longitude,
           },
-        categories: profileForm.categories.length > 0
-          ? profileForm.categories
-          : ['Vegetables'],
+        },
+        categories: profileForm.categories.length > 0 ? profileForm.categories : ['Vegetables'],
         fssaiCertified: profileForm.fssaiCertified,
         fssaiLicense: profileForm.fssaiLicense,
         businessHours: {
           open: profileForm.businessHoursOpen,
           close: profileForm.businessHoursClose,
-          days: profileForm.businessDays.length > 0
-            ? profileForm.businessDays
-            : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+          days:
+            profileForm.businessDays.length > 0
+              ? profileForm.businessDays
+              : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         },
         deliveryRadius: profileForm.deliveryRadius,
-        minimumOrder: profileForm.minimumOrder
-      })
-      setIsProfileSetup(false)
+        minimumOrder: profileForm.minimumOrder,
+      });
+      setIsProfileSetup(false);
     } catch (error) {
-      console.error('Error creating supplier profile:', error)
+      console.error('Error creating supplier profile:', error);
       setLocalSupplierFallback({
         _id: `local_supplier_${user.id}`,
         businessName: profileForm.businessName || `${user.firstName || 'Demo'} Supplier Store`,
@@ -335,17 +348,18 @@ export default function SupplierDashboard() {
         businessHours: {
           open: profileForm.businessHoursOpen,
           close: profileForm.businessHoursClose,
-          days: profileForm.businessDays.length > 0
-            ? profileForm.businessDays
-            : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+          days:
+            profileForm.businessDays.length > 0
+              ? profileForm.businessDays
+              : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         },
       });
       setIsProfileSetup(false);
     }
-  }
+  };
 
   const handleAddProduct = async (e?: React.FormEvent) => {
-    e?.preventDefault()
+    e?.preventDefault();
 
     const localItem = createLocalInventoryItem();
     const persistLocalItem = () => {
@@ -369,59 +383,61 @@ export default function SupplierDashboard() {
         pricePerUnit: productForm.pricePerUnit,
         minimumOrder: productForm.minimumOrder,
         quality: productForm.quality,
-        expiryDate: productForm.expiryDate ? new Date(productForm.expiryDate).getTime() : undefined
-      })
+        expiryDate: productForm.expiryDate ? new Date(productForm.expiryDate).getTime() : undefined,
+      });
       persistLocalItem();
     } catch (error) {
-      console.error('Error adding product:', error)
+      console.error('Error adding product:', error);
       persistLocalItem();
     }
-  }
+  };
 
-  const handleSaveProductEdit = async (updates: Pick<InventoryItem, 'pricePerUnit' | 'currentStock' | 'minimumOrder'>) => {
-    if (!editingProduct) return
-    const itemId = editingProduct._id
+  const handleSaveProductEdit = async (
+    updates: Pick<InventoryItem, 'pricePerUnit' | 'currentStock' | 'minimumOrder'>,
+  ) => {
+    if (!editingProduct) return;
+    const itemId = editingProduct._id;
     const applyLocally = () =>
       setLocalInventory((previous) =>
         previous.map((item) =>
-          item._id === itemId ? { ...item, ...updates, isAvailable: updates.currentStock > 0 } : item
-        )
-      )
+          item._id === itemId ? { ...item, ...updates, isAvailable: updates.currentStock > 0 } : item,
+        ),
+      );
 
     if (itemId.startsWith('local_') || !hasBackendSupplier) {
-      applyLocally()
+      applyLocally();
     } else {
       try {
-        await updateInventoryItem({ id: itemId as Id<'inventory'>, ...updates })
+        await updateInventoryItem({ id: itemId as Id<'inventory'>, ...updates });
       } catch (error) {
-        console.error('Error updating product:', error)
-        applyLocally()
+        console.error('Error updating product:', error);
+        applyLocally();
       }
     }
-    setEditingProduct(null)
-  }
+    setEditingProduct(null);
+  };
 
   const handleToggleAvailability = async (itemId: string, isAvailable: boolean) => {
     if (itemId.startsWith('local_') || !hasBackendSupplier) {
       setLocalInventory((previous) =>
-        previous.map((item) => item._id === itemId ? { ...item, isAvailable } : item)
+        previous.map((item) => (item._id === itemId ? { ...item, isAvailable } : item)),
       );
       return;
     }
 
     try {
-      await updateInventoryItem({ id: itemId as Id<'inventory'>, isAvailable })
+      await updateInventoryItem({ id: itemId as Id<'inventory'>, isAvailable });
     } catch (error) {
-      console.error('Error updating product availability:', error)
+      console.error('Error updating product availability:', error);
       setLocalInventory((previous) =>
-        previous.map((item) => item._id === itemId ? { ...item, isAvailable } : item)
+        previous.map((item) => (item._id === itemId ? { ...item, isAvailable } : item)),
       );
     }
-  }
+  };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!supplierProfile?._id) return
+    e.preventDefault();
+    if (!supplierProfile?._id) return;
 
     if (!hasBackendSupplier) {
       setLocalSupplierFallback((previous) =>
@@ -435,12 +451,13 @@ export default function SupplierDashboard() {
               businessHours: {
                 open: editProfileForm.businessHoursOpen,
                 close: editProfileForm.businessHoursClose,
-                days: editProfileForm.businessDays.length > 0
-                  ? editProfileForm.businessDays
-                  : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                days:
+                  editProfileForm.businessDays.length > 0
+                    ? editProfileForm.businessDays
+                    : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
               },
             }
-          : previous
+          : previous,
       );
       setEditingProfile(false);
       return;
@@ -456,25 +473,26 @@ export default function SupplierDashboard() {
         businessHours: {
           open: editProfileForm.businessHoursOpen,
           close: editProfileForm.businessHoursClose,
-          days: editProfileForm.businessDays.length > 0
-            ? editProfileForm.businessDays
-            : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+          days:
+            editProfileForm.businessDays.length > 0
+              ? editProfileForm.businessDays
+              : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         },
-      })
-      setEditingProfile(false)
+      });
+      setEditingProfile(false);
     } catch (error) {
-      console.error('Error updating supplier profile:', error)
+      console.error('Error updating supplier profile:', error);
     }
-  }
+  };
 
   const handleCategoryToggle = (category: string) => {
-    setEditProfileForm(prev => ({
+    setEditProfileForm((prev) => ({
       ...prev,
       categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
-    }))
-  }
+        ? prev.categories.filter((c) => c !== category)
+        : [...prev.categories, category],
+    }));
+  };
 
   const handleProfileCategoryToggle = (category: string) => {
     setProfileForm((prev) => ({
@@ -485,10 +503,7 @@ export default function SupplierDashboard() {
     }));
   };
 
-  const handleBusinessDayToggle = (
-    day: string,
-    target: 'profile' | 'edit'
-  ) => {
+  const handleBusinessDayToggle = (day: string, target: 'profile' | 'edit') => {
     if (target === 'profile') {
       setProfileForm((prev) => ({
         ...prev,
@@ -533,7 +548,7 @@ export default function SupplierDashboard() {
         <div className="max-w-4xl mx-auto p-6">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Complete Your Supplier Profile</h2>
-            
+
             <form onSubmit={handleCreateProfile} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -542,7 +557,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.businessName}
-                    onChange={(e) => setProfileForm((prev) => ({...prev, businessName: e.target.value}))}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, businessName: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -552,7 +567,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.ownerName}
-                    onChange={(e) => setProfileForm((prev) => ({...prev, ownerName: e.target.value}))}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, ownerName: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -562,7 +577,7 @@ export default function SupplierDashboard() {
                     type="tel"
                     required
                     value={profileForm.phone}
-                    onChange={(e) => setProfileForm((prev) => ({...prev, phone: e.target.value}))}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -572,7 +587,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.city}
-                    onChange={(e) => setProfileForm((prev) => ({...prev, city: e.target.value}))}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, city: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -583,7 +598,7 @@ export default function SupplierDashboard() {
                 <textarea
                   required
                   value={profileForm.address}
-                  onChange={(e) => setProfileForm((prev) => ({...prev, address: e.target.value}))}
+                  onChange={(e) => setProfileForm((prev) => ({ ...prev, address: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   rows={3}
                 />
@@ -596,7 +611,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.state}
-                    onChange={(e) => setProfileForm((prev) => ({...prev, state: e.target.value}))}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, state: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -606,7 +621,7 @@ export default function SupplierDashboard() {
                     type="text"
                     required
                     value={profileForm.pincode}
-                    onChange={(e) => setProfileForm((prev) => ({...prev, pincode: e.target.value}))}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, pincode: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -615,7 +630,9 @@ export default function SupplierDashboard() {
                   <input
                     type="number"
                     value={profileForm.deliveryRadius}
-                    onChange={(e) => setProfileForm((prev) => ({...prev, deliveryRadius: Number(e.target.value)}))}
+                    onChange={(e) =>
+                      setProfileForm((prev) => ({ ...prev, deliveryRadius: Number(e.target.value) }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -629,7 +646,9 @@ export default function SupplierDashboard() {
                     required
                     step="0.000001"
                     value={profileForm.latitude}
-                    onChange={(e) => setProfileForm((prev) => ({ ...prev, latitude: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setProfileForm((prev) => ({ ...prev, latitude: Number(e.target.value) }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -640,7 +659,9 @@ export default function SupplierDashboard() {
                     required
                     step="0.000001"
                     value={profileForm.longitude}
-                    onChange={(e) => setProfileForm((prev) => ({ ...prev, longitude: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setProfileForm((prev) => ({ ...prev, longitude: Number(e.target.value) }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -653,7 +674,9 @@ export default function SupplierDashboard() {
                     type="time"
                     required
                     value={profileForm.businessHoursOpen}
-                    onChange={(e) => setProfileForm((prev) => ({ ...prev, businessHoursOpen: e.target.value }))}
+                    onChange={(e) =>
+                      setProfileForm((prev) => ({ ...prev, businessHoursOpen: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -663,7 +686,9 @@ export default function SupplierDashboard() {
                     type="time"
                     required
                     value={profileForm.businessHoursClose}
-                    onChange={(e) => setProfileForm((prev) => ({ ...prev, businessHoursClose: e.target.value }))}
+                    onChange={(e) =>
+                      setProfileForm((prev) => ({ ...prev, businessHoursClose: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
@@ -707,7 +732,7 @@ export default function SupplierDashboard() {
                 <input
                   type="checkbox"
                   checked={profileForm.fssaiCertified}
-                  onChange={(e) => setProfileForm((prev) => ({...prev, fssaiCertified: e.target.checked}))}
+                  onChange={(e) => setProfileForm((prev) => ({ ...prev, fssaiCertified: e.target.checked }))}
                   className="mr-2"
                 />
                 <label className="text-sm text-gray-700">FSSAI Certified</label>
@@ -723,7 +748,7 @@ export default function SupplierDashboard() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -745,7 +770,9 @@ export default function SupplierDashboard() {
                   <span className="text-yellow-300">★</span>
                   <span className="ml-1">{supplierProfile?.trustScore?.toFixed(1)}</span>
                   {supplierProfile?.isVerified && (
-                    <span className="ml-2 bg-white/20 text-white px-2 py-0.5 rounded-full text-xs">Verified</span>
+                    <span className="ml-2 bg-white/20 text-white px-2 py-0.5 rounded-full text-xs">
+                      Verified
+                    </span>
                   )}
                 </div>
               </div>
@@ -773,7 +800,8 @@ export default function SupplierDashboard() {
               <div>
                 <h3 className="text-blue-800 font-medium">Welcome to Smart Suppliers!</h3>
                 <p className="text-blue-700 text-sm">
-                  Get started by adding your first product, managing orders, or viewing analytics. Your products will be visible to vendors in your area.
+                  Get started by adding your first product, managing orders, or viewing analytics. Your
+                  products will be visible to vendors in your area.
                 </p>
                 <button
                   onClick={() => setShowOnboarding(false)}
@@ -800,8 +828,8 @@ export default function SupplierDashboard() {
                 { id: 'quality', label: 'Quality Control', icon: '🛡️' },
                 { id: 'loyalty', label: 'Loyalty Program', icon: '🏆' },
                 { id: 'analytics', label: 'Business Analytics', icon: '📈' },
-                { id: 'profile', label: 'Store Profile', icon: '🏪' }
-              ].map(tab => (
+                { id: 'profile', label: 'Store Profile', icon: '🏪' },
+              ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
@@ -825,7 +853,7 @@ export default function SupplierDashboard() {
             <RoleOnboardingWizard role="supplier" userId={user?.id} />
             {/* Quick Actions */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <button 
+              <button
                 onClick={() => setShowAddProduct(true)}
                 className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
               >
@@ -833,8 +861,8 @@ export default function SupplierDashboard() {
                 <div className="font-semibold text-lg">Add New Product</div>
                 <div className="text-sm opacity-90">Upload items to your catalog</div>
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => setActiveTab('orders')}
                 className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
               >
@@ -842,8 +870,8 @@ export default function SupplierDashboard() {
                 <div className="font-semibold text-lg">Manage Orders</div>
                 <div className="text-sm opacity-90">Process vendor orders</div>
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => setActiveTab('analytics')}
                 className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
               >
@@ -885,7 +913,9 @@ export default function SupplierDashboard() {
               <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      ₹{stats.totalRevenue.toLocaleString()}
+                    </div>
                     <div className="text-sm text-gray-600">Total Earnings</div>
                   </div>
                   <div className="text-3xl text-purple-500">💰</div>
@@ -902,7 +932,10 @@ export default function SupplierDashboard() {
                 </div>
                 <div className="space-y-3">
                   {forecasts.slice(0, 3).map((forecast: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100"
+                    >
                       <div>
                         <div className="font-medium text-gray-900">{forecast.item}</div>
                         <div className="text-sm text-gray-600">
@@ -910,11 +943,15 @@ export default function SupplierDashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className={`text-sm px-2 py-1 rounded-full font-medium ${
-                          forecast.confidence >= 0.8 ? 'bg-green-100 text-green-800' :
-                          forecast.confidence >= 0.6 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                        <div
+                          className={`text-sm px-2 py-1 rounded-full font-medium ${
+                            forecast.confidence >= 0.8
+                              ? 'bg-green-100 text-green-800'
+                              : forecast.confidence >= 0.6
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                          }`}
+                        >
                           {Math.round(forecast.confidence * 100)}% confidence
                         </div>
                       </div>
@@ -940,20 +977,29 @@ export default function SupplierDashboard() {
               {orders.length > 0 ? (
                 <div className="space-y-3">
                   {orders.slice(0, 5).map((order: Order) => (
-                    <div key={order._id} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+                    <div
+                      key={order._id}
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100"
+                    >
                       <div>
                         <div className="font-semibold text-gray-800">Order #{order._id.slice(-6)}</div>
                         <div className="text-sm text-gray-600">{order.items.length} items ordered</div>
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-green-600">₹{order.totalAmount}</div>
-                        <div className={`text-xs px-2 py-1 rounded-full font-medium ${
-                          order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                          order.status === 'delivered' ? 'bg-purple-100 text-purple-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <div
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            order.status === 'confirmed'
+                              ? 'bg-green-100 text-green-800'
+                              : order.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : order.status === 'processing'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : order.status === 'delivered'
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </div>
                       </div>
@@ -964,7 +1010,9 @@ export default function SupplierDashboard() {
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">📋</div>
                   <h3 className="text-xl font-medium text-gray-700 mb-2">No Orders Yet</h3>
-                  <p className="text-gray-500">Orders from vendors will appear here once you add products to your catalog</p>
+                  <p className="text-gray-500">
+                    Orders from vendors will appear here once you add products to your catalog
+                  </p>
                 </div>
               )}
             </div>
@@ -990,46 +1038,55 @@ export default function SupplierDashboard() {
             {inventory.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {inventory.map((item: InventoryItem) => (
-                  <div key={item._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                  <div
+                    key={item._id}
+                    className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                  >
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-800">{item.itemName}</h3>
                           <p className="text-sm text-gray-600">{item.category}</p>
                         </div>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          item.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            item.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
+                        >
                           {item.isAvailable ? 'Available' : 'Out of Stock'}
                         </span>
                       </div>
-                      
+
                       <div className="space-y-2 mb-4">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Stock:</span>
-                          <span className={`font-medium ${
-                            item.currentStock < 10 ? 'text-red-600' : 'text-gray-800'
-                          }`}>
+                          <span
+                            className={`font-medium ${
+                              item.currentStock < 10 ? 'text-red-600' : 'text-gray-800'
+                            }`}
+                          >
                             {item.currentStock} {item.unit}
-                            {item.currentStock < 10 && (
-                              <span className="ml-1 text-red-500">⚠️</span>
-                            )}
+                            {item.currentStock < 10 && <span className="ml-1 text-red-500">⚠️</span>}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Price:</span>
-                          <span className="font-semibold text-green-600">₹{item.pricePerUnit}/{item.unit}</span>
+                          <span className="font-semibold text-green-600">
+                            ₹{item.pricePerUnit}/{item.unit}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Min Order:</span>
-                          <span className="text-gray-800">{item.minimumOrder} {item.unit}</span>
+                          <span className="text-gray-800">
+                            {item.minimumOrder} {item.unit}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Quality:</span>
                           <span className="text-gray-800 capitalize">{item.quality}</span>
                         </div>
                       </div>
-                      
+
                       <div className="flex space-x-2">
                         <button
                           onClick={() => setEditingProduct(item)}
@@ -1040,8 +1097,8 @@ export default function SupplierDashboard() {
                         <button
                           onClick={() => handleToggleAvailability(item._id, !item.isAvailable)}
                           className={`flex-1 px-3 py-2 rounded-md text-sm transition-colors ${
-                            item.isAvailable 
-                              ? 'bg-red-500 hover:bg-red-600 text-white' 
+                            item.isAvailable
+                              ? 'bg-red-500 hover:bg-red-600 text-white'
                               : 'bg-green-500 hover:bg-green-600 text-white'
                           }`}
                         >
@@ -1075,7 +1132,7 @@ export default function SupplierDashboard() {
               <h2 className="text-2xl font-bold mb-2">Order Management</h2>
               <p className="opacity-90">Process and fulfill vendor orders efficiently</p>
             </div>
-            
+
             <TrackingStatusBanner />
 
             <div className="bg-white rounded-lg shadow-lg p-6">
@@ -1095,22 +1152,27 @@ export default function SupplierDashboard() {
                             {new Date(order.createdAt).toLocaleDateString()}
                           </p>
                           {order.vendor && (
-                            <p className="text-sm text-blue-600">
-                              {order.vendor.businessName}
-                            </p>
+                            <p className="text-sm text-blue-600">{order.vendor.businessName}</p>
                           )}
                         </div>
                         <div className="text-right">
                           <div className="font-medium">₹{order.totalAmount}</div>
                           <div className="flex items-center space-x-2 mt-1">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                              order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              order.status === 'processing' ? 'bg-purple-100 text-purple-800' :
-                              order.status === 'shipped' ? 'bg-orange-100 text-orange-800' :
-                              order.status === 'delivered' ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span
+                              className={`px-2 py-1 text-xs rounded-full ${
+                                order.status === 'confirmed'
+                                  ? 'bg-green-100 text-green-800'
+                                  : order.status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : order.status === 'processing'
+                                      ? 'bg-purple-100 text-purple-800'
+                                      : order.status === 'shipped'
+                                        ? 'bg-orange-100 text-orange-800'
+                                        : order.status === 'delivered'
+                                          ? 'bg-blue-100 text-blue-800'
+                                          : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
                               {order.status}
                             </span>
                             {order.status === 'shipped' && (
@@ -1121,9 +1183,7 @@ export default function SupplierDashboard() {
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-600 mb-3">
-                        {order.items.length} items ordered
-                      </div>
+                      <div className="text-sm text-gray-600 mb-3">{order.items.length} items ordered</div>
                       <div className="flex flex-wrap gap-2">
                         {order.status === 'pending' && (
                           <button
@@ -1131,7 +1191,10 @@ export default function SupplierDashboard() {
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
                               setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'confirmed' });
+                              await updateOrderStatus({
+                                orderId: order._id as Id<'orders'>,
+                                status: 'confirmed',
+                              });
                               setUpdatingOrderId(null);
                             }}
                           >
@@ -1144,7 +1207,10 @@ export default function SupplierDashboard() {
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
                               setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'processing' });
+                              await updateOrderStatus({
+                                orderId: order._id as Id<'orders'>,
+                                status: 'processing',
+                              });
                               setUpdatingOrderId(null);
                             }}
                           >
@@ -1157,7 +1223,10 @@ export default function SupplierDashboard() {
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
                               setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'shipped' });
+                              await updateOrderStatus({
+                                orderId: order._id as Id<'orders'>,
+                                status: 'shipped',
+                              });
                               setUpdatingOrderId(null);
                             }}
                           >
@@ -1170,7 +1239,10 @@ export default function SupplierDashboard() {
                             disabled={updatingOrderId === order._id}
                             onClick={async () => {
                               setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({ orderId: order._id as Id<'orders'>, status: 'delivered' });
+                              await updateOrderStatus({
+                                orderId: order._id as Id<'orders'>,
+                                status: 'delivered',
+                              });
                               setUpdatingOrderId(null);
                             }}
                           >
@@ -1183,7 +1255,9 @@ export default function SupplierDashboard() {
                         >
                           Details
                         </button>
-                        {(order.status === 'confirmed' || order.status === 'processing' || order.status === 'shipped') && (
+                        {(order.status === 'confirmed' ||
+                          order.status === 'processing' ||
+                          order.status === 'shipped') && (
                           <button
                             className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs"
                             onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
@@ -1199,7 +1273,9 @@ export default function SupplierDashboard() {
                 <div className="text-center py-16">
                   <div className="text-6xl mb-4">📋</div>
                   <h3 className="text-xl font-medium text-gray-700 mb-2">No Orders Received</h3>
-                  <p className="text-gray-500 mb-6">Vendor orders will appear here once you have products in your catalog</p>
+                  <p className="text-gray-500 mb-6">
+                    Vendor orders will appear here once you have products in your catalog
+                  </p>
                   <button
                     onClick={() => setActiveTab('products')}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
@@ -1225,12 +1301,14 @@ export default function SupplierDashboard() {
                 <div className="bg-white rounded-lg shadow-lg p-6">
                   <SupplierAnalytics supplierId={supplierProfile._id as Id<'suppliers'>} />
                 </div>
-                
+
                 {/* AI Forecast Section */}
                 <div className="bg-white rounded-lg shadow-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-semibold text-gray-800">AI Demand Forecast</h3>
-                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">AI-Powered</span>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      AI-Powered
+                    </span>
                   </div>
                   <InventoryForecast supplierId={supplierProfile._id as Id<'suppliers'>} />
                 </div>
@@ -1239,7 +1317,8 @@ export default function SupplierDashboard() {
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-3">Supplier Analytics</h2>
                 <p className="text-gray-600">
-                  Live analytics will appear when backend connectivity is restored. Your dashboard remains available in local mode.
+                  Live analytics will appear when backend connectivity is restored. Your dashboard remains
+                  available in local mode.
                 </p>
               </div>
             )}
@@ -1254,7 +1333,9 @@ export default function SupplierDashboard() {
             ) : (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-800">Smart Pricing Engine</h2>
-                <p className="text-gray-600 mt-2">Pricing insights are temporarily unavailable without live inventory data.</p>
+                <p className="text-gray-600 mt-2">
+                  Pricing insights are temporarily unavailable without live inventory data.
+                </p>
               </div>
             )}
           </div>
@@ -1268,7 +1349,9 @@ export default function SupplierDashboard() {
             ) : (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-800">Inventory Automation</h2>
-                <p className="text-gray-600 mt-2">Automation rules will activate once backend data sync is available.</p>
+                <p className="text-gray-600 mt-2">
+                  Automation rules will activate once backend data sync is available.
+                </p>
               </div>
             )}
           </div>
@@ -1282,7 +1365,9 @@ export default function SupplierDashboard() {
             ) : (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-800">Quality Assurance</h2>
-                <p className="text-gray-600 mt-2">Quality metrics need live order and inventory feeds to compute accurately.</p>
+                <p className="text-gray-600 mt-2">
+                  Quality metrics need live order and inventory feeds to compute accurately.
+                </p>
               </div>
             )}
           </div>
@@ -1296,7 +1381,9 @@ export default function SupplierDashboard() {
             ) : (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-800">Vendor Loyalty Program</h2>
-                <p className="text-gray-600 mt-2">Loyalty insights will load after reconnecting to backend order history.</p>
+                <p className="text-gray-600 mt-2">
+                  Loyalty insights will load after reconnecting to backend order history.
+                </p>
               </div>
             )}
           </div>
@@ -1309,7 +1396,7 @@ export default function SupplierDashboard() {
               <h2 className="text-2xl font-bold mb-2">Store Profile</h2>
               <p className="opacity-90">Manage your store information and verification status</p>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-lg p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-semibold text-gray-800">Business Information</h3>
@@ -1334,37 +1421,49 @@ export default function SupplierDashboard() {
                         type="text"
                         required
                         value={editProfileForm.businessName}
-                        onChange={(e) => setEditProfileForm((prev) => ({...prev, businessName: e.target.value}))}
+                        onChange={(e) =>
+                          setEditProfileForm((prev) => ({ ...prev, businessName: e.target.value }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius (km) *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Delivery Radius (km) *
+                      </label>
                       <input
                         type="number"
                         required
                         min="1"
                         max="100"
                         value={editProfileForm.deliveryRadius}
-                        onChange={(e) => setEditProfileForm((prev) => ({...prev, deliveryRadius: Number(e.target.value)}))}
+                        onChange={(e) =>
+                          setEditProfileForm((prev) => ({ ...prev, deliveryRadius: Number(e.target.value) }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order Amount (₹) *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Minimum Order Amount (₹) *
+                      </label>
                       <input
                         type="number"
                         required
                         min="0"
                         value={editProfileForm.minimumOrder}
-                        onChange={(e) => setEditProfileForm((prev) => ({...prev, minimumOrder: Number(e.target.value)}))}
+                        onChange={(e) =>
+                          setEditProfileForm((prev) => ({ ...prev, minimumOrder: Number(e.target.value) }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Business Categories</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Business Categories
+                    </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {MARKETPLACE_CATEGORIES.map((category) => (
                         <label key={category} className="flex items-center space-x-2 cursor-pointer">
@@ -1450,32 +1549,45 @@ export default function SupplierDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
                     <div className="flex items-center">
                       <span className="text-yellow-500 mr-2 text-xl">★</span>
-                      <span className="text-lg font-semibold text-gray-900">{supplierProfile.trustScore.toFixed(1)}/5.0</span>
+                      <span className="text-lg font-semibold text-gray-900">
+                        {supplierProfile.trustScore.toFixed(1)}/5.0
+                      </span>
                     </div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Categories</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Business Categories
+                    </label>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {supplierProfile.categories.map((category: string) => (
-                        <span key={category} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        <span
+                          key={category}
+                          className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
+                        >
                           {category}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      supplierProfile.isVerified
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Verification Status
+                    </label>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        supplierProfile.isVerified
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
                       {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
                     </span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius</label>
-                    <div className="text-lg font-semibold text-gray-900">{supplierProfile.deliveryRadius} km</div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {supplierProfile.deliveryRadius} km
+                    </div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
@@ -1484,16 +1596,19 @@ export default function SupplierDashboard() {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
                     <div className="text-lg font-semibold text-gray-900">
-                      {supplierProfile.businessHours?.open || '09:00'} - {supplierProfile.businessHours?.close || '18:00'}
+                      {supplierProfile.businessHours?.open || '09:00'} -{' '}
+                      {supplierProfile.businessHours?.close || '18:00'}
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      {(supplierProfile.businessHours?.days || []).join(', ') || 'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday'}
+                      {(supplierProfile.businessHours?.days || []).join(', ') ||
+                        'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday'}
                     </div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Coordinates</label>
                     <div className="text-lg font-semibold text-gray-900">
-                      {supplierProfile.location?.coordinates?.lat?.toFixed?.(6) ?? 'N/A'}, {supplierProfile.location?.coordinates?.lng?.toFixed?.(6) ?? 'N/A'}
+                      {supplierProfile.location?.coordinates?.lat?.toFixed?.(6) ?? 'N/A'},{' '}
+                      {supplierProfile.location?.coordinates?.lng?.toFixed?.(6) ?? 'N/A'}
                     </div>
                   </div>
                 </div>
@@ -1514,7 +1629,7 @@ export default function SupplierDashboard() {
               </div>
               {hasBackendSupplier ? (
                 <div className="p-6">
-                  <FSSAIVerification 
+                  <FSSAIVerification
                     supplierId={supplierProfile._id as any}
                     onVerificationComplete={() => {
                       // Refresh the page to update verification status
@@ -1524,7 +1639,8 @@ export default function SupplierDashboard() {
                 </div>
               ) : (
                 <div className="p-6 text-sm text-gray-600">
-                  Verification workflows need backend connectivity. You can continue updating your store profile in local mode.
+                  Verification workflows need backend connectivity. You can continue updating your store
+                  profile in local mode.
                 </div>
               )}
             </div>
@@ -1553,28 +1669,41 @@ export default function SupplierDashboard() {
                     ✕
                   </button>
                 </div>
-                
-                <form onSubmit={(event) => { void handleAddProduct(event); }} noValidate className="space-y-6">
+
+                <form
+                  onSubmit={(event) => {
+                    void handleAddProduct(event);
+                  }}
+                  noValidate
+                  className="space-y-6"
+                >
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                      <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Product Name *
+                      </label>
                       <input
                         id="product-name"
                         type="text"
                         required
                         value={productForm.itemName}
-                        onChange={(e) => setProductForm((prev) => ({...prev, itemName: e.target.value}))}
+                        onChange={(e) => setProductForm((prev) => ({ ...prev, itemName: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="e.g., Fresh Tomatoes"
                       />
                     </div>
                     <div>
-                      <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                      <label
+                        htmlFor="product-category"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Category *
+                      </label>
                       <select
                         id="product-category"
                         required
                         value={productForm.category}
-                        onChange={(e) => setProductForm((prev) => ({...prev, category: e.target.value}))}
+                        onChange={(e) => setProductForm((prev) => ({ ...prev, category: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="">Select Category</option>
@@ -1586,27 +1715,33 @@ export default function SupplierDashboard() {
                       </select>
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="product-stock" className="block text-sm font-medium text-gray-700 mb-2">Current Stock *</label>
+                      <label htmlFor="product-stock" className="block text-sm font-medium text-gray-700 mb-2">
+                        Current Stock *
+                      </label>
                       <input
                         id="product-stock"
                         type="number"
                         required
                         min="0"
                         value={productForm.currentStock}
-                        onChange={(e) => setProductForm((prev) => ({...prev, currentStock: Number(e.target.value)}))}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({ ...prev, currentStock: Number(e.target.value) }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
                     <div>
-                      <label htmlFor="product-unit" className="block text-sm font-medium text-gray-700 mb-2">Unit *</label>
+                      <label htmlFor="product-unit" className="block text-sm font-medium text-gray-700 mb-2">
+                        Unit *
+                      </label>
                       <select
                         id="product-unit"
                         required
                         value={productForm.unit}
-                        onChange={(e) => setProductForm((prev) => ({...prev, unit: e.target.value}))}
+                        onChange={(e) => setProductForm((prev) => ({ ...prev, unit: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="">Select Unit</option>
@@ -1621,7 +1756,9 @@ export default function SupplierDashboard() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-2">Price per Unit *</label>
+                      <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-2">
+                        Price per Unit *
+                      </label>
                       <input
                         id="product-price"
                         type="number"
@@ -1629,33 +1766,47 @@ export default function SupplierDashboard() {
                         min="0"
                         step="0.01"
                         value={productForm.pricePerUnit}
-                        onChange={(e) => setProductForm((prev) => ({...prev, pricePerUnit: Number(e.target.value)}))}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({ ...prev, pricePerUnit: Number(e.target.value) }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="₹"
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="product-minimum-order" className="block text-sm font-medium text-gray-700 mb-2">Minimum Order *</label>
+                      <label
+                        htmlFor="product-minimum-order"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Minimum Order *
+                      </label>
                       <input
                         id="product-minimum-order"
                         type="number"
                         required
                         min="1"
                         value={productForm.minimumOrder}
-                        onChange={(e) => setProductForm((prev) => ({...prev, minimumOrder: Number(e.target.value)}))}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({ ...prev, minimumOrder: Number(e.target.value) }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
                     <div>
-                      <label htmlFor="product-quality" className="block text-sm font-medium text-gray-700 mb-2">Quality Grade *</label>
+                      <label
+                        htmlFor="product-quality"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Quality Grade *
+                      </label>
                       <select
                         id="product-quality"
                         required
                         value={productForm.quality}
-                        onChange={(e) => setProductForm((prev) => ({...prev, quality: e.target.value}))}
+                        onChange={(e) => setProductForm((prev) => ({ ...prev, quality: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       >
                         <option value="premium">Premium</option>
@@ -1665,17 +1816,22 @@ export default function SupplierDashboard() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="product-expiry-date" className="block text-sm font-medium text-gray-700 mb-2">Expiry Date (Optional)</label>
+                      <label
+                        htmlFor="product-expiry-date"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Expiry Date (Optional)
+                      </label>
                       <input
                         id="product-expiry-date"
                         type="date"
                         value={productForm.expiryDate}
-                        onChange={(e) => setProductForm((prev) => ({...prev, expiryDate: e.target.value}))}
+                        onChange={(e) => setProductForm((prev) => ({ ...prev, expiryDate: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end space-x-4">
                     <button
                       type="button"
@@ -1686,7 +1842,9 @@ export default function SupplierDashboard() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => { void handleAddProduct(); }}
+                      onClick={() => {
+                        void handleAddProduct();
+                      }}
                       className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors"
                     >
                       Add Product
@@ -1698,7 +1856,7 @@ export default function SupplierDashboard() {
           </div>
         )}
       </div>
-      
+
       {/* Order Details Modal */}
       {selectedOrderId && (
         <OrderDetailsModal orderId={selectedOrderId} onClose={() => setSelectedOrderId(null)} />
@@ -1716,9 +1874,8 @@ export default function SupplierDashboard() {
           </div>
         </div>
       )}
-
     </div>
-  )
+  );
 }
 
 function EditProductModal({
@@ -1726,37 +1883,40 @@ function EditProductModal({
   onClose,
   onSave,
 }: {
-  product: InventoryItem
-  onClose: () => void
-  onSave: (updates: Pick<InventoryItem, 'pricePerUnit' | 'currentStock' | 'minimumOrder'>) => Promise<void>
+  product: InventoryItem;
+  onClose: () => void;
+  onSave: (updates: Pick<InventoryItem, 'pricePerUnit' | 'currentStock' | 'minimumOrder'>) => Promise<void>;
 }) {
   const [form, setForm] = useState({
     pricePerUnit: String(product.pricePerUnit),
     currentStock: String(product.currentStock),
     minimumOrder: String(product.minimumOrder),
-  })
-  const [error, setError] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
+  });
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    const pricePerUnit = Number(form.pricePerUnit)
-    const currentStock = Number(form.currentStock)
-    const minimumOrder = Number(form.minimumOrder)
-    if (![pricePerUnit, currentStock, minimumOrder].every((n) => Number.isFinite(n) && n >= 0) || pricePerUnit === 0) {
-      setError('Enter a price above zero and non-negative stock and minimum order values.')
-      return
+    event.preventDefault();
+    const pricePerUnit = Number(form.pricePerUnit);
+    const currentStock = Number(form.currentStock);
+    const minimumOrder = Number(form.minimumOrder);
+    if (
+      ![pricePerUnit, currentStock, minimumOrder].every((n) => Number.isFinite(n) && n >= 0) ||
+      pricePerUnit === 0
+    ) {
+      setError('Enter a price above zero and non-negative stock and minimum order values.');
+      return;
     }
-    setIsSaving(true)
-    await onSave({ pricePerUnit, currentStock, minimumOrder })
-    setIsSaving(false)
-  }
+    setIsSaving(true);
+    await onSave({ pricePerUnit, currentStock, minimumOrder });
+    setIsSaving(false);
+  };
 
   const fields = [
     { key: 'pricePerUnit', label: `Price per ${product.unit} (₹)`, step: '0.01' },
     { key: 'currentStock', label: `Current stock (${product.unit})`, step: '1' },
     { key: 'minimumOrder', label: `Minimum order (${product.unit})`, step: '1' },
-  ] as const
+  ] as const;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1767,12 +1927,25 @@ function EditProductModal({
         className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 id="edit-product-title" className="text-xl font-bold text-gray-800">Edit {product.itemName}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-gray-500 hover:text-gray-800 text-xl">
+          <h2 id="edit-product-title" className="text-xl font-bold text-gray-800">
+            Edit {product.itemName}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="text-gray-500 hover:text-gray-800 text-xl"
+          >
             ✕
           </button>
         </div>
-        <form onSubmit={(event) => { void handleSubmit(event) }} noValidate className="space-y-4">
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(event);
+          }}
+          noValidate
+          className="space-y-4"
+        >
           {fields.map((field) => (
             <div key={field.key}>
               <label htmlFor={`edit-${field.key}`} className="block text-sm font-medium text-gray-700 mb-1">
@@ -1790,9 +1963,17 @@ function EditProductModal({
               />
             </div>
           ))}
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
               Cancel
             </button>
             <button
@@ -1806,10 +1987,10 @@ function EditProductModal({
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClose: () => void }) {
+function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>; onClose: () => void }) {
   const order = useQuery(api.orders.getOrderDetails, { orderId });
   if (!order) {
     return (
@@ -1817,7 +1998,9 @@ function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClos
         <div className="bg-white rounded-lg p-8 max-w-lg w-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Order Details</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-800">✕</button>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+              ✕
+            </button>
           </div>
           <div className="flex justify-center items-center h-32 animate-fade-in">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -1831,19 +2014,30 @@ function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClos
       <div className="bg-white rounded-lg p-8 max-w-lg w-full">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Order Details</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">✕</button>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+            ✕
+          </button>
         </div>
         <div className="mb-4">
           <div className="font-medium mb-1">Order #{order._id?.slice ? order._id.slice(-8) : ''}</div>
-          <div className="text-sm text-gray-600 mb-1">Status: <span className="font-semibold">{order.status}</span></div>
-          <div className="text-sm text-gray-600 mb-1">Placed: {order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</div>
-          <div className="text-sm text-gray-600 mb-1">Total: ₹{(order as any).totalAmount ?? (order as any).totalCost ?? ''}</div>
+          <div className="text-sm text-gray-600 mb-1">
+            Status: <span className="font-semibold">{order.status}</span>
+          </div>
+          <div className="text-sm text-gray-600 mb-1">
+            Placed: {order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}
+          </div>
+          <div className="text-sm text-gray-600 mb-1">
+            Total: ₹{(order as any).totalAmount ?? (order as any).totalCost ?? ''}
+          </div>
         </div>
         <div className="mb-4">
           <div className="font-semibold mb-1">Items:</div>
           <ul className="list-disc pl-5 text-sm">
             {order.items?.map((item: any, idx: number) => (
-              <li key={idx}>{(item as any).itemName} × {(item as any).quantity} @ ₹{(item as any).priceAtOrder ?? (item as any).pricePerUnit ?? ''}</li>
+              <li key={idx}>
+                {(item as any).itemName} × {(item as any).quantity} @ ₹
+                {(item as any).priceAtOrder ?? (item as any).pricePerUnit ?? ''}
+              </li>
             ))}
           </ul>
         </div>
@@ -1853,7 +2047,9 @@ function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClos
           <div className="text-sm text-gray-500">{order.vendor?.phone ?? ''}</div>
         </div>
         <div className="flex justify-end">
-          <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Close</button>
+          <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Close
+          </button>
         </div>
       </div>
     </div>

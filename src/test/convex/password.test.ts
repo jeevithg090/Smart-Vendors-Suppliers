@@ -1,6 +1,12 @@
 import { webcrypto } from 'node:crypto';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { hashPassword, isValidEmail, normalizeEmail, timingSafeEqual, verifyPassword } from '../../../convex/lib/password';
+import {
+  hashPassword,
+  isValidEmail,
+  normalizeEmail,
+  timingSafeEqual,
+  verifyPassword,
+} from '../../../convex/lib/password';
 
 // jsdom does not implement SubtleCrypto; use Node's WebCrypto (same API as the Convex runtime).
 beforeAll(() => {

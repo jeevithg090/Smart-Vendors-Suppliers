@@ -78,25 +78,24 @@ export class GoogleVisionProvider implements VisionProvider {
       throw new Error('Google Vision API key not configured');
     }
 
-    const response = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate?key=${this.apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          requests: [{
+    const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${this.apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        requests: [
+          {
             image: { content: imageData },
             features: [
               { type: 'OBJECT_LOCALIZATION', maxResults: 10 },
               { type: 'LABEL_DETECTION', maxResults: 10 },
-              { type: 'TEXT_DETECTION', maxResults: 5 }
-            ]
-          }]
-        })
-      }
-    );
+              { type: 'TEXT_DETECTION', maxResults: 5 },
+            ],
+          },
+        ],
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`Google Vision API error: ${response.statusText}`);
@@ -109,24 +108,24 @@ export class GoogleVisionProvider implements VisionProvider {
       objects: this.parseObjects(annotations.localizedObjectAnnotations || []),
       labels: this.parseLabels(annotations.labelAnnotations || []),
       text: annotations.textAnnotations?.[0]?.description || '',
-      confidence: this.calculateOverallConfidence(annotations)
+      confidence: this.calculateOverallConfidence(annotations),
     };
   }
 
   private parseObjects(objects: any[]): DetectedObject[] {
-    return objects.map(obj => ({
+    return objects.map((obj) => ({
       name: obj.name.toLowerCase(),
       confidence: obj.score,
       boundingBox: obj.boundingPoly ? this.parseBoundingBox(obj.boundingPoly) : undefined,
-      category: this.categorizeObject(obj.name)
+      category: this.categorizeObject(obj.name),
     }));
   }
 
   private parseLabels(labels: any[]): Label[] {
-    return labels.map(label => ({
+    return labels.map((label) => ({
       description: label.description.toLowerCase(),
       score: label.score,
-      category: this.categorizeLabel(label.description)
+      category: this.categorizeLabel(label.description),
     }));
   }
 
@@ -145,14 +144,14 @@ export class GoogleVisionProvider implements VisionProvider {
       x: minX,
       y: minY,
       width: maxX - minX,
-      height: maxY - minY
+      height: maxY - minY,
     };
   }
 
   private categorizeObject(name: string): string {
     const lowerName = name.toLowerCase();
     for (const [category, items] of Object.entries(FOOD_CATEGORIES)) {
-      if (items.some(item => lowerName.includes(item) || item.includes(lowerName))) {
+      if (items.some((item) => lowerName.includes(item) || item.includes(lowerName))) {
         return category.toLowerCase();
       }
     }
@@ -172,16 +171,16 @@ export class GoogleVisionProvider implements VisionProvider {
   private calculateOverallConfidence(annotations: any): number {
     const objects = annotations.localizedObjectAnnotations || [];
     const labels = annotations.labelAnnotations || [];
-    
+
     if (objects.length === 0 && labels.length === 0) return 0;
-    
-    const objectConfidence = objects.length > 0 
-      ? objects.reduce((sum: number, obj: any) => sum + obj.score, 0) / objects.length 
-      : 0;
-    
-    const labelConfidence = labels.length > 0
-      ? labels.reduce((sum: number, label: any) => sum + label.score, 0) / labels.length
-      : 0;
+
+    const objectConfidence =
+      objects.length > 0 ? objects.reduce((sum: number, obj: any) => sum + obj.score, 0) / objects.length : 0;
+
+    const labelConfidence =
+      labels.length > 0
+        ? labels.reduce((sum: number, label: any) => sum + label.score, 0) / labels.length
+        : 0;
 
     return (objectConfidence + labelConfidence) / 2;
   }
@@ -206,18 +205,20 @@ export class ClarifaiProvider implements VisionProvider {
     const response = await fetch('https://api.clarifai.com/v2/models/food-item-recognition/outputs', {
       method: 'POST',
       headers: {
-        'Authorization': `Key ${this.apiKey}`,
+        Authorization: `Key ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: [{
-          data: {
-            image: {
-              base64: imageData
-            }
-          }
-        }]
-      })
+        inputs: [
+          {
+            data: {
+              image: {
+                base64: imageData,
+              },
+            },
+          },
+        ],
+      }),
     });
 
     if (!response.ok) {
@@ -230,7 +231,7 @@ export class ClarifaiProvider implements VisionProvider {
     return {
       objects: this.parseConceptsAsObjects(concepts),
       labels: this.parseConceptsAsLabels(concepts),
-      confidence: this.calculateConfidence(concepts)
+      confidence: this.calculateConfidence(concepts),
     };
   }
 
@@ -240,7 +241,7 @@ export class ClarifaiProvider implements VisionProvider {
       .map((concept: any) => ({
         name: concept.name.toLowerCase(),
         confidence: concept.value,
-        category: this.categorizeObject(concept.name)
+        category: this.categorizeObject(concept.name),
       }));
   }
 
@@ -248,14 +249,14 @@ export class ClarifaiProvider implements VisionProvider {
     return concepts.map((concept: any) => ({
       description: concept.name.toLowerCase(),
       score: concept.value,
-      category: this.categorizeLabel(concept.name)
+      category: this.categorizeLabel(concept.name),
     }));
   }
 
   private categorizeObject(name: string): string {
     const lowerName = name.toLowerCase();
     for (const [category, items] of Object.entries(FOOD_CATEGORIES)) {
-      if (items.some(item => lowerName.includes(item) || item.includes(lowerName))) {
+      if (items.some((item) => lowerName.includes(item) || item.includes(lowerName))) {
         return category.toLowerCase();
       }
     }
@@ -295,10 +296,7 @@ export class ComputerVisionManager {
   /**
    * Analyze food image and extract ingredients
    */
-  async analyzeFoodImage(
-    imageFile: File, 
-    provider?: string
-  ): Promise<FoodAnalysisResult> {
+  async analyzeFoodImage(imageFile: File, provider?: string): Promise<FoodAnalysisResult> {
     try {
       // Validate image
       this.validateImage(imageFile);
@@ -376,14 +374,14 @@ export class ComputerVisionManager {
     const alternatives: Set<string> = new Set();
 
     // Process detected objects
-    visionResult.objects.forEach(obj => {
+    visionResult.objects.forEach((obj) => {
       if (this.isFoodItem(obj.name)) {
         const foodItem: FoodItem = {
           name: obj.name,
           confidence: obj.confidence,
           category: obj.category || 'general',
           alternatives: this.getAlternatives(obj.name),
-          boundingBox: obj.boundingBox
+          boundingBox: obj.boundingBox,
         };
 
         identifiedItems.push(foodItem);
@@ -395,17 +393,17 @@ export class ComputerVisionManager {
             name: obj.name,
             confidence: obj.confidence,
             category: foodItem.category,
-            alternatives: foodItem.alternatives
+            alternatives: foodItem.alternatives,
           });
         }
 
         // Add alternatives
-        foodItem.alternatives.forEach(alt => alternatives.add(alt));
+        foodItem.alternatives.forEach((alt) => alternatives.add(alt));
       }
     });
 
     // Process labels for additional context
-    visionResult.labels.forEach(label => {
+    visionResult.labels.forEach((label) => {
       if (this.isFoodCategory(label.description)) {
         categories.add(label.category || 'general');
       }
@@ -420,7 +418,7 @@ export class ComputerVisionManager {
       ingredients,
       confidence: visionResult.confidence,
       categories: Array.from(categories),
-      alternatives: Array.from(alternatives)
+      alternatives: Array.from(alternatives),
     };
   }
 
@@ -429,24 +427,26 @@ export class ComputerVisionManager {
    */
   private isFoodItem(name: string): boolean {
     const lowerName = name.toLowerCase();
-    
+
     // Check against known food categories
     for (const items of Object.values(FOOD_CATEGORIES)) {
-      if (items.some(item => 
-        lowerName.includes(item) || 
-        item.includes(lowerName) ||
-        this.getAlternatives(item).some(alt => 
-          lowerName.includes(alt.toLowerCase()) || 
-          alt.toLowerCase().includes(lowerName)
+      if (
+        items.some(
+          (item) =>
+            lowerName.includes(item) ||
+            item.includes(lowerName) ||
+            this.getAlternatives(item).some(
+              (alt) => lowerName.includes(alt.toLowerCase()) || alt.toLowerCase().includes(lowerName),
+            ),
         )
-      )) {
+      ) {
         return true;
       }
     }
 
     // Check common food keywords
     const foodKeywords = ['food', 'ingredient', 'vegetable', 'fruit', 'spice', 'grain', 'dairy'];
-    return foodKeywords.some(keyword => lowerName.includes(keyword));
+    return foodKeywords.some((keyword) => lowerName.includes(keyword));
   }
 
   /**
@@ -454,7 +454,7 @@ export class ComputerVisionManager {
    */
   private isFoodCategory(description: string): boolean {
     const foodCategories = ['vegetable', 'fruit', 'grain', 'spice', 'food', 'ingredient', 'produce', 'dairy'];
-    return foodCategories.some(category => description.toLowerCase().includes(category));
+    return foodCategories.some((category) => description.toLowerCase().includes(category));
   }
 
   /**
@@ -466,12 +466,11 @@ export class ComputerVisionManager {
       ...FOOD_CATEGORIES.FRUITS,
       ...FOOD_CATEGORIES.GRAINS,
       ...FOOD_CATEGORIES.SPICES,
-      ...FOOD_CATEGORIES.PULSES
+      ...FOOD_CATEGORIES.PULSES,
     ];
-    
-    return simpleIngredients.some(ingredient => 
-      name.toLowerCase().includes(ingredient) || 
-      ingredient.includes(name.toLowerCase())
+
+    return simpleIngredients.some(
+      (ingredient) => name.toLowerCase().includes(ingredient) || ingredient.includes(name.toLowerCase()),
     );
   }
 
@@ -480,7 +479,7 @@ export class ComputerVisionManager {
    */
   private getAlternatives(name: string): string[] {
     const lowerName = name.toLowerCase();
-    
+
     // Check predefined alternatives
     for (const [key, alternatives] of Object.entries(INGREDIENT_ALTERNATIVES)) {
       if (lowerName.includes(key) || key.includes(lowerName)) {
@@ -497,17 +496,17 @@ export class ComputerVisionManager {
   private extractComplexIngredients(items: FoodItem[]): Ingredient[] {
     const complexIngredients: Ingredient[] = [];
 
-    items.forEach(item => {
+    items.forEach((item) => {
       if (!this.isSimpleIngredient(item.name)) {
         // For complex items, try to extract constituent ingredients
         const extractedIngredients = this.getComplexIngredients(item.name);
-        
-        extractedIngredients.forEach(ingredientName => {
+
+        extractedIngredients.forEach((ingredientName) => {
           complexIngredients.push({
             name: ingredientName,
             confidence: item.confidence * 0.8, // Reduce confidence for extracted ingredients
             category: this.categorizeIngredient(ingredientName),
-            alternatives: this.getAlternatives(ingredientName)
+            alternatives: this.getAlternatives(ingredientName),
           });
         });
       }
@@ -521,14 +520,14 @@ export class ComputerVisionManager {
    */
   private getComplexIngredients(itemName: string): string[] {
     const complexFoodMap: Record<string, string[]> = {
-      'curry': ['onion', 'tomato', 'spices', 'oil'],
-      'salad': ['vegetables', 'dressing'],
-      'soup': ['vegetables', 'broth', 'spices'],
-      'sandwich': ['bread', 'vegetables', 'condiments'],
-      'pizza': ['flour', 'tomato', 'cheese', 'vegetables'],
-      'pasta': ['flour', 'tomato', 'herbs', 'cheese'],
-      'biryani': ['rice', 'meat', 'spices', 'onion'],
-      'dal': ['lentils', 'spices', 'onion', 'tomato']
+      curry: ['onion', 'tomato', 'spices', 'oil'],
+      salad: ['vegetables', 'dressing'],
+      soup: ['vegetables', 'broth', 'spices'],
+      sandwich: ['bread', 'vegetables', 'condiments'],
+      pizza: ['flour', 'tomato', 'cheese', 'vegetables'],
+      pasta: ['flour', 'tomato', 'herbs', 'cheese'],
+      biryani: ['rice', 'meat', 'spices', 'onion'],
+      dal: ['lentils', 'spices', 'onion', 'tomato'],
     };
 
     const lowerName = itemName.toLowerCase();
@@ -546,9 +545,9 @@ export class ComputerVisionManager {
    */
   private categorizeIngredient(name: string): string {
     const lowerName = name.toLowerCase();
-    
+
     for (const [category, items] of Object.entries(FOOD_CATEGORIES)) {
-      if (items.some(item => lowerName.includes(item) || item.includes(lowerName))) {
+      if (items.some((item) => lowerName.includes(item) || item.includes(lowerName))) {
         return category.toLowerCase();
       }
     }

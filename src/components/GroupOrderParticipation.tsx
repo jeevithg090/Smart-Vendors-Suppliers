@@ -4,8 +4,8 @@ import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface GroupOrderParticipationProps {
-  groupOrderId: Id<"groupOrders">;
-  vendorId: Id<"vendors">;
+  groupOrderId: Id<'groupOrders'>;
+  vendorId: Id<'vendors'>;
   vendorLocation: string;
   initialQuantity?: number;
   onSuccess: () => void;
@@ -13,19 +13,19 @@ interface GroupOrderParticipationProps {
 }
 
 interface GroupOrder {
-  _id: Id<"groupOrders">;
-  initiatorId: Id<"vendors">;
+  _id: Id<'groupOrders'>;
+  initiatorId: Id<'vendors'>;
   itemName: string;
   category: string;
   targetQuantity: number;
   currentQuantity: number;
   pricePerUnit: number;
   participants: Array<{
-    vendorId: Id<"vendors">;
+    vendorId: Id<'vendors'>;
     quantity: number;
     joinedAt: number;
   }>;
-  supplierId: Id<"suppliers">;
+  supplierId: Id<'suppliers'>;
   status: string;
   location: string;
   expiresAt: number;
@@ -33,7 +33,7 @@ interface GroupOrder {
   initiatorName: string;
   supplierName: string;
   participantsWithDetails: Array<{
-    vendorId: Id<"vendors">;
+    vendorId: Id<'vendors'>;
     quantity: number;
     joinedAt: number;
     vendorName: string;
@@ -64,19 +64,13 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
     setQuantity(initialQuantity > 0 ? initialQuantity : 1);
   }, [initialQuantity, groupOrderId]);
 
-  const groupOrder = groupOrders?.find(order => order._id === groupOrderId);
+  const groupOrder = groupOrders?.find((order) => order._id === groupOrderId);
 
-  const isVendorParticipating = groupOrder?.participants.some(
-    p => p.vendorId === vendorId
-  );
+  const isVendorParticipating = groupOrder?.participants.some((p) => p.vendorId === vendorId);
 
-  const vendorParticipation = groupOrder?.participants.find(
-    p => p.vendorId === vendorId
-  );
+  const vendorParticipation = groupOrder?.participants.find((p) => p.vendorId === vendorId);
 
-  const remainingQuantity = groupOrder 
-    ? groupOrder.targetQuantity - groupOrder.currentQuantity 
-    : 0;
+  const remainingQuantity = groupOrder ? groupOrder.targetQuantity - groupOrder.currentQuantity : 0;
 
   const maxQuantity = Math.min(remainingQuantity, 50); // Reasonable maximum
 
@@ -125,12 +119,12 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
   const formatTimeRemaining = (expiresAt: number) => {
     const now = Date.now();
     const remaining = expiresAt - now;
-    
+
     if (remaining <= 0) return 'Expired';
-    
+
     const hours = Math.floor(remaining / (1000 * 60 * 60));
     const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m remaining`;
     }
@@ -163,10 +157,7 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
         <h2 className="text-2xl font-bold text-gray-900">
           {isVendorParticipating ? 'Manage Participation' : 'Join Group Order'}
         </h2>
-        <button
-          onClick={onCancel}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -182,23 +173,23 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
             <p className="text-gray-600">Supplier: {groupOrder.supplierName}</p>
           </div>
           <div className="text-right">
-            <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-              groupOrder.status === 'open' 
-                ? 'bg-green-100 text-green-800'
-                : 'bg-orange-100 text-orange-800'
-            }`}>
+            <div
+              className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                groupOrder.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
+              }`}
+            >
               {groupOrder.status.charAt(0).toUpperCase() + groupOrder.status.slice(1)}
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              {formatTimeRemaining(groupOrder.expiresAt)}
-            </p>
+            <p className="text-sm text-gray-500 mt-1">{formatTimeRemaining(groupOrder.expiresAt)}</p>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-4">
           <div className="flex justify-between text-sm text-gray-600 mb-2">
-            <span>Progress: {groupOrder.currentQuantity} / {groupOrder.targetQuantity} kg</span>
+            <span>
+              Progress: {groupOrder.currentQuantity} / {groupOrder.targetQuantity} kg
+            </span>
             <span>{progressPercentage.toFixed(0)}% complete</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -236,7 +227,9 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
             </div>
             <div>
               <span>Total Cost:</span>
-              <span className="ml-2 font-medium">₹{(vendorParticipation.quantity * groupOrder.pricePerUnit).toFixed(2)}</span>
+              <span className="ml-2 font-medium">
+                ₹{(vendorParticipation.quantity * groupOrder.pricePerUnit).toFixed(2)}
+              </span>
             </div>
           </div>
           <p className="text-xs text-blue-600 mt-2">
@@ -254,9 +247,7 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
               <div
                 key={index}
                 className={`flex justify-between items-center p-3 rounded-lg ${
-                  participant.vendorId === vendorId
-                    ? 'bg-blue-50 border border-blue-200'
-                    : 'bg-gray-50'
+                  participant.vendorId === vendorId ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
                 }`}
               >
                 <div>
@@ -283,9 +274,7 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
           {!isVendorParticipating && remainingQuantity > 0 && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quantity to join (kg)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity to join (kg)</label>
                 <input
                   type="number"
                   min="1"
@@ -294,9 +283,7 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Max: {remainingQuantity} kg remaining
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Max: {remainingQuantity} kg remaining</p>
               </div>
 
               {/* Cost Calculation */}
@@ -329,7 +316,7 @@ const GroupOrderParticipation: React.FC<GroupOrderParticipationProps> = ({
             >
               Cancel
             </button>
-            
+
             {!isVendorParticipating && remainingQuantity > 0 && (
               <button
                 onClick={handleJoinOrder}

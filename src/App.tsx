@@ -1,20 +1,20 @@
-import { Suspense, lazy, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './contexts/AuthContext'
-import AuthFlow from './components/AuthFlow'
-import LanguageTranslator from './components/LanguageTranslator'
+import { Suspense, lazy, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import AuthFlow from './components/AuthFlow';
+import LanguageTranslator from './components/LanguageTranslator';
 
 // Lazy load components for better performance
-const HomePage = lazy(() => import('./pages/HomePage'))
-const VendorDashboard = lazy(() => import('./pages/VendorDashboard'))
-const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
+const HomePage = lazy(() => import('./pages/HomePage'));
+const VendorDashboard = lazy(() => import('./pages/VendorDashboard'));
+const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'));
 
 // Loading component
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
   </div>
-)
+);
 
 // Auth component that handles role selection and authentication flow
 const AuthComponent = () => {
@@ -22,31 +22,34 @@ const AuthComponent = () => {
 };
 
 // Protected route component
-const ProtectedRoute = ({ children, requiredRole }: {
-  children: React.ReactNode,
-  requiredRole?: 'vendor' | 'supplier'
+const ProtectedRoute = ({
+  children,
+  requiredRole,
+}: {
+  children: React.ReactNode;
+  requiredRole?: 'vendor' | 'supplier';
 }) => {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />
+    return <Navigate to="/auth" replace />;
   }
 
   if (requiredRole && user?.role !== requiredRole) {
     // Redirect to appropriate dashboard based on user role
     const redirectPath = user?.role === 'vendor' ? '/vendor/dashboard' : '/supplier/dashboard';
-    return <Navigate to={redirectPath} replace />
+    return <Navigate to={redirectPath} replace />;
   }
 
-  return <>{children}</>
-}
+  return <>{children}</>;
+};
 
 function App() {
-  const { isAuthenticated, user, isLoading } = useAuth()
+  const { isAuthenticated, user, isLoading } = useAuth();
 
   useEffect(() => {
     if (typeof performance !== 'undefined' && typeof performance.mark === 'function') {
@@ -55,7 +58,7 @@ function App() {
   }, []);
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   return (
@@ -67,27 +70,39 @@ function App() {
           <Route path="/" element={<HomePage />} />
 
           {/* Authentication route */}
-          <Route path="/auth" element={
-            isAuthenticated ? (
-              <Navigate to={user?.role === 'vendor' ? "/vendor/dashboard" : "/supplier/dashboard"} replace />
-            ) : (
-              <AuthComponent />
-            )
-          } />
+          <Route
+            path="/auth"
+            element={
+              isAuthenticated ? (
+                <Navigate
+                  to={user?.role === 'vendor' ? '/vendor/dashboard' : '/supplier/dashboard'}
+                  replace
+                />
+              ) : (
+                <AuthComponent />
+              )
+            }
+          />
 
           {/* Protected vendor routes */}
-          <Route path="/vendor/dashboard" element={
-            <ProtectedRoute requiredRole="vendor">
-              <VendorDashboard />
-            </ProtectedRoute>
-          } />
+          <Route
+            path="/vendor/dashboard"
+            element={
+              <ProtectedRoute requiredRole="vendor">
+                <VendorDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected supplier routes */}
-          <Route path="/supplier/dashboard" element={
-            <ProtectedRoute requiredRole="supplier">
-              <SupplierDashboard />
-            </ProtectedRoute>
-          } />
+          <Route
+            path="/supplier/dashboard"
+            element={
+              <ProtectedRoute requiredRole="supplier">
+                <SupplierDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Legacy routes - redirect to new auth system */}
           <Route path="/vendor/auth" element={<Navigate to="/auth" replace />} />
@@ -98,7 +113,7 @@ function App() {
         </Routes>
       </Suspense>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

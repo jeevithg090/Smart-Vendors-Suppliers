@@ -4,9 +4,9 @@ import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface RatingInterfaceProps {
-  orderId: Id<"orders">;
-  vendorId: Id<"vendors">;
-  supplierId: Id<"suppliers">;
+  orderId: Id<'orders'>;
+  vendorId: Id<'vendors'>;
+  supplierId: Id<'suppliers'>;
   supplierName: string;
   onRatingSubmitted?: () => void;
   onCancel?: () => void;
@@ -25,14 +25,14 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
   supplierId,
   supplierName,
   onRatingSubmitted,
-  onCancel
+  onCancel,
 }) => {
   const [overallRating, setOverallRating] = useState<number>(0);
   const [categoryRatings, setCategoryRatings] = useState<CategoryRatings>({
     quality: 0,
     delivery: 0,
     communication: 0,
-    pricing: 0
+    pricing: 0,
   });
   const [review, setReview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,9 +43,9 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
 
   const handleStarClick = (rating: number, category?: keyof CategoryRatings) => {
     if (category) {
-      setCategoryRatings(prev => ({
+      setCategoryRatings((prev) => ({
         ...prev,
-        [category]: rating
+        [category]: rating,
       }));
     } else {
       setOverallRating(rating);
@@ -80,7 +80,7 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
         orderId,
         rating: overallRating,
         review: review.trim() || undefined,
-        categories: categoryRatings
+        categories: categoryRatings,
       });
 
       onRatingSubmitted?.();
@@ -91,9 +91,13 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
     }
   };
 
-  const renderStars = (currentRating: number, onStarClick: (rating: number) => void, size: 'sm' | 'lg' = 'sm') => {
+  const renderStars = (
+    currentRating: number,
+    onStarClick: (rating: number) => void,
+    size: 'sm' | 'lg' = 'sm',
+  ) => {
     const starSize = size === 'lg' ? 'w-8 h-8' : 'w-6 h-6';
-    
+
     return (
       <div className="flex space-x-1">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -130,13 +134,15 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-yellow-800">
-              {canRateQuery.reason}
-            </p>
+            <p className="text-sm text-yellow-800">{canRateQuery.reason}</p>
           </div>
         </div>
       </div>
@@ -146,9 +152,7 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Rate Your Experience
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Rate Your Experience</h2>
         <p className="text-gray-600">
           How was your experience with <span className="font-semibold">{supplierName}</span>?
         </p>
@@ -157,9 +161,7 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Overall Rating */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Overall Rating
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Overall Rating</label>
           <div className="flex items-center space-x-4">
             {renderStars(overallRating, setOverallRating, 'lg')}
             <span className="text-lg font-medium text-gray-700">
@@ -171,9 +173,7 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
         {/* Category Ratings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Product Quality
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Product Quality</label>
             <div className="flex items-center space-x-2">
               {renderStars(categoryRatings.quality, (rating) => handleStarClick(rating, 'quality'))}
               <span className="text-sm text-gray-600">
@@ -183,9 +183,7 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Delivery Service
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Service</label>
             <div className="flex items-center space-x-2">
               {renderStars(categoryRatings.delivery, (rating) => handleStarClick(rating, 'delivery'))}
               <span className="text-sm text-gray-600">
@@ -195,11 +193,11 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Communication
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Communication</label>
             <div className="flex items-center space-x-2">
-              {renderStars(categoryRatings.communication, (rating) => handleStarClick(rating, 'communication'))}
+              {renderStars(categoryRatings.communication, (rating) =>
+                handleStarClick(rating, 'communication'),
+              )}
               <span className="text-sm text-gray-600">
                 {categoryRatings.communication > 0 ? `${categoryRatings.communication}/5` : ''}
               </span>
@@ -207,9 +205,7 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Pricing
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Pricing</label>
             <div className="flex items-center space-x-2">
               {renderStars(categoryRatings.pricing, (rating) => handleStarClick(rating, 'pricing'))}
               <span className="text-sm text-gray-600">
@@ -233,9 +229,7 @@ const RatingInterface: React.FC<RatingInterfaceProps> = ({
             placeholder="Share your experience to help other vendors..."
             maxLength={500}
           />
-          <p className="mt-1 text-sm text-gray-500">
-            {review.length}/500 characters
-          </p>
+          <p className="mt-1 text-sm text-gray-500">{review.length}/500 characters</p>
         </div>
 
         {/* Error Message */}

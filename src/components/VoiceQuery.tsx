@@ -74,12 +74,12 @@ interface Supplier {
   fssaiCertified: boolean;
 }
 
-export default function VoiceQuery({ 
-  userRole, 
-  mode = 'general', 
-  onResults, 
-  onFiltersApplied, 
-  className = '' 
+export default function VoiceQuery({
+  userRole,
+  mode = 'general',
+  onResults,
+  onFiltersApplied,
+  className = '',
 }: VoiceQueryProps) {
   const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
@@ -117,7 +117,7 @@ export default function VoiceQuery({
       ? {
           ingredients: searchIngredients,
         }
-      : "skip"
+      : 'skip',
   );
 
   useEffect(() => {
@@ -164,9 +164,10 @@ export default function VoiceQuery({
 
     setSearchResults(result);
     onResults?.(result);
-    const matchSummary = suppliers.length > 0
-      ? `Found ${suppliers.length} suppliers matching your request.`
-      : 'No supplier matched your current query. Try adding ingredient names or removing filters.';
+    const matchSummary =
+      suppliers.length > 0
+        ? `Found ${suppliers.length} suppliers matching your request.`
+        : 'No supplier matched your current query. Try adding ingredient names or removing filters.';
     setResponse({
       answer: matchSummary,
       originalText: pendingSearchMeta.originalQuery,
@@ -198,7 +199,15 @@ export default function VoiceQuery({
     });
 
     setPendingSearchMeta(null);
-  }, [supplierMatches, pendingSearchMeta, onResults, processEnhancedVoiceQuery, recordingTime, userRole, currentUserId]);
+  }, [
+    supplierMatches,
+    pendingSearchMeta,
+    onResults,
+    processEnhancedVoiceQuery,
+    recordingTime,
+    userRole,
+    currentUserId,
+  ]);
 
   const voiceHistory = useQuery(api.voiceQuery.getVoiceQueryHistory, {
     userId: currentUserId,
@@ -226,13 +235,13 @@ export default function VoiceQuery({
       setAlternatives([]);
       audioChunksRef.current = [];
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: VOICE_QUERY_CONFIG.SAMPLE_RATE
-        } 
+          sampleRate: VOICE_QUERY_CONFIG.SAMPLE_RATE,
+        },
       });
 
       // Set up enhanced audio visualization
@@ -248,11 +257,11 @@ export default function VoiceQuery({
         if (analyserRef.current && isRecording) {
           const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
           analyserRef.current.getByteFrequencyData(dataArray);
-          
+
           // Calculate RMS for better audio level representation
           const rms = Math.sqrt(dataArray.reduce((sum, value) => sum + value * value, 0) / dataArray.length);
-          setAudioLevel(Math.min(rms / 128 * 100, 100));
-          
+          setAudioLevel(Math.min((rms / 128) * 100, 100));
+
           // Detect speech activity
           const speechThreshold = 20;
           const isSpeaking = rms > speechThreshold;
@@ -265,13 +274,13 @@ export default function VoiceQuery({
       updateAudioLevel();
 
       // Set up MediaRecorder with better settings
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
-        ? 'audio/webm;codecs=opus' 
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
         : 'audio/webm';
-      
+
       mediaRecorderRef.current = new MediaRecorder(stream, {
         mimeType,
-        audioBitsPerSecond: 128000
+        audioBitsPerSecond: 128000,
       });
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -289,38 +298,36 @@ export default function VoiceQuery({
       // Enhanced timer with silence detection
       const startTime = Date.now();
       let lastSpeechTime = startTime;
-      
+
       recordingTimerRef.current = setInterval(() => {
         const elapsed = Date.now() - startTime;
         setRecordingTime(elapsed);
-        
+
         // Auto-stop on max time
         if (elapsed >= MAX_RECORDING_TIME) {
           stopRecording();
           return;
         }
-        
+
         // Auto-stop on silence (if enabled and in search mode)
         if (mode === 'search' && VOICE_QUERY_CONFIG.VOICE_PROCESSING.silenceDuration) {
           if (isListening) {
             lastSpeechTime = Date.now();
-          } else if (elapsed > 2000 && // Minimum 2 seconds of recording
-                     Date.now() - lastSpeechTime > VOICE_QUERY_CONFIG.VOICE_PROCESSING.silenceDuration) {
+          } else if (
+            elapsed > 2000 && // Minimum 2 seconds of recording
+            Date.now() - lastSpeechTime > VOICE_QUERY_CONFIG.VOICE_PROCESSING.silenceDuration
+          ) {
             stopRecording();
             return;
           }
         }
       }, 100);
-
     } catch (err) {
       console.error('Error starting recording:', err);
-      const errorName = typeof err === 'object' && err && 'name' in err
-        ? String((err as any).name)
-        : '';
+      const errorName = typeof err === 'object' && err && 'name' in err ? String((err as any).name) : '';
       const rawMessage = err instanceof Error ? err.message : String(err ?? '');
       const isPermissionError =
-        errorName === 'NotAllowedError' ||
-        /notallowed|permission|denied/i.test(rawMessage);
+        errorName === 'NotAllowedError' || /notallowed|permission|denied/i.test(rawMessage);
       const errorMessage = isPermissionError
         ? ERROR_MESSAGES.MICROPHONE_ACCESS_DENIED
         : ERROR_MESSAGES.RECORDING_FAILED;
@@ -349,7 +356,7 @@ export default function VoiceQuery({
 
     // Stop recording
     mediaRecorderRef.current.stop();
-    mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
   };
 
   const processRecording = async () => {
@@ -361,10 +368,10 @@ export default function VoiceQuery({
       }
 
       // Create audio blob
-      const audioBlob = new Blob(audioChunksRef.current, { 
-        type: mediaRecorderRef.current?.mimeType || 'audio/webm' 
+      const audioBlob = new Blob(audioChunksRef.current, {
+        type: mediaRecorderRef.current?.mimeType || 'audio/webm',
       });
-      
+
       // Validate audio duration
       const audioDuration = recordingTime;
       if (audioDuration < 500) {
@@ -379,12 +386,9 @@ export default function VoiceQuery({
       setTranscriptionText('Processing your voice...');
       const voiceResult = await voiceProcessor.processAudioToText(
         uint8Array,
-        selectedLanguage === 'auto' ? undefined : selectedLanguage
+        selectedLanguage === 'auto' ? undefined : selectedLanguage,
       );
-      const parsed = await voiceProcessor.parseSearchQuery(
-        voiceResult.transcription,
-        voiceResult.language
-      );
+      const parsed = await voiceProcessor.parseSearchQuery(voiceResult.transcription, voiceResult.language);
 
       setTranscriptionText(voiceResult.transcription);
       setConfidenceLevel(voiceResult.confidence);
@@ -403,7 +407,7 @@ export default function VoiceQuery({
       const assistantResponse = buildDeterministicVoiceResponse(
         parsed.translatedText || parsed.originalText,
         mode,
-        userRole
+        userRole,
       );
 
       const resolvedResponse: VoiceQueryResponse = {
@@ -433,9 +437,8 @@ export default function VoiceQuery({
         response: assistantResponse,
         responseLanguage: parsed.language,
         processingTime: voiceResult.processingTime,
-        audioDuration
+        audioDuration,
       });
-
     } catch (err) {
       console.error('Error processing voice query:', err);
       const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.PROCESSING_FAILED;
@@ -448,7 +451,7 @@ export default function VoiceQuery({
   const buildDeterministicVoiceResponse = (
     query: string,
     queryMode: 'search' | 'filter' | 'general',
-    role: 'vendor' | 'supplier'
+    role: 'vendor' | 'supplier',
   ): string => {
     const normalizedQuery = query.toLowerCase();
 
@@ -456,7 +459,11 @@ export default function VoiceQuery({
       if (normalizedQuery.includes('fssai') || normalizedQuery.includes('certified')) {
         return 'Applied filter for FSSAI-certified suppliers. You can add location or price range for narrower results.';
       }
-      if (normalizedQuery.includes('price') || normalizedQuery.includes('rupees') || normalizedQuery.includes('rs')) {
+      if (
+        normalizedQuery.includes('price') ||
+        normalizedQuery.includes('rupees') ||
+        normalizedQuery.includes('rs')
+      ) {
         return 'Applied price filters from your request. Review the filtered supplier list to refine the range.';
       }
       return 'Applied the requested filters. You can refine by category, distance, and delivery speed.';
@@ -530,26 +537,32 @@ export default function VoiceQuery({
       {/* Header with mode indicator and controls */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-            mode === 'search' ? 'bg-green-100 text-green-800' :
-            mode === 'filter' ? 'bg-blue-100 text-blue-800' :
-            'bg-gray-100 text-gray-800'
-          }`}>
-            {mode === 'search' ? '🔍 Search Mode' : 
-             mode === 'filter' ? '🔧 Filter Mode' : 
-             '💬 General Mode'}
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              mode === 'search'
+                ? 'bg-green-100 text-green-800'
+                : mode === 'filter'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            {mode === 'search' ? '🔍 Search Mode' : mode === 'filter' ? '🔧 Filter Mode' : '💬 General Mode'}
           </div>
           {confidenceLevel > 0 && (
-            <div className={`px-2 py-1 rounded text-xs ${
-              confidenceLevel >= 0.8 ? 'bg-green-100 text-green-700' :
-              confidenceLevel >= 0.6 ? 'bg-yellow-100 text-yellow-700' :
-              'bg-red-100 text-red-700'
-            }`}>
+            <div
+              className={`px-2 py-1 rounded text-xs ${
+                confidenceLevel >= 0.8
+                  ? 'bg-green-100 text-green-700'
+                  : confidenceLevel >= 0.6
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : 'bg-red-100 text-red-700'
+              }`}
+            >
               {Math.round(confidenceLevel * 100)}% confident
             </div>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {/* Language selector */}
           <select
@@ -565,7 +578,7 @@ export default function VoiceQuery({
               </option>
             ))}
           </select>
-          
+
           {/* History toggle */}
           <button
             onClick={toggleHistory}
@@ -573,7 +586,11 @@ export default function VoiceQuery({
             title="Voice History"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                clipRule="evenodd"
+              />
             </svg>
           </button>
         </div>
@@ -585,33 +602,34 @@ export default function VoiceQuery({
           {/* Audio visualization rings */}
           {isRecording && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div 
+              <div
                 className="absolute rounded-full border-2 border-red-300 animate-pulse"
                 style={{
                   width: `${80 + audioLevel * 0.8}px`,
                   height: `${80 + audioLevel * 0.8}px`,
-                  opacity: 0.6
+                  opacity: 0.6,
                 }}
               />
-              <div 
+              <div
                 className="absolute rounded-full border border-red-200"
                 style={{
                   width: `${100 + audioLevel * 1.2}px`,
                   height: `${100 + audioLevel * 1.2}px`,
-                  opacity: 0.4
+                  opacity: 0.4,
                 }}
               />
             </div>
           )}
-          
+
           <button
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isProcessing}
             className={`
               relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 z-10
-              ${isRecording 
-                ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50' 
-                : 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/50'
+              ${
+                isRecording
+                  ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50'
+                  : 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/50'
               }
               ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               transform ${isRecording ? 'scale-110' : 'scale-100'}
@@ -622,17 +640,13 @@ export default function VoiceQuery({
             {isRecording && isListening && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse border-2 border-white" />
             )}
-            
+
             {/* Mic icon */}
-            <svg 
-              className="w-8 h-8 text-white"
-              fill="currentColor" 
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
               {isRecording ? (
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
               ) : (
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
               )}
             </svg>
           </button>
@@ -657,18 +671,13 @@ export default function VoiceQuery({
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <div className="text-sm font-medium text-red-600">
-                Recording {formatTime(recordingTime)}
-              </div>
-              <div className="text-xs text-gray-500">
-                ({isListening ? 'Speaking' : 'Silence'})
-              </div>
+              <div className="text-sm font-medium text-red-600">Recording {formatTime(recordingTime)}</div>
+              <div className="text-xs text-gray-500">({isListening ? 'Speaking' : 'Silence'})</div>
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              {mode === 'search' && VOICE_QUERY_CONFIG.VOICE_PROCESSING.silenceDuration 
+              {mode === 'search' && VOICE_QUERY_CONFIG.VOICE_PROCESSING.silenceDuration
                 ? 'Will auto-stop after 2 seconds of silence'
-                : `Auto-stop in ${formatTime(MAX_RECORDING_TIME - recordingTime)}`
-              }
+                : `Auto-stop in ${formatTime(MAX_RECORDING_TIME - recordingTime)}`}
             </div>
           </div>
         )}
@@ -678,12 +687,10 @@ export default function VoiceQuery({
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-2">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-              <div className="text-sm text-gray-600">
-                Processing your {mode} query...
-              </div>
+              <div className="text-sm text-gray-600">Processing your {mode} query...</div>
             </div>
             <div className="w-full max-w-xs bg-gray-200 rounded-full h-1">
-              <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{width: '60%'}}></div>
+              <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '60%' }}></div>
             </div>
           </div>
         )}
@@ -692,9 +699,7 @@ export default function VoiceQuery({
       {/* Alternative suggestions */}
       {alternatives.length > 0 && (
         <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="text-xs text-yellow-700 mb-2">
-            Did you mean:
-          </div>
+          <div className="text-xs text-yellow-700 mb-2">Did you mean:</div>
           <div className="space-y-1">
             {alternatives.map((alt, index) => (
               <button
@@ -714,14 +719,15 @@ export default function VoiceQuery({
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-center">
             <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
             <span className="text-red-700 text-sm">{error}</span>
           </div>
-          <button
-            onClick={clearResponse}
-            className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
-          >
+          <button onClick={clearResponse} className="mt-2 text-red-600 hover:text-red-800 text-sm underline">
             Try again
           </button>
         </div>
@@ -732,15 +738,16 @@ export default function VoiceQuery({
         <div className="mt-4 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Search Results</h3>
-            <div className="text-sm text-gray-500">
-              {searchResults.items.length} items found
-            </div>
+            <div className="text-sm text-gray-500">{searchResults.items.length} items found</div>
           </div>
 
           {/* Items */}
           <div className="space-y-3">
             {searchResults.items.map((item) => (
-              <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div
+                key={item.id}
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -754,9 +761,7 @@ export default function VoiceQuery({
                         </span>
                       )}
                     </div>
-                    <div className="mt-1 text-sm text-gray-600">
-                      by {item.supplierName}
-                    </div>
+                    <div className="mt-1 text-sm text-gray-600">by {item.supplierName}</div>
                     <div className="mt-2 flex items-center space-x-4">
                       <div className="text-lg font-semibold text-green-600">
                         ₹{item.price}/{item.unit}
@@ -776,15 +781,9 @@ export default function VoiceQuery({
                             </svg>
                           ))}
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {item.trustScore}
-                        </span>
+                        <span className="text-sm text-gray-500">{item.trustScore}</span>
                       </div>
-                      {item.distance && (
-                        <div className="text-sm text-gray-500">
-                          {item.distance}km away
-                        </div>
-                      )}
+                      {item.distance && <div className="text-sm text-gray-500">{item.distance}km away</div>}
                     </div>
                   </div>
                   <button className="ml-4 px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors">
@@ -829,9 +828,7 @@ export default function VoiceQuery({
                         </div>
                       </div>
                       {supplier.distance && (
-                        <div className="text-sm text-gray-500">
-                          {supplier.distance}km
-                        </div>
+                        <div className="text-sm text-gray-500">{supplier.distance}km</div>
                       )}
                     </div>
                   </div>
@@ -850,21 +847,26 @@ export default function VoiceQuery({
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
               <div className="flex items-center justify-between mb-1">
                 <div className="text-xs text-gray-500">
-                  Original ({LANGUAGE_NAMES[response.language as keyof typeof LANGUAGE_NAMES]?.name || response.language}):
+                  Original (
+                  {LANGUAGE_NAMES[response.language as keyof typeof LANGUAGE_NAMES]?.name ||
+                    response.language}
+                  ):
                 </div>
                 {response.confidence && (
-                  <div className={`text-xs px-2 py-1 rounded ${
-                    response.confidence >= 0.8 ? 'bg-green-100 text-green-700' :
-                    response.confidence >= 0.6 ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
+                  <div
+                    className={`text-xs px-2 py-1 rounded ${
+                      response.confidence >= 0.8
+                        ? 'bg-green-100 text-green-700'
+                        : response.confidence >= 0.6
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                    }`}
+                  >
                     {Math.round(response.confidence * 100)}%
                   </div>
                 )}
               </div>
-              <div className="text-sm text-gray-700 italic">
-                "{response.originalText}"
-              </div>
+              <div className="text-sm text-gray-700 italic">"{response.originalText}"</div>
             </div>
           )}
 
@@ -874,17 +876,17 @@ export default function VoiceQuery({
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
               </div>
               <div className="flex-1">
-                <div className="text-sm font-medium text-blue-900 mb-1">
-                  Smart Assistant
-                </div>
-                <div className="text-sm text-blue-800">
-                  {response.answer}
-                </div>
+                <div className="text-sm font-medium text-blue-900 mb-1">Smart Assistant</div>
+                <div className="text-sm text-blue-800">{response.answer}</div>
               </div>
             </div>
           </div>
@@ -912,36 +914,39 @@ export default function VoiceQuery({
         <div className="mt-6 border-t pt-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-gray-900">Voice History</h3>
-            <button
-              onClick={toggleHistory}
-              className="text-gray-500 hover:text-gray-700"
-            >
+            <button onClick={toggleHistory} className="text-gray-500 hover:text-gray-700">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
               </svg>
             </button>
           </div>
-          
+
           {voiceHistory ? (
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {voiceHistory.map((query, index) => (
                 <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="text-sm text-gray-900">
-                        {query.queryText}
-                      </div>
+                      <div className="text-sm text-gray-900">{query.queryText}</div>
                       <div className="text-xs text-gray-500 mt-1">
                         {new Date(query.createdAt).toLocaleString()} •
-                        {LANGUAGE_NAMES[query.language as keyof typeof LANGUAGE_NAMES]?.flag} {query.language} •
-                        {Math.round(query.confidence * 100)}% confidence
+                        {LANGUAGE_NAMES[query.language as keyof typeof LANGUAGE_NAMES]?.flag} {query.language}{' '}
+                        •{Math.round(query.confidence * 100)}% confidence
                       </div>
                     </div>
-                    <div className={`px-2 py-1 text-xs rounded ${
-                      query.queryType === 'search' ? 'bg-green-100 text-green-700' :
-                      query.queryType === 'filter' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <div
+                      className={`px-2 py-1 text-xs rounded ${
+                        query.queryType === 'search'
+                          ? 'bg-green-100 text-green-700'
+                          : query.queryType === 'filter'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
                       {query.queryType}
                     </div>
                   </div>
@@ -954,19 +959,15 @@ export default function VoiceQuery({
               <div className="text-xs mt-1">Backend authentication is being updated</div>
             </div>
           )}
-          
+
           {voiceStats && (
             <div className="mt-4 grid grid-cols-3 gap-4 text-center">
               <div className="bg-blue-50 rounded-lg p-3">
-                <div className="text-lg font-semibold text-blue-600">
-                  {voiceStats?.totalQueries || 0}
-                </div>
+                <div className="text-lg font-semibold text-blue-600">{voiceStats?.totalQueries || 0}</div>
                 <div className="text-xs text-blue-500">Total Queries</div>
               </div>
               <div className="bg-green-50 rounded-lg p-3">
-                <div className="text-lg font-semibold text-green-600">
-                  {voiceStats?.avgConfidence || 0}%
-                </div>
+                <div className="text-lg font-semibold text-green-600">{voiceStats?.avgConfidence || 0}%</div>
                 <div className="text-xs text-green-500">Avg Confidence</div>
               </div>
               <div className="bg-purple-50 rounded-lg p-3">

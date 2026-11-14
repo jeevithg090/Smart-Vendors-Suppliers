@@ -17,23 +17,25 @@ interface SupplierDetailsProps {
 
 export default function SupplierDetails({ supplierId, onBack, vendorLocation }: SupplierDetailsProps) {
   const [activeTab, setActiveTab] = useState<'inventory' | 'reviews' | 'info'>('inventory');
-  
+
   const supplierDetails = useQuery(api.suppliers.getSupplierDetails, {
-    supplierId: supplierId as any
+    supplierId: supplierId as any,
   });
 
   const isCurrentlyOpen = useMemo(() => {
     if (!supplierDetails) return false;
-    
+
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
     const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-    
+
     if (!supplierDetails.businessHours.days.includes(currentDay)) {
       return false;
     }
-    
-    return currentTime >= supplierDetails.businessHours.open && currentTime <= supplierDetails.businessHours.close;
+
+    return (
+      currentTime >= supplierDetails.businessHours.open && currentTime <= supplierDetails.businessHours.close
+    );
   }, [supplierDetails]);
 
   const formatDistance = (distance: number) => {
@@ -45,13 +47,15 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
 
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
     const R = 6371; // Earth's radius in kilometers
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
 
@@ -61,11 +65,9 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
       vendorLocation.lat,
       vendorLocation.lng,
       supplierDetails.location.coordinates.lat,
-      supplierDetails.location.coordinates.lng
+      supplierDetails.location.coordinates.lng,
     );
   }, [vendorLocation, supplierDetails]);
-
-
 
   if (!supplierDetails) {
     return (
@@ -101,26 +103,20 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
           <div className="flex-1">
             <div className="flex items-start gap-4 mb-4">
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                  {supplierDetails.businessName}
-                </h1>
-                <p className="text-lg text-gray-600 mb-2">
-                  Owned by {supplierDetails.ownerName}
-                </p>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">{supplierDetails.businessName}</h1>
+                <p className="text-lg text-gray-600 mb-2">Owned by {supplierDetails.ownerName}</p>
                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                   <span className="flex items-center">
                     📍 {supplierDetails.location.address}, {supplierDetails.location.city}
                   </span>
                   {distance && (
-                    <span className="text-blue-600 font-medium">
-                      • {formatDistance(distance)} away
-                    </span>
+                    <span className="text-blue-600 font-medium">• {formatDistance(distance)} away</span>
                   )}
                 </div>
               </div>
-              
+
               {/* Trust Score */}
-              <TrustScoreDisplay 
+              <TrustScoreDisplay
                 supplierId={supplierId as any}
                 showBreakdown={true}
                 size="lg"
@@ -143,7 +139,9 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
             {/* Status Indicators */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${isCurrentlyOpen ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <div
+                  className={`w-3 h-3 rounded-full ${isCurrentlyOpen ? 'bg-green-500' : 'bg-red-500'}`}
+                ></div>
                 <span className={`font-medium ${isCurrentlyOpen ? 'text-green-600' : 'text-red-600'}`}>
                   {isCurrentlyOpen ? 'Open Now' : 'Closed'}
                 </span>
@@ -155,7 +153,11 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
               {supplierDetails.isVerified && (
                 <div className="flex items-center gap-1 text-blue-600">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   <span className="font-medium">Verified Supplier</span>
                 </div>
@@ -186,19 +188,34 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
         <div className="flex gap-4 mt-6 pt-6 border-t border-gray-200">
           <button className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors font-medium flex items-center">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"
+              />
             </svg>
             Place Order
           </button>
           <button className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
             Message
           </button>
           <button className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+              />
             </svg>
             Call
           </button>
@@ -249,7 +266,10 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
               {supplierDetails.inventory.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {supplierDetails.inventory.map((item, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-orange-200 transition-colors">
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-4 hover:border-orange-200 transition-colors"
+                    >
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-medium text-gray-800">{item.itemName}</h4>
                         <span className="text-sm text-gray-500">{item.category}</span>
@@ -257,17 +277,23 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Price:</span>
-                          <span className="font-medium">₹{item.pricePerUnit}/{item.unit}</span>
+                          <span className="font-medium">
+                            ₹{item.pricePerUnit}/{item.unit}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Stock:</span>
-                          <span className={`font-medium ${item.currentStock > 10 ? 'text-green-600' : 'text-orange-600'}`}>
+                          <span
+                            className={`font-medium ${item.currentStock > 10 ? 'text-green-600' : 'text-orange-600'}`}
+                          >
                             {item.currentStock} {item.unit}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Min Order:</span>
-                          <span className="font-medium">{item.minimumOrder} {item.unit}</span>
+                          <span className="font-medium">
+                            {item.minimumOrder} {item.unit}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Quality:</span>
@@ -284,7 +310,9 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                 <div className="text-center py-12">
                   <div className="text-4xl mb-4">📦</div>
                   <h3 className="text-lg font-medium text-gray-700 mb-2">No inventory available</h3>
-                  <p className="text-gray-600">This supplier hasn't added any items to their inventory yet.</p>
+                  <p className="text-gray-600">
+                    This supplier hasn't added any items to their inventory yet.
+                  </p>
                 </div>
               )}
             </div>
@@ -292,11 +320,7 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
 
           {/* Reviews Tab */}
           {activeTab === 'reviews' && (
-            <ReviewDisplay 
-              supplierId={supplierId as any}
-              limit={20}
-              showFilters={true}
-            />
+            <ReviewDisplay supplierId={supplierId as any} limit={20} showFilters={true} />
           )}
 
           {/* Business Info Tab */}
@@ -319,8 +343,10 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                     <div className="flex items-start">
                       <span className="text-gray-600 w-20">Address:</span>
                       <span className="font-medium">
-                        {supplierDetails.location.address}<br />
-                        {supplierDetails.location.city}, {supplierDetails.location.state} - {supplierDetails.location.pincode}
+                        {supplierDetails.location.address}
+                        <br />
+                        {supplierDetails.location.city}, {supplierDetails.location.state} -{' '}
+                        {supplierDetails.location.pincode}
                       </span>
                     </div>
                   </div>
@@ -334,9 +360,7 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                     <span className="font-medium">
                       {supplierDetails.businessHours.open} - {supplierDetails.businessHours.close}
                     </span>
-                    <span className="text-gray-600">
-                      {supplierDetails.businessHours.days.join(', ')}
-                    </span>
+                    <span className="text-gray-600">{supplierDetails.businessHours.days.join(', ')}</span>
                   </div>
                 </div>
               </div>
@@ -347,7 +371,11 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                   {supplierDetails.fssaiCertified ? (
                     <div className="flex items-center text-green-600">
                       <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                       <span className="font-medium">FSSAI Certified</span>
                       {supplierDetails.fssaiLicense && (
@@ -357,7 +385,11 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                   ) : (
                     <div className="flex items-center text-gray-500">
                       <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                       <span>FSSAI Certification Pending</span>
                     </div>
@@ -368,7 +400,7 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
               {/* FSSAI Verification Component */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">FSSAI Certificate Verification</h3>
-                <FSSAIVerification 
+                <FSSAIVerification
                   supplierId={supplierId as any}
                   onVerificationComplete={() => {
                     // Refresh the page or update the supplier details

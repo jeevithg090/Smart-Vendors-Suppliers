@@ -39,7 +39,12 @@ describe('getSeasonalMultiplier', () => {
 describe('buildFallbackForecast', () => {
   it('projects 7-day demand from the 30-day average with seasonal uplift', () => {
     // 90 kg over 30 days = 3/day; 7 days × 3 × 1.2 (May, onion) = 25.2
-    const [onion] = buildFallbackForecast(orders, inventory, { fssaiCertified: false }, new Date(2026, 4, 10));
+    const [onion] = buildFallbackForecast(
+      orders,
+      inventory,
+      { fssaiCertified: false },
+      new Date(2026, 4, 10),
+    );
     expect(onion).toMatchObject({ item: 'Onion', predictedQty: 25.2, confidence: 0.6 });
     expect(onion.reason).toContain('2 recent orders');
     expect(onion.reason).toContain('20% seasonal increase');
@@ -49,7 +54,9 @@ describe('buildFallbackForecast', () => {
     const [, ghee] = buildFallbackForecast(orders, inventory, { fssaiCertified: true }, new Date(2026, 0, 1));
     expect(ghee.predictedQty).toBe(1);
     expect(ghee.confidence).toBe(0.3);
-    expect(ghee.reason).toBe('Limited historical data available. FSSAI certified supplier may see higher demand.');
+    expect(ghee.reason).toBe(
+      'Limited historical data available. FSSAI certified supplier may see higher demand.',
+    );
   });
 });
 
@@ -67,7 +74,9 @@ describe('normalizeForecast', () => {
   });
 
   it('drops malformed entries and returns null when nothing is usable', () => {
-    expect(normalizeForecast([{ item: '', predictedQty: 1 }, { item: 'X', predictedQty: -1 }, null])).toBeNull();
+    expect(
+      normalizeForecast([{ item: '', predictedQty: 1 }, { item: 'X', predictedQty: -1 }, null]),
+    ).toBeNull();
     expect(normalizeForecast({ item: 'not-an-array' })).toBeNull();
   });
 });

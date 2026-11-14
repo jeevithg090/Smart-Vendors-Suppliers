@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  safeDivide, 
-  safeMultiply, 
-  safePercentage, 
-  validateNumber, 
-  safeAverage, 
-  formatCurrencySafe, 
+import {
+  safeDivide,
+  safeMultiply,
+  safePercentage,
+  validateNumber,
+  safeAverage,
+  formatCurrencySafe,
   safeRound,
-  clampNumber 
+  clampNumber,
 } from '../../utils/numberValidation';
 
 describe('Number Validation Utilities', () => {

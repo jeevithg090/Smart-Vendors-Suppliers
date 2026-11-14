@@ -53,7 +53,13 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string, role: 'vendor' | 'supplier') => Promise<AuthResult>;
-  signup: (email: string, password: string, firstName: string, lastName: string, role: 'vendor' | 'supplier') => Promise<AuthResult>;
+  signup: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    role: 'vendor' | 'supplier',
+  ) => Promise<AuthResult>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -103,7 +109,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * In local development without a reachable Convex backend, allow an offline
    * demo session so the UI can still be explored. Never enabled in production.
    */
-  const devFallback = (email: string, role: User['role'], firstName?: string, lastName?: string): AuthResult | null => {
+  const devFallback = (
+    email: string,
+    role: User['role'],
+    firstName?: string,
+    lastName?: string,
+  ): AuthResult | null => {
     if (!import.meta.env.DEV) return null;
     console.warn('Convex backend unreachable; starting an offline development session.');
     return completeAuth({
@@ -135,7 +146,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isConnectivityFailure(error)) {
         const offline = devFallback(args.email, args.role, args.firstName, args.lastName);
         if (offline) return offline;
-        return { success: false, error: 'Unable to reach the server. Please check your connection and try again.' };
+        return {
+          success: false,
+          error: 'Unable to reach the server. Please check your connection and try again.',
+        };
       }
       return { success: false, error: extractServerErrorMessage(error, fallbackMessage) };
     } finally {
@@ -147,7 +161,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     runAuth({ email, password, role, isSignup: false }, 'Login failed. Please check your credentials.');
 
   const signup = (email: string, password: string, firstName: string, lastName: string, role: User['role']) =>
-    runAuth({ email, password, role, firstName, lastName, isSignup: true }, 'Signup failed. Please try again.');
+    runAuth(
+      { email, password, role, firstName, lastName, isSignup: true },
+      'Signup failed. Please try again.',
+    );
 
   const logout = () => {
     setUser(null);

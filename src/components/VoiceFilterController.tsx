@@ -85,7 +85,7 @@ export default function VoiceFilterController({
   onFiltersChanged,
   supportedLanguages,
   userRole,
-  className = ''
+  className = '',
 }: VoiceFilterControllerProps) {
   const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
@@ -169,13 +169,13 @@ export default function VoiceFilterController({
       setTranscriptionText('');
       audioChunksRef.current = [];
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: VOICE_QUERY_CONFIG.SAMPLE_RATE
-        } 
+          sampleRate: VOICE_QUERY_CONFIG.SAMPLE_RATE,
+        },
       });
 
       // Set up audio visualization
@@ -190,10 +190,10 @@ export default function VoiceFilterController({
         if (analyserRef.current && isRecording) {
           const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
           analyserRef.current.getByteFrequencyData(dataArray);
-          
+
           const rms = Math.sqrt(dataArray.reduce((sum, value) => sum + value * value, 0) / dataArray.length);
-          setAudioLevel(Math.min(rms / 128 * 100, 100));
-          
+          setAudioLevel(Math.min((rms / 128) * 100, 100));
+
           const speechThreshold = 20;
           const isSpeaking = rms > speechThreshold;
           setIsListening(isSpeaking);
@@ -204,13 +204,13 @@ export default function VoiceFilterController({
       };
       updateAudioLevel();
 
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
-        ? 'audio/webm;codecs=opus' 
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
         : 'audio/webm';
-      
+
       mediaRecorderRef.current = new MediaRecorder(stream, {
         mimeType,
-        audioBitsPerSecond: 128000
+        audioBitsPerSecond: 128000,
       });
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -230,21 +230,17 @@ export default function VoiceFilterController({
       recordingTimerRef.current = setInterval(() => {
         const elapsed = Date.now() - startTime;
         setRecordingTime(elapsed);
-        
+
         if (elapsed >= VOICE_QUERY_CONFIG.MAX_RECORDING_TIME) {
           stopRecording();
         }
       }, 100);
-
     } catch (err) {
       console.error('Error starting recording:', err);
-      const errorName = typeof err === 'object' && err && 'name' in err
-        ? String((err as any).name)
-        : '';
+      const errorName = typeof err === 'object' && err && 'name' in err ? String((err as any).name) : '';
       const rawMessage = err instanceof Error ? err.message : String(err ?? '');
       const isPermissionError =
-        errorName === 'NotAllowedError' ||
-        /notallowed|permission|denied/i.test(rawMessage);
+        errorName === 'NotAllowedError' || /notallowed|permission|denied/i.test(rawMessage);
       const errorMessage = isPermissionError
         ? ERROR_MESSAGES.MICROPHONE_ACCESS_DENIED
         : ERROR_MESSAGES.RECORDING_FAILED;
@@ -270,7 +266,7 @@ export default function VoiceFilterController({
     }
 
     mediaRecorderRef.current.stop();
-    mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
   };
 
   const processFilterRecording = async () => {
@@ -280,10 +276,10 @@ export default function VoiceFilterController({
         audioContextRef.current = null;
       }
 
-      const audioBlob = new Blob(audioChunksRef.current, { 
-        type: mediaRecorderRef.current?.mimeType || 'audio/webm' 
+      const audioBlob = new Blob(audioChunksRef.current, {
+        type: mediaRecorderRef.current?.mimeType || 'audio/webm',
       });
-      
+
       if (recordingTime < 500) {
         throw new Error(ERROR_MESSAGES.AUDIO_TOO_SHORT);
       }
@@ -295,8 +291,8 @@ export default function VoiceFilterController({
 
       // Process voice for filter parsing
       const voiceResult = await voiceProcessor.processAudioToText(
-        uint8Array, 
-        selectedLanguage === 'auto' ? undefined : selectedLanguage
+        uint8Array,
+        selectedLanguage === 'auto' ? undefined : selectedLanguage,
       );
 
       setTranscriptionText(voiceResult.transcription);
@@ -304,7 +300,7 @@ export default function VoiceFilterController({
       // Parse the transcription for filter criteria
       const searchQuery = await voiceProcessor.parseSearchQuery(
         voiceResult.transcription,
-        voiceResult.language
+        voiceResult.language,
       );
 
       // Extract filters from the parsed query
@@ -329,13 +325,12 @@ export default function VoiceFilterController({
           response: `Parsed filters: ${JSON.stringify(extractedFilters)}`,
           responseLanguage: 'en',
           processingTime: voiceResult.processingTime,
-          audioDuration: recordingTime
+          audioDuration: recordingTime,
         });
       } catch (voiceLogError) {
         // Do not block the UX when telemetry persistence fails.
         console.warn('Failed to store voice filter query:', voiceLogError);
       }
-
     } catch (err) {
       console.error('Error processing filter recording:', err);
       const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.PROCESSING_FAILED;
@@ -351,13 +346,13 @@ export default function VoiceFilterController({
     // Merge with current filters
     const newFilters: SearchFilters = {
       ...currentFilters,
-      ...parsedFilters
+      ...parsedFilters,
     };
 
     onFiltersChanged(newFilters);
     setShowConfirmation(false);
     setSuccess('Filters applied successfully!');
-    
+
     // Clear after 3 seconds
     setTimeout(() => setSuccess(null), 3000);
   };
@@ -373,7 +368,7 @@ export default function VoiceFilterController({
     onFiltersChanged(preset.filters);
     setSuccess(`Applied "${preset.name}" filters`);
     setShowPresets(false);
-    
+
     setTimeout(() => setSuccess(null), 3000);
   };
 
@@ -386,22 +381,25 @@ export default function VoiceFilterController({
     const newPreset: FilterPreset = {
       name: presetName,
       filters: currentFilters,
-      voiceShortcut
+      voiceShortcut,
     };
 
     const updatedPresets = [...filterPresets, newPreset];
     setFilterPresets(updatedPresets);
 
     // Update voice preferences
-    const presetMap = updatedPresets.reduce((acc, preset) => {
-      acc[preset.name] = preset.filters;
-      return acc;
-    }, {} as Record<string, VoiceFilters>);
+    const presetMap = updatedPresets.reduce(
+      (acc, preset) => {
+        acc[preset.name] = preset.filters;
+        return acc;
+      },
+      {} as Record<string, VoiceFilters>,
+    );
 
     try {
       await updateVoicePreferences({
         userId: currentUserId,
-        filterPresets: presetMap
+        filterPresets: presetMap,
       });
     } catch (saveError) {
       // Keep local success and continue in offline/degraded mode.
@@ -426,14 +424,14 @@ export default function VoiceFilterController({
 
   const formatFilters = (filters: VoiceFilters) => {
     const parts = [];
-    
+
     if (filters.location) parts.push(`Location: ${filters.location}`);
     if (filters.priceRange) parts.push(`Price: ₹${filters.priceRange.min}-${filters.priceRange.max}`);
     if (filters.categories?.length) parts.push(`Categories: ${filters.categories.join(', ')}`);
     if (filters.quality) parts.push(`Quality: ${filters.quality}`);
     if (filters.deliveryTime) parts.push(`Delivery: ${filters.deliveryTime}`);
     if (filters.fssaiRequired) parts.push('FSSAI Required');
-    
+
     return parts.join(' • ');
   };
 
@@ -458,11 +456,9 @@ export default function VoiceFilterController({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <h3 className="text-lg font-semibold text-gray-900">Voice Filters</h3>
-          <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-            🔧 Filter Mode
-          </div>
+          <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">🔧 Filter Mode</div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {/* Language selector */}
           <select
@@ -472,11 +468,13 @@ export default function VoiceFilterController({
             disabled={isRecording || isProcessing}
           >
             <option value="auto">Auto-detect</option>
-            {supportedLanguages.map(lang => (
-              <option key={lang} value={lang}>{lang.toUpperCase()}</option>
+            {supportedLanguages.map((lang) => (
+              <option key={lang} value={lang}>
+                {lang.toUpperCase()}
+              </option>
             ))}
           </select>
-          
+
           {/* Presets button */}
           <button
             onClick={() => setShowPresets(!showPresets)}
@@ -498,10 +496,7 @@ export default function VoiceFilterController({
               <div className="text-sm font-medium text-gray-700 mb-1">Current Filters:</div>
               <div className="text-sm text-gray-600">{formatFilters(currentFilters)}</div>
             </div>
-            <button
-              onClick={clearAllFilters}
-              className="text-xs text-red-600 hover:text-red-800 underline"
-            >
+            <button onClick={clearAllFilters} className="text-xs text-red-600 hover:text-red-800 underline">
               Clear All
             </button>
           </div>
@@ -514,25 +509,26 @@ export default function VoiceFilterController({
           {/* Audio visualization */}
           {isRecording && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div 
+              <div
                 className="absolute rounded-full border-2 border-blue-300 animate-pulse"
                 style={{
                   width: `${80 + audioLevel * 0.8}px`,
                   height: `${80 + audioLevel * 0.8}px`,
-                  opacity: 0.6
+                  opacity: 0.6,
                 }}
               />
             </div>
           )}
-          
+
           <button
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isProcessing}
             className={`
               relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 z-10
-              ${isRecording 
-                ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50' 
-                : 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/50'
+              ${
+                isRecording
+                  ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/50'
+                  : 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/50'
               }
               ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               transform ${isRecording ? 'scale-110' : 'scale-100'}
@@ -543,16 +539,12 @@ export default function VoiceFilterController({
             {isRecording && isListening && (
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse border-2 border-white" />
             )}
-            
-            <svg 
-              className="w-8 h-8 text-white"
-              fill="currentColor" 
-              viewBox="0 0 24 24"
-            >
+
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
               {isRecording ? (
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
               ) : (
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
               )}
             </svg>
           </button>
@@ -563,12 +555,8 @@ export default function VoiceFilterController({
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <div className="text-sm font-medium text-red-600">
-                Recording {formatTime(recordingTime)}
-              </div>
-              <div className="text-xs text-gray-500">
-                ({isListening ? 'Speaking' : 'Silence'})
-              </div>
+              <div className="text-sm font-medium text-red-600">Recording {formatTime(recordingTime)}</div>
+              <div className="text-xs text-gray-500">({isListening ? 'Speaking' : 'Silence'})</div>
             </div>
             <div className="text-xs text-gray-500 mt-1">
               Say your filter criteria (e.g., "Show only FSSAI certified suppliers within 5km")
@@ -581,9 +569,7 @@ export default function VoiceFilterController({
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-2">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-              <div className="text-sm text-gray-600">
-                Processing filter criteria...
-              </div>
+              <div className="text-sm text-gray-600">Processing filter criteria...</div>
             </div>
           </div>
         )}
@@ -602,12 +588,8 @@ export default function VoiceFilterController({
       {/* Filter Confirmation Dialog */}
       {showConfirmation && parsedFilters && (
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="text-sm font-medium text-blue-900 mb-2">
-            Detected Filter Criteria:
-          </div>
-          <div className="text-sm text-blue-800 mb-3">
-            {formatFilters(parsedFilters)}
-          </div>
+          <div className="text-sm font-medium text-blue-900 mb-2">Detected Filter Criteria:</div>
+          <div className="text-sm text-blue-800 mb-3">{formatFilters(parsedFilters)}</div>
           <div className="flex space-x-2">
             <button
               onClick={applyParsedFilters}
@@ -638,15 +620,16 @@ export default function VoiceFilterController({
               Save Current
             </button>
           </div>
-          
+
           {filterPresets.length === 0 ? (
-            <div className="text-sm text-gray-500 text-center py-4">
-              No filter presets saved yet
-            </div>
+            <div className="text-sm text-gray-500 text-center py-4">No filter presets saved yet</div>
           ) : (
             <div className="space-y-2">
               {filterPresets.map((preset, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded"
+                >
                   <div>
                     <div className="text-sm font-medium text-gray-900">{preset.name}</div>
                     <div className="text-xs text-gray-600">{formatFilters(preset.filters)}</div>
@@ -670,7 +653,11 @@ export default function VoiceFilterController({
         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center">
             <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             </svg>
             <span className="text-green-700 text-sm">{success}</span>
           </div>
@@ -682,7 +669,11 @@ export default function VoiceFilterController({
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-center">
             <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
             <span className="text-red-700 text-sm">{error}</span>
           </div>

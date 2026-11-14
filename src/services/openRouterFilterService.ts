@@ -69,11 +69,11 @@ export class OpenRouterFilterService {
         model: this.model,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userPrompt },
         ],
         functions: [this.getFilterParsingFunction()],
         temperature: 0.3,
-        max_tokens: 500
+        max_tokens: 500,
       });
 
       return this.parseOpenRouterResponse(response, request.text);
@@ -86,11 +86,7 @@ export class OpenRouterFilterService {
   /**
    * Generate voice response for applied filters
    */
-  async generateFilterResponse(
-    appliedFilters: any,
-    language: string,
-    _userContext?: any
-  ): Promise<string> {
+  async generateFilterResponse(appliedFilters: any, language: string, _userContext?: any): Promise<string> {
     try {
       if (!this.apiKey) {
         return 'Filters applied successfully.';
@@ -107,10 +103,10 @@ export class OpenRouterFilterService {
         model: this.model,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userPrompt },
         ],
         temperature: 0.7,
-        max_tokens: 100
+        max_tokens: 100,
       });
 
       return response.choices[0]?.message?.content || 'Filters applied successfully.';
@@ -126,7 +122,7 @@ export class OpenRouterFilterService {
   async suggestFilterImprovements(
     originalQuery: string,
     parsedFilters: any,
-    _userContext?: any
+    _userContext?: any,
   ): Promise<string[]> {
     try {
       if (!this.apiKey) {
@@ -146,14 +142,17 @@ export class OpenRouterFilterService {
         model: this.model,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userPrompt },
         ],
         temperature: 0.6,
-        max_tokens: 200
+        max_tokens: 200,
       });
 
       const suggestions = response.choices[0]?.message?.content || '';
-      return suggestions.split('\n').filter(s => s.trim().length > 0).slice(0, 3);
+      return suggestions
+        .split('\n')
+        .filter((s) => s.trim().length > 0)
+        .slice(0, 3);
     } catch (error) {
       console.error('Error generating filter suggestions:', error);
       return [];
@@ -183,17 +182,17 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
 
   private buildUserPrompt(request: FilterParsingRequest): string {
     let prompt = `Parse this filter request: "${request.text}"`;
-    
+
     if (request.language !== 'en') {
       prompt += `\nOriginal language: ${request.language}`;
     }
-    
+
     if (request.currentFilters && Object.keys(request.currentFilters).length > 0) {
       prompt += `\nCurrent filters: ${JSON.stringify(request.currentFilters)}`;
     }
-    
+
     prompt += `\nExtract and return the filter criteria using the parseFilters function.`;
-    
+
     return prompt;
   }
 
@@ -209,57 +208,57 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
             properties: {
               location: {
                 type: 'string',
-                description: 'Location filter like "nearby", "within 5km", or area name'
+                description: 'Location filter like "nearby", "within 5km", or area name',
               },
               priceRange: {
                 type: 'object',
                 properties: {
                   min: { type: 'number', description: 'Minimum price in rupees' },
-                  max: { type: 'number', description: 'Maximum price in rupees' }
-                }
+                  max: { type: 'number', description: 'Maximum price in rupees' },
+                },
               },
               deliveryTime: {
                 type: 'string',
                 enum: ['same_day', 'next_day', 'express', 'standard', 'scheduled'],
-                description: 'Delivery time preference'
+                description: 'Delivery time preference',
               },
               quality: {
                 type: 'string',
                 enum: ['premium', 'organic', 'fresh', 'grade_a'],
-                description: 'Quality preference'
+                description: 'Quality preference',
               },
               categories: {
                 type: 'array',
                 items: {
                   type: 'string',
-                  enum: ['vegetables', 'fruits', 'spices', 'grains', 'pulses', 'dairy']
+                  enum: ['vegetables', 'fruits', 'spices', 'grains', 'pulses', 'dairy'],
                 },
-                description: 'Product categories'
+                description: 'Product categories',
               },
               fssaiRequired: {
                 type: 'boolean',
-                description: 'Whether FSSAI certification is required'
-              }
-            }
+                description: 'Whether FSSAI certification is required',
+              },
+            },
           },
           confidence: {
             type: 'number',
             minimum: 0,
             maximum: 1,
-            description: 'Confidence score for the parsing (0-1)'
+            description: 'Confidence score for the parsing (0-1)',
           },
           explanation: {
             type: 'string',
-            description: 'Brief explanation of what filters were extracted'
+            description: 'Brief explanation of what filters were extracted',
           },
           suggestions: {
             type: 'array',
             items: { type: 'string' },
-            description: 'Optional suggestions for additional filters'
-          }
+            description: 'Optional suggestions for additional filters',
+          },
         },
-        required: ['filters', 'confidence', 'explanation']
-      }
+        required: ['filters', 'confidence', 'explanation'],
+      },
     };
   }
 
@@ -271,12 +270,12 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': window.location.origin,
-        'X-Title': 'Street Food Vendor Platform'
+        'X-Title': 'Street Food Vendor Platform',
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -286,12 +285,9 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
     return response.json();
   }
 
-  private parseOpenRouterResponse(
-    response: OpenRouterResponse,
-    originalText: string
-  ): FilterParsingResponse {
+  private parseOpenRouterResponse(response: OpenRouterResponse, originalText: string): FilterParsingResponse {
     const choice = response.choices[0];
-    
+
     if (choice?.message?.function_call?.name === 'parseFilters') {
       try {
         const args = JSON.parse(choice.message.function_call.arguments);
@@ -299,7 +295,7 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
           filters: args.filters || {},
           confidence: args.confidence || 0.5,
           explanation: args.explanation || 'Parsed filter criteria from voice input',
-          suggestions: args.suggestions || []
+          suggestions: args.suggestions || [],
         };
       } catch (error) {
         console.error('Error parsing function call arguments:', error);
@@ -342,7 +338,7 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
       filters,
       confidence: 0.6,
       explanation: 'Parsed using fallback method due to API limitations',
-      suggestions: []
+      suggestions: [],
     };
   }
 
@@ -357,12 +353,10 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
     try {
       const response = await this.callOpenRouter({
         model: this.model,
-        messages: [
-          { role: 'user', content: 'Test connection' }
-        ],
-        max_tokens: 10
+        messages: [{ role: 'user', content: 'Test connection' }],
+        max_tokens: 10,
       });
-      
+
       return response.choices && response.choices.length > 0;
     } catch (error) {
       console.error('OpenRouter connection validation failed:', error);
@@ -377,7 +371,7 @@ Parse the user's natural language input and extract relevant filters. Be flexibl
     // In a real implementation, this would track usage
     return {
       totalRequests: 0,
-      totalTokens: 0
+      totalTokens: 0,
     };
   }
 }

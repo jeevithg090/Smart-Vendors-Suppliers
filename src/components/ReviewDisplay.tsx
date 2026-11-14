@@ -4,21 +4,21 @@ import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface ReviewDisplayProps {
-  supplierId: Id<"suppliers">;
+  supplierId: Id<'suppliers'>;
   limit?: number;
   showFilters?: boolean;
 }
 
 export default function ReviewDisplay({ supplierId, limit = 10, showFilters = false }: ReviewDisplayProps) {
   const [filterRating, setFilterRating] = useState<number | null>(null);
-  
-  const ratings = useQuery(api.ratings.getSupplierRatings, { 
-    supplierId, 
-    limit 
+
+  const ratings = useQuery(api.ratings.getSupplierRatings, {
+    supplierId,
+    limit,
   });
-  
-  const ratingStats = useQuery(api.ratings.getSupplierRatingStats, { 
-    supplierId 
+
+  const ratingStats = useQuery(api.ratings.getSupplierRatingStats, {
+    supplierId,
   });
 
   if (!ratings || !ratingStats) {
@@ -38,8 +38,8 @@ export default function ReviewDisplay({ supplierId, limit = 10, showFilters = fa
     );
   }
 
-  const filteredRatings = filterRating 
-    ? ratings.filter(rating => Math.round(rating.rating) === filterRating)
+  const filteredRatings = filterRating
+    ? ratings.filter((rating) => Math.round(rating.rating) === filterRating)
     : ratings;
 
   const renderStars = (rating: number) => {
@@ -48,9 +48,7 @@ export default function ReviewDisplay({ supplierId, limit = 10, showFilters = fa
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
-            className={`w-4 h-4 ${
-              star <= rating ? 'text-yellow-400' : 'text-gray-300'
-            }`}
+            className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -65,7 +63,7 @@ export default function ReviewDisplay({ supplierId, limit = 10, showFilters = fa
     return new Date(timestamp).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -80,9 +78,7 @@ export default function ReviewDisplay({ supplierId, limit = 10, showFilters = fa
               <span className="text-lg font-semibold text-gray-900">
                 {ratingStats.averageRating.toFixed(1)}
               </span>
-              <span className="text-gray-600">
-                ({ratingStats.totalRatings} reviews)
-              </span>
+              <span className="text-gray-600">({ratingStats.totalRatings} reviews)</span>
             </div>
           </div>
         </div>
@@ -154,16 +150,12 @@ export default function ReviewDisplay({ supplierId, limit = 10, showFilters = fa
                     <div className="font-medium text-gray-900">
                       {rating.vendor?.businessName || 'Anonymous Vendor'}
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {formatDate(rating.createdAt)}
-                    </div>
+                    <div className="text-sm text-gray-500">{formatDate(rating.createdAt)}</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   {renderStars(rating.rating)}
-                  <span className="text-sm font-medium text-gray-700">
-                    {rating.rating.toFixed(1)}
-                  </span>
+                  <span className="text-sm font-medium text-gray-700">{rating.rating.toFixed(1)}</span>
                 </div>
               </div>
 
@@ -181,9 +173,7 @@ export default function ReviewDisplay({ supplierId, limit = 10, showFilters = fa
 
               {/* Review Text */}
               {rating.review && (
-                <div className="text-gray-700 text-sm leading-relaxed">
-                  "{rating.review}"
-                </div>
+                <div className="text-gray-700 text-sm leading-relaxed">"{rating.review}"</div>
               )}
             </div>
           ))
@@ -194,10 +184,9 @@ export default function ReviewDisplay({ supplierId, limit = 10, showFilters = fa
               {filterRating ? `No ${filterRating}-star reviews` : 'No reviews yet'}
             </h3>
             <p className="text-gray-600">
-              {filterRating 
+              {filterRating
                 ? 'Try selecting a different rating filter.'
-                : 'Be the first to leave a review for this supplier!'
-              }
+                : 'Be the first to leave a review for this supplier!'}
             </p>
           </div>
         )}

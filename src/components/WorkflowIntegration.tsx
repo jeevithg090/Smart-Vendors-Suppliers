@@ -92,9 +92,7 @@ const createGuestWorkflowState = (initialStep: string): WorkflowState => ({
 
 const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep = 'discover' }) => {
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState<WorkflowStepId>(
-    initialStep as WorkflowStepId,
-  );
+  const [currentStep, setCurrentStep] = useState<WorkflowStepId>(initialStep as WorkflowStepId);
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
@@ -117,15 +115,10 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
   const allInventory = useQuery(api.inventory.getAvailableInventory, {}) as
     | MarketplaceInventory[]
     | undefined;
-  const allSuppliers = useQuery(api.suppliers.listAllSuppliers, {}) as
-    | MarketplaceSupplier[]
-    | undefined;
+  const allSuppliers = useQuery(api.suppliers.listAllSuppliers, {}) as MarketplaceSupplier[] | undefined;
 
   const vendor = useQuery(api.vendors.getByUserId, user ? { userId: user.id } : 'skip');
-  const workflowState = useQuery(
-    api.vendors.getWorkflowState,
-    vendor ? { vendorId: vendor._id } : 'skip',
-  );
+  const workflowState = useQuery(api.vendors.getWorkflowState, vendor ? { vendorId: vendor._id } : 'skip');
 
   const updateWorkflowState = useMutation(api.vendors.updateWorkflowState);
   const createPriceAlert = useMutation(api.priceAlerts.createPriceAlert);
@@ -146,8 +139,7 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
     if (!allInventory) return [];
 
     return allInventory.filter((item) => {
-      const matchesSearch =
-        search === '' || item.itemName.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = search === '' || item.itemName.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = category === '' || item.category === category;
       const matchesSupplier = supplier === '' || String(item.supplierId) === supplier;
       return matchesSearch && matchesCategory && matchesSupplier;
@@ -313,10 +305,7 @@ const WorkflowIntegration: React.FC<WorkflowIntegrationProps> = ({ initialStep =
         supplierId: item.supplierId,
       });
 
-      setActionFeedback(
-        'success',
-        `Price alert created for ${item.itemName} at ₹${targetPrice.toFixed(2)}.`,
-      );
+      setActionFeedback('success', `Price alert created for ${item.itemName} at ₹${targetPrice.toFixed(2)}.`);
       setCurrentStep('priceAlerts');
       void persistWorkflowActivity('priceAlerts', { priceAlertsSet: true });
     } catch (error) {

@@ -5,6 +5,7 @@ This guide explains how to use the comprehensive error handling system implement
 ## Overview
 
 The error handling system provides:
+
 - Global error boundaries for React component errors
 - Comprehensive error reporting and monitoring
 - Retry mechanisms with circuit breakers
@@ -48,16 +49,14 @@ function MyComponent() {
     error,
     canRetry,
     retry,
-    clearError
+    clearError,
   } = useAppError();
 
   const handleApiCall = async () => {
     try {
-      const result = await executeOperation(
-        () => fetch('/api/data').then(res => res.json()),
-        'fetchData',
-        { userId: 'user-123' }
-      );
+      const result = await executeOperation(() => fetch('/api/data').then((res) => res.json()), 'fetchData', {
+        userId: 'user-123',
+      });
       // Handle success
     } catch (error) {
       // Error is automatically handled by the system
@@ -90,16 +89,10 @@ import { useQuery, useMutation } from 'convex/react';
 
 function ConvexComponent() {
   // Safe query wrapper
-  const data = convexUtils.safeQuery(
-    useQuery(api.suppliers.list),
-    'suppliersList'
-  );
+  const data = convexUtils.safeQuery(useQuery(api.suppliers.list), 'suppliersList');
 
   // Safe mutation wrapper
-  const createOrder = convexUtils.safeMutation(
-    useMutation(api.orders.create),
-    'createOrder'
-  );
+  const createOrder = convexUtils.safeMutation(useMutation(api.orders.create), 'createOrder');
 
   const handleCreateOrder = async () => {
     try {
@@ -111,7 +104,7 @@ function ConvexComponent() {
 
   return (
     <div>
-      {data?.map(supplier => (
+      {data?.map((supplier) => (
         <div key={supplier._id}>{supplier.businessName}</div>
       ))}
       <button onClick={handleCreateOrder}>Create Order</button>
@@ -130,14 +123,9 @@ import { useFormValidation } from './hooks/useFormValidation';
 import { validationSchemas } from './utils/validation';
 
 function RegistrationForm() {
-  const {
-    data,
-    errors,
-    handleSubmit,
-    getFieldProps
-  } = useFormValidation(
+  const { data, errors, handleSubmit, getFieldProps } = useFormValidation(
     { businessName: '', email: '', phone: '' },
-    validationSchemas.vendorRegistration
+    validationSchemas.vendorRegistration,
   );
 
   const onSubmit = async (formData) => {
@@ -146,30 +134,18 @@ function RegistrationForm() {
   };
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); handleSubmit(onSubmit); }}>
-      <FormField
-        label="Business Name"
-        name="businessName"
-        required
-        {...getFieldProps('businessName')}
-      />
-      
-      <FormField
-        label="Email"
-        name="email"
-        type="email"
-        required
-        {...getFieldProps('email')}
-      />
-      
-      <FormField
-        label="Phone"
-        name="phone"
-        type="tel"
-        required
-        {...getFieldProps('phone')}
-      />
-      
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(onSubmit);
+      }}
+    >
+      <FormField label="Business Name" name="businessName" required {...getFieldProps('businessName')} />
+
+      <FormField label="Email" name="email" type="email" required {...getFieldProps('email')} />
+
+      <FormField label="Phone" name="phone" type="tel" required {...getFieldProps('phone')} />
+
       <button type="submit">Register</button>
     </form>
   );
@@ -190,7 +166,7 @@ function OrderPlacement() {
     try {
       // Validate business logic
       const validation = await validateBusinessLogic('orderPlacement', orderData);
-      
+
       if (!validation.isValid) {
         // Errors are automatically handled and displayed
         return;
@@ -206,9 +182,7 @@ function OrderPlacement() {
   return (
     <div>
       {/* Order form */}
-      <button onClick={() => handlePlaceOrder(orderData)}>
-        Place Order
-      </button>
+      <button onClick={() => handlePlaceOrder(orderData)}>Place Order</button>
     </div>
   );
 }
@@ -219,28 +193,33 @@ function OrderPlacement() {
 The system handles several types of errors:
 
 ### 1. Network Errors
+
 - Connection failures
 - Timeouts
 - Server errors
 - Automatically retryable
 
 ### 2. Business Errors
+
 - Insufficient stock
 - Order expired
 - Payment failed
 - Include actionable suggestions
 
 ### 3. Validation Errors
+
 - Form field validation
 - Data format errors
 - Required field errors
 
 ### 4. System Errors
+
 - Database errors
 - Service unavailable
 - Permission errors
 
 ### 5. Authentication Errors
+
 - Session expired
 - Invalid credentials
 - Unauthorized access
@@ -248,22 +227,26 @@ The system handles several types of errors:
 ## Features
 
 ### Retry Mechanisms
+
 - Automatic retry with exponential backoff
 - Circuit breakers to prevent cascading failures
 - Configurable retry policies
 
 ### Offline Support
+
 - Operation queuing when offline
 - Automatic sync when back online
 - Visual indicators for offline status
 
 ### Performance Monitoring
+
 - Error frequency tracking
 - Performance impact measurement
 - Memory usage monitoring
 - API call performance
 
 ### Error Reporting
+
 - Automatic error reporting to monitoring service
 - Context preservation for debugging
 - User-friendly error messages
@@ -271,6 +254,7 @@ The system handles several types of errors:
 ## Configuration
 
 ### Environment Variables
+
 ```env
 VITE_ERROR_REPORTING_ENABLED=true
 VITE_PERFORMANCE_MONITORING_ENABLED=true
@@ -279,7 +263,9 @@ VITE_RETRY_BASE_DELAY=1000
 ```
 
 ### Error Dashboard
+
 Enable the error dashboard in development:
+
 ```javascript
 localStorage.setItem('showErrorDashboard', 'true');
 ```
@@ -287,7 +273,9 @@ localStorage.setItem('showErrorDashboard', 'true');
 ## Best Practices
 
 ### 1. Always Use Error Boundaries
+
 Wrap components that might throw errors:
+
 ```tsx
 <ErrorBoundary fallback={CustomErrorComponent}>
   <RiskyComponent />
@@ -295,17 +283,17 @@ Wrap components that might throw errors:
 ```
 
 ### 2. Provide Context
+
 Always provide context when handling errors:
+
 ```tsx
-await executeOperation(
-  () => apiCall(),
-  'operationName',
-  { userId, orderId, timestamp }
-);
+await executeOperation(() => apiCall(), 'operationName', { userId, orderId, timestamp });
 ```
 
 ### 3. Handle Business Logic Errors
+
 Validate business logic before operations:
+
 ```tsx
 const validation = await validateBusinessLogic('orderPlacement', data);
 if (!validation.isValid) {
@@ -315,31 +303,33 @@ if (!validation.isValid) {
 ```
 
 ### 4. Use Appropriate Error Types
+
 Choose the right error type for the situation:
+
 - Use `NetworkError` for connectivity issues
 - Use `BusinessError` for business rule violations
 - Use `ValidationError` for input validation
 - Use `SystemError` for unexpected failures
 
 ### 5. Provide Recovery Actions
+
 Include actionable suggestions in error messages:
+
 ```tsx
 const error = {
   type: 'BUSINESS_ERROR',
   code: 'INSUFFICIENT_STOCK',
   message: 'Not enough stock available',
-  suggestions: [
-    'Reduce quantity',
-    'Try a different supplier',
-    'Join a group order'
-  ]
+  suggestions: ['Reduce quantity', 'Try a different supplier', 'Join a group order'],
 };
 ```
 
 ## Testing
 
 ### Unit Tests
+
 Test error handling logic:
+
 ```tsx
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AppErrorProvider } from './components/AppErrorProvider';
@@ -348,7 +338,7 @@ test('should handle errors gracefully', async () => {
   render(
     <AppErrorProvider>
       <ComponentThatMightError />
-    </AppErrorProvider>
+    </AppErrorProvider>,
   );
 
   // Trigger error
@@ -360,11 +350,14 @@ test('should handle errors gracefully', async () => {
 ```
 
 ### Integration Tests
+
 Test error handling across components:
+
 ```tsx
 test('should retry failed operations', async () => {
   // Mock failing then succeeding operation
-  const mockOperation = jest.fn()
+  const mockOperation = jest
+    .fn()
     .mockRejectedValueOnce(new Error('Network error'))
     .mockResolvedValue('success');
 
@@ -376,11 +369,13 @@ test('should retry failed operations', async () => {
 ```
 
 ### E2E Tests
+
 Test error scenarios in real browser:
+
 ```typescript
 test('should handle network failures gracefully', async ({ page }) => {
   // Simulate network failure
-  await page.route('**/api/**', route => route.abort('failed'));
+  await page.route('**/api/**', (route) => route.abort('failed'));
 
   // Verify error handling
   await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
@@ -390,21 +385,27 @@ test('should handle network failures gracefully', async ({ page }) => {
 ## Monitoring and Debugging
 
 ### Error Dashboard
+
 The error dashboard provides real-time monitoring:
+
 - Error frequency and types
 - Performance metrics
 - Offline queue status
 - Memory usage
 
 ### Performance Metrics
+
 Track key metrics:
+
 - Error rates
 - Response times
 - Retry attempts
 - Circuit breaker states
 
 ### Error Reporting
+
 Errors are automatically reported with:
+
 - Stack traces
 - User context
 - Performance data
@@ -431,7 +432,9 @@ Errors are automatically reported with:
    - Adjust retry policies if needed
 
 ### Debug Mode
+
 Enable debug logging:
+
 ```javascript
 localStorage.setItem('errorHandlingDebug', 'true');
 ```

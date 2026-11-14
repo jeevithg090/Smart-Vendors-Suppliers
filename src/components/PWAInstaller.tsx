@@ -1,78 +1,78 @@
-import { useState, useEffect } from 'react'
-import { Workbox } from 'workbox-window'
+import { useState, useEffect } from 'react';
+import { Workbox } from 'workbox-window';
 
 interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[]
+  readonly platforms: string[];
   readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed'
-    platform: string
-  }>
-  prompt(): Promise<void>
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
 }
 
 export default function PWAInstaller() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false)
-  const [isInstalled, setIsInstalled] = useState(false)
-  const [updateAvailable, setUpdateAvailable] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
     // Check if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true)
+      setIsInstalled(true);
     }
 
     // Register service worker
     if ('serviceWorker' in navigator) {
-      const wb = new Workbox('/sw.js')
+      const wb = new Workbox('/sw.js');
 
       wb.addEventListener('waiting', () => {
-        setUpdateAvailable(true)
-      })
+        setUpdateAvailable(true);
+      });
 
-      wb.register()
+      wb.register();
     }
 
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
-      setShowInstallPrompt(true)
-    }
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setShowInstallPrompt(true);
+    };
 
     // Listen for app installed event
     const handleAppInstalled = () => {
-      setIsInstalled(true)
-      setShowInstallPrompt(false)
-      setDeferredPrompt(null)
-    }
+      setIsInstalled(true);
+      setShowInstallPrompt(false);
+      setDeferredPrompt(null);
+    };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    window.addEventListener('appinstalled', handleAppInstalled)
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', handleAppInstalled)
-    }
-  }, [])
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return
+    if (!deferredPrompt) return;
 
-    deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
 
     if (outcome === 'accepted') {
-      setDeferredPrompt(null)
-      setShowInstallPrompt(false)
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
     }
-  }
+  };
 
   const handleUpdateClick = () => {
-    window.location.reload()
-  }
+    window.location.reload();
+  };
 
-  if (isInstalled && !updateAvailable) return null
+  if (isInstalled && !updateAvailable) return null;
 
   return (
     <>
@@ -84,9 +84,7 @@ export default function PWAInstaller() {
               <span className="text-2xl">📱</span>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-gray-900">
-                Install Smart Street
-              </h3>
+              <h3 className="text-sm font-medium text-gray-900">Install Smart Street</h3>
               <p className="text-xs text-gray-500 mt-1">
                 Add to your home screen for quick access and offline features
               </p>
@@ -117,12 +115,8 @@ export default function PWAInstaller() {
               <span className="text-2xl">🔄</span>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-blue-900">
-                Update Available
-              </h3>
-              <p className="text-xs text-blue-700 mt-1">
-                A new version of Smart Street is available
-              </p>
+              <h3 className="text-sm font-medium text-blue-900">Update Available</h3>
+              <p className="text-xs text-blue-700 mt-1">A new version of Smart Street is available</p>
               <div className="flex space-x-2 mt-3">
                 <button
                   onClick={handleUpdateClick}
@@ -142,5 +136,5 @@ export default function PWAInstaller() {
         </div>
       )}
     </>
-  )
+  );
 }

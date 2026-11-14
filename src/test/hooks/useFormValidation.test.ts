@@ -6,19 +6,17 @@ describe('useFormValidation', () => {
   const mockSchema = {
     name: { required: true, minLength: 2 },
     email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
-    age: { min: 18, max: 100 }
+    age: { min: 18, max: 100 },
   };
 
   const initialData = {
     name: '',
     email: '',
-    age: 0
+    age: 0,
   };
 
   it('should initialize with provided data', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema)
-    );
+    const { result } = renderHook(() => useFormValidation(initialData, mockSchema));
 
     expect(result.current.data).toEqual(initialData);
     expect(result.current.errors).toEqual({});
@@ -28,9 +26,7 @@ describe('useFormValidation', () => {
   });
 
   it('should update field values', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema)
-    );
+    const { result } = renderHook(() => useFormValidation(initialData, mockSchema));
 
     act(() => {
       result.current.updateField('name', 'John');
@@ -41,9 +37,7 @@ describe('useFormValidation', () => {
   });
 
   it('should validate fields on blur when validateOnBlur is true', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema, { validateOnBlur: true })
-    );
+    const { result } = renderHook(() => useFormValidation(initialData, mockSchema, { validateOnBlur: true }));
 
     act(() => {
       result.current.handleBlur('name');
@@ -54,8 +48,8 @@ describe('useFormValidation', () => {
   });
 
   it('should validate fields on change when validateOnChange is true', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema, { validateOnChange: true })
+    const { result } = renderHook(() =>
+      useFormValidation(initialData, mockSchema, { validateOnChange: true }),
     );
 
     act(() => {
@@ -66,9 +60,7 @@ describe('useFormValidation', () => {
   });
 
   it('should validate all fields', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema)
-    );
+    const { result } = renderHook(() => useFormValidation(initialData, mockSchema));
 
     act(() => {
       const validation = result.current.validateAll();
@@ -78,9 +70,7 @@ describe('useFormValidation', () => {
   });
 
   it('should handle form submission with validation', async () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema)
-    );
+    const { result } = renderHook(() => useFormValidation(initialData, mockSchema));
 
     const mockSubmit = vi.fn();
 
@@ -111,14 +101,12 @@ describe('useFormValidation', () => {
     expect(mockSubmit).toHaveBeenCalledWith({
       name: 'John Doe',
       email: 'john@example.com',
-      age: 25
+      age: 25,
     });
   });
 
   it('should reset form data', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema)
-    );
+    const { result } = renderHook(() => useFormValidation(initialData, mockSchema));
 
     act(() => {
       result.current.updateField('name', 'John');
@@ -138,9 +126,7 @@ describe('useFormValidation', () => {
   });
 
   it('should provide field props for easy integration', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema)
-    );
+    const { result } = renderHook(() => useFormValidation(initialData, mockSchema));
 
     const fieldProps = result.current.getFieldProps('name');
 
@@ -152,8 +138,8 @@ describe('useFormValidation', () => {
   });
 
   it('should show errors immediately when showErrorsImmediately is true', () => {
-    const { result } = renderHook(() => 
-      useFormValidation(initialData, mockSchema, { showErrorsImmediately: true })
+    const { result } = renderHook(() =>
+      useFormValidation(initialData, mockSchema, { showErrorsImmediately: true }),
     );
 
     const fieldProps = result.current.getFieldProps('name');

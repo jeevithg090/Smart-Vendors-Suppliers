@@ -10,7 +10,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-
   PieChart,
   Pie,
   Cell,
@@ -20,7 +19,7 @@ import {
 } from 'recharts';
 
 interface FinancialAnalyticsProps {
-  vendorId: Id<"vendors">;
+  vendorId: Id<'vendors'>;
 }
 
 // Move utility functions outside component to prevent re-creation on each render
@@ -42,7 +41,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
   // Memoize date calculations to prevent re-renders
   const dateRange = useMemo(() => {
     const endDate = Date.now();
-    const startDate = endDate - (timeRange * 30 * 24 * 60 * 60 * 1000);
+    const startDate = endDate - timeRange * 30 * 24 * 60 * 60 * 1000;
     return { startDate, endDate };
   }, [timeRange]);
 
@@ -66,24 +65,30 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
 
   const costOptimizationRecommendations = useQuery(
     api.financialAnalytics.getCostOptimizationRecommendations,
-    { vendorId }
+    { vendorId },
   );
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-  const totalSpending = spendingByCategory?.reduce((sum: number, item: any) => sum + validateNumber(item.amount, 0), 0) || 0;
+  const totalSpending =
+    spendingByCategory?.reduce((sum: number, item: any) => sum + validateNumber(item.amount, 0), 0) || 0;
 
   // Memoize transformed data to prevent infinite re-renders
-  const chartData = useMemo(() => ({
-    monthlySpending: monthlySpending?.map((item: any) => ({
-      ...item,
-      monthFormatted: formatMonth(item.month)
-    })) || [],
-    topSuppliers: topSuppliers?.map((item: any) => ({
-      name: item.supplier?.businessName || 'Unknown',
-      amount: validateNumber(item.totalSpent, 0)
-    })) || []
-  }), [monthlySpending, topSuppliers]);
+  const chartData = useMemo(
+    () => ({
+      monthlySpending:
+        monthlySpending?.map((item: any) => ({
+          ...item,
+          monthFormatted: formatMonth(item.month),
+        })) || [],
+      topSuppliers:
+        topSuppliers?.map((item: any) => ({
+          name: item.supplier?.businessName || 'Unknown',
+          amount: validateNumber(item.totalSpent, 0),
+        })) || [],
+    }),
+    [monthlySpending, topSuppliers],
+  );
 
   return (
     <div className="space-y-6">
@@ -118,9 +123,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
           </div>
           <div className="bg-purple-50 p-4 rounded-lg">
             <p className="text-sm font-medium text-purple-600">Top Category</p>
-            <p className="text-2xl font-bold text-purple-800">
-              {spendingByCategory?.[0]?.category || 'N/A'}
-            </p>
+            <p className="text-2xl font-bold text-purple-800">{spendingByCategory?.[0]?.category || 'N/A'}</p>
           </div>
         </div>
       </div>
@@ -134,10 +137,10 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
             <XAxis dataKey="monthFormatted" />
             <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
             <Tooltip formatter={(value) => [formatCurrency(value as number), 'Amount']} />
-            <Line 
-              type="monotone" 
-              dataKey="amount" 
-              stroke="#2563eb" 
+            <Line
+              type="monotone"
+              dataKey="amount"
+              stroke="#2563eb"
               strokeWidth={2}
               dot={{ fill: '#2563eb' }}
             />
@@ -156,7 +159,9 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ category, percent }: any) => `${category} ${validateNumber(percent ? percent * 100 : 0, 0).toFixed(0)}%`}
+                label={({ category, percent }: any) =>
+                  `${category} ${validateNumber(percent ? percent * 100 : 0, 0).toFixed(0)}%`
+                }
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="amount"
@@ -176,12 +181,7 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData.topSuppliers}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
               <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
               <Tooltip formatter={(value) => [formatCurrency(value as number), 'Total Spent']} />
               <Bar dataKey="amount" fill="#10b981" />
@@ -202,8 +202,8 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
                   recommendation.priority === 'high'
                     ? 'bg-red-50 border-red-400'
                     : recommendation.priority === 'medium'
-                    ? 'bg-yellow-50 border-yellow-400'
-                    : 'bg-blue-50 border-blue-400'
+                      ? 'bg-yellow-50 border-yellow-400'
+                      : 'bg-blue-50 border-blue-400'
                 }`}
               >
                 <div className="flex justify-between items-start">
@@ -214,15 +214,13 @@ const FinancialAnalytics: React.FC<FinancialAnalyticsProps> = ({ vendorId }) => 
                           recommendation.priority === 'high'
                             ? 'bg-red-100 text-red-800'
                             : recommendation.priority === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-blue-100 text-blue-800'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-blue-100 text-blue-800'
                         }`}
                       >
                         {recommendation.priority.toUpperCase()}
                       </span>
-                      <span className="text-sm font-medium text-gray-600">
-                        {recommendation.category}
-                      </span>
+                      <span className="text-sm font-medium text-gray-600">{recommendation.category}</span>
                     </div>
                     <p className="text-gray-800">{recommendation.message}</p>
                   </div>

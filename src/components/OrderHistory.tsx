@@ -5,8 +5,8 @@ import type { Id } from '../../convex/_generated/dataModel';
 import RatingInterface from './RatingInterface';
 
 interface OrderHistoryProps {
-  vendorId: Id<"vendors">;
-  onViewOrder?: (orderId: Id<"orders">) => void;
+  vendorId: Id<'vendors'>;
+  onViewOrder?: (orderId: Id<'orders'>) => void;
 }
 
 const statusColors = {
@@ -15,21 +15,21 @@ const statusColors = {
   processing: 'bg-purple-100 text-purple-800',
   shipped: 'bg-orange-100 text-orange-800',
   delivered: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800'
+  cancelled: 'bg-red-100 text-red-800',
 };
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp).toLocaleDateString('en-IN', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
 };
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'INR'
+    currency: 'INR',
   }).format(amount);
 };
 
@@ -39,15 +39,15 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showRatingModal, setShowRatingModal] = useState<{
-    orderId: Id<"orders">;
-    supplierId: Id<"suppliers">;
+    orderId: Id<'orders'>;
+    supplierId: Id<'suppliers'>;
     supplierName: string;
   } | null>(null);
 
   // Get all orders for the vendor
-  const allOrders = useQuery(api.orders.getVendorOrders, { 
+  const allOrders = useQuery(api.orders.getVendorOrders, {
     vendorId,
-    limit: 100 
+    limit: 100,
   });
 
   // Get order statistics
@@ -56,22 +56,22 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
   // Search orders if search term is provided
   const searchResults = useQuery(
     api.orders.searchOrders,
-    searchTerm.trim() ? { vendorId, searchTerm: searchTerm.trim() } : "skip"
+    searchTerm.trim() ? { vendorId, searchTerm: searchTerm.trim() } : 'skip',
   );
 
   // Memoized filtered and sorted orders
   const filteredOrders = useMemo(() => {
-    let orders = searchTerm.trim() ? (searchResults || []) : (allOrders || []);
+    let orders = searchTerm.trim() ? searchResults || [] : allOrders || [];
 
     // Filter by status
     if (statusFilter !== 'all') {
-      orders = orders.filter(order => order.status === statusFilter);
+      orders = orders.filter((order) => order.status === statusFilter);
     }
 
     // Sort orders
     orders = [...orders].sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'date':
           comparison = a.createdAt - b.createdAt;
@@ -83,7 +83,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
           comparison = a.status.localeCompare(b.status);
           break;
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
@@ -117,9 +117,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Order History</h2>
-        <p className="text-gray-600">
-          Manage and track all your orders in one place
-        </p>
+        <p className="text-gray-600">Manage and track all your orders in one place</p>
       </div>
 
       {/* Order Statistics */}
@@ -149,9 +147,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
           <div className="text-sm text-red-800">Cancelled</div>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-gray-600">
-            {formatCurrency(orderStats.totalValue)}
-          </div>
+          <div className="text-2xl font-bold text-gray-600">{formatCurrency(orderStats.totalValue)}</div>
           <div className="text-sm text-gray-800">Total Value</div>
         </div>
       </div>
@@ -161,9 +157,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Search Orders
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
             <input
               type="text"
               value={searchTerm}
@@ -175,9 +169,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
 
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Filter by Status
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -195,9 +187,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
 
           {/* Sort Options */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Sort By
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
             <select
               value={`${sortBy}-${sortOrder}`}
               onChange={(e) => {
@@ -225,10 +215,9 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
             <div className="text-gray-400 text-6xl mb-4">📦</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
             <p className="text-gray-500">
-              {searchTerm || statusFilter !== 'all' 
+              {searchTerm || statusFilter !== 'all'
                 ? 'Try adjusting your search or filters'
-                : 'You haven\'t placed any orders yet'
-              }
+                : "You haven't placed any orders yet"}
             </p>
           </div>
         ) : (
@@ -236,7 +225,7 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th 
+                  <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('date')}
                   >
@@ -251,13 +240,13 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Items
                   </th>
-                  <th 
+                  <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('amount')}
                   >
                     Amount {getSortIcon('amount')}
                   </th>
-                  <th 
+                  <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('status')}
                   >
@@ -278,24 +267,20 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
                       {order._id.slice(-8)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {order.supplier?.businessName}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {order.supplier?.location.city}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{order.supplier?.businessName}</div>
+                      <div className="text-sm text-gray-500">{order.supplier?.location.city}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900">
-                        {order.items.length === 1 
-                          ? order.items[0].itemName
-                          : `${order.items.length} items`
-                        }
+                        {order.items.length === 1 ? order.items[0].itemName : `${order.items.length} items`}
                       </div>
                       <div className="text-sm text-gray-500">
                         {order.items.length > 1 && (
                           <span>
-                            {order.items.slice(0, 2).map(item => item.itemName).join(', ')}
+                            {order.items
+                              .slice(0, 2)
+                              .map((item) => item.itemName)
+                              .join(', ')}
                             {order.items.length > 2 && ` +${order.items.length - 2} more`}
                           </span>
                         )}
@@ -305,9 +290,11 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
                       {formatCurrency(order.totalCost)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        statusColors[order.status as keyof typeof statusColors]
-                      }`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          statusColors[order.status as keyof typeof statusColors]
+                        }`}
+                      >
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </span>
                     </td>
@@ -320,11 +307,13 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
                       </button>
                       {order.status === 'delivered' && (
                         <button
-                          onClick={() => setShowRatingModal({
-                            orderId: order._id,
-                            supplierId: order.supplierId,
-                            supplierName: order.supplier?.businessName || 'Supplier'
-                          })}
+                          onClick={() =>
+                            setShowRatingModal({
+                              orderId: order._id,
+                              supplierId: order.supplierId,
+                              supplierName: order.supplier?.businessName || 'Supplier',
+                            })
+                          }
                           className="text-green-600 hover:text-green-900"
                         >
                           Rate

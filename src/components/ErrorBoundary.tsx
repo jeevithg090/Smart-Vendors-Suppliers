@@ -24,12 +24,12 @@ interface State {
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { 
-      hasError: false, 
-      error: null, 
-      errorInfo: null, 
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
       retryCount: 0,
-      errorId: ''
+      errorId: '',
     };
   }
 
@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
       hasError: true,
       error,
       errorInfo: null,
-      errorId
+      errorId,
     };
   }
 
@@ -48,7 +48,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // Call custom error handler if provided
@@ -61,7 +61,7 @@ export class ErrorBoundary extends Component<Props, State> {
       errorMessage: error.message,
       componentStack: errorInfo.componentStack,
       retryCount: this.state.retryCount,
-      errorId: this.state.errorId
+      errorId: this.state.errorId,
     });
 
     // Track error frequency for this boundary
@@ -70,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
       retryCount: this.state.retryCount,
       errorId: this.state.errorId,
-      isolate: this.props.isolate
+      isolate: this.props.isolate,
     });
 
     // Report the error with enhanced context
@@ -92,8 +92,8 @@ export class ErrorBoundary extends Component<Props, State> {
         isolate: this.props.isolate,
         performanceMetrics: performanceMonitoring.getPerformanceSummary(),
         memoryUsage: this.getMemoryUsage(),
-        networkStatus: navigator.onLine ? 'online' : 'offline'
-      }
+        networkStatus: navigator.onLine ? 'online' : 'offline',
+      },
     };
 
     errorReporting.reportError(systemError);
@@ -105,7 +105,7 @@ export class ErrorBoundary extends Component<Props, State> {
       this.setState({
         hasError: false,
         error: null,
-        errorInfo: null
+        errorInfo: null,
       });
     }
   }
@@ -135,7 +135,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return {
         usedJSHeapSize: memory.usedJSHeapSize,
         totalJSHeapSize: memory.totalJSHeapSize,
-        jsHeapSizeLimit: memory.jsHeapSizeLimit
+        jsHeapSizeLimit: memory.jsHeapSizeLimit,
       };
     }
     return null;
@@ -143,7 +143,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleRetry = async () => {
     const maxRetries = this.props.maxRetries || 3;
-    
+
     if (this.state.retryCount >= maxRetries) {
       // Max retries reached, show different UI or escalate
       this.handleMaxRetriesReached();
@@ -155,12 +155,12 @@ export class ErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      retryCount: nextRetryCount
+      retryCount: nextRetryCount,
     });
 
     performanceMonitoring.recordMetric('Error Boundary Retry Success', nextRetryCount, {
       errorId: this.state.errorId,
-      totalRetries: nextRetryCount
+      totalRetries: nextRetryCount,
     });
   };
 
@@ -168,7 +168,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // Track max retries reached
     performanceMonitoring.recordMetric('Error Boundary Max Retries Reached', this.state.retryCount, {
       errorId: this.state.errorId,
-      errorMessage: this.state.error?.message
+      errorMessage: this.state.error?.message,
     });
 
     // Could show a different UI or redirect to a safe page
@@ -197,12 +197,15 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="text-center">
               <div className="mx-auto h-12 w-12 text-red-500">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
                 </svg>
               </div>
-              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                Something went wrong
-              </h2>
+              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Something went wrong</h2>
               <p className="mt-2 text-sm text-gray-600">
                 We're sorry, but something unexpected happened. Our team has been notified.
               </p>
@@ -214,9 +217,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <div className="mt-2 text-sm text-red-700">
                   <p className="font-mono">{this.state.error.message}</p>
                   {this.state.error.stack && (
-                    <pre className="mt-2 text-xs overflow-auto max-h-32">
-                      {this.state.error.stack}
-                    </pre>
+                    <pre className="mt-2 text-xs overflow-auto max-h-32">{this.state.error.stack}</pre>
                   )}
                 </div>
               </div>
@@ -229,7 +230,8 @@ export class ErrorBoundary extends Component<Props, State> {
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
                   disabled={this.state.retryCount >= (this.props.maxRetries || 3)}
                 >
-                  Try Again {this.state.retryCount > 0 && `(${this.state.retryCount}/${this.props.maxRetries || 3})`}
+                  Try Again{' '}
+                  {this.state.retryCount > 0 && `(${this.state.retryCount}/${this.props.maxRetries || 3})`}
                 </button>
               )}
               <button
@@ -241,9 +243,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div className="text-center">
-              <p className="text-xs text-gray-500">
-                Error ID: {this.state.errorId}
-              </p>
+              <p className="text-xs text-gray-500">Error ID: {this.state.errorId}</p>
               {this.state.retryCount > 0 && (
                 <p className="text-xs text-gray-500 mt-1">
                   Retry attempts: {this.state.retryCount}/{this.props.maxRetries || 3}
@@ -262,7 +262,7 @@ export class ErrorBoundary extends Component<Props, State> {
 // Higher-order component for wrapping components with error boundary
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  fallback?: (error: Error, errorInfo: ErrorInfo) => ReactNode
+  fallback?: (error: Error, errorInfo: ErrorInfo) => ReactNode,
 ) {
   return function WrappedComponent(props: P) {
     return (

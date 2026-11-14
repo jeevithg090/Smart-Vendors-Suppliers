@@ -47,7 +47,7 @@ export const validateNumber = (value: number | undefined | null, fallback = 0): 
  * Safely calculates the average of an array of numbers
  */
 export const safeAverage = (numbers: number[], fallback = 0): number => {
-  const validNumbers = numbers.filter(n => isFinite(n));
+  const validNumbers = numbers.filter((n) => isFinite(n));
   if (validNumbers.length === 0) {
     return fallback;
   }

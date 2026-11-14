@@ -55,17 +55,17 @@ export function getSeasonalMultiplier(itemName: string, month: number): number {
 
   // Festival season (Oct-Dec): Diwali sweets and festive cooking
   if (month >= 10 && month <= 12) {
-    if (has("sugar", "ghee", "dry fruits")) return 1.5;
-    if (has("spices", "masala")) return 1.3;
+    if (has('sugar', 'ghee', 'dry fruits')) return 1.5;
+    if (has('spices', 'masala')) return 1.3;
   }
   // Summer (Mar-Jun): cooling foods and summer vegetables
   if (month >= 3 && month <= 6) {
-    if (has("coconut", "curd", "mint")) return 1.4;
-    if (has("onion", "tomato")) return 1.2;
+    if (has('coconut', 'curd', 'mint')) return 1.4;
+    if (has('onion', 'tomato')) return 1.2;
   }
   // Monsoon (Jun-Sep): immunity boosters
   if (month >= 6 && month <= 9) {
-    if (has("ginger", "garlic", "turmeric")) return 1.3;
+    if (has('ginger', 'garlic', 'turmeric')) return 1.3;
   }
   return 1.0;
 }
@@ -77,7 +77,7 @@ export function getSeasonalMultiplier(itemName: string, month: number): number {
 export function buildFallbackForecast(
   orders: ForecastOrder[],
   inventory: ForecastInventoryItem[],
-  supplier: Pick<ForecastSupplierContext, "fssaiCertified">,
+  supplier: Pick<ForecastSupplierContext, 'fssaiCertified'>,
   now: Date = new Date(),
 ): ForecastEntry[] {
   const month = now.getMonth() + 1;
@@ -97,12 +97,12 @@ export function buildFallbackForecast(
     let reason =
       matchingLines.length > 0
         ? `Based on ${matchingLines.length} recent orders averaging ${avgDailyDemand.toFixed(2)} units/day`
-        : "Limited historical data available";
+        : 'Limited historical data available';
     if (matchingLines.length > 0 && multiplier > 1) {
       reason += ` with ${Math.round((multiplier - 1) * 100)}% seasonal increase`;
     }
     if (supplier.fssaiCertified) {
-      reason += ". FSSAI certified supplier may see higher demand.";
+      reason += '. FSSAI certified supplier may see higher demand.';
     }
 
     return {
@@ -123,9 +123,9 @@ export function normalizeForecast(raw: unknown): ForecastEntry[] | null {
   if (!Array.isArray(raw)) return null;
   const entries: ForecastEntry[] = [];
   for (const candidate of raw) {
-    if (!candidate || typeof candidate !== "object") continue;
+    if (!candidate || typeof candidate !== 'object') continue;
     const record = candidate as Record<string, unknown>;
-    const item = typeof record.item === "string" ? record.item.trim() : "";
+    const item = typeof record.item === 'string' ? record.item.trim() : '';
     const qty = Number(record.predictedQty);
     const confidence = Number(record.confidence);
     if (!item || !Number.isFinite(qty) || qty < 0) continue;
@@ -133,7 +133,7 @@ export function normalizeForecast(raw: unknown): ForecastEntry[] | null {
       item,
       predictedQty: round2(qty),
       confidence: round2(clamp(Number.isFinite(confidence) ? confidence : 0.5, 0, 1)),
-      ...(typeof record.reason === "string" ? { reason: record.reason } : {}),
+      ...(typeof record.reason === 'string' ? { reason: record.reason } : {}),
     });
   }
   return entries.length > 0 ? entries : null;
@@ -155,7 +155,7 @@ ${JSON.stringify(inventory, null, 2)}
 
 Business Context:
 - Supplier: ${supplier.businessName}
-- Categories: ${supplier.categories.join(", ")}
+- Categories: ${supplier.categories.join(', ')}
 - Location: ${supplier.city}, ${supplier.state}
 - FSSAI Certified: ${supplier.fssaiCertified}
 
@@ -167,7 +167,7 @@ Indian Market Context to Consider:
 5. FSSAI Compliance: certified suppliers often see higher demand during festivals
 6. Local Events: weddings, fairs, temple festivals, school/college events
 
-Current Date: ${now.toLocaleDateString("en-IN")}
+Current Date: ${now.toLocaleDateString('en-IN')}
 
 Predict demand for the next ${FORECAST_HORIZON_DAYS} days for each inventory item, considering
 historical order patterns, upcoming festivals, weather, current stock, regional

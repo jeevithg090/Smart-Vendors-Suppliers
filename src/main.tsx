@@ -1,20 +1,18 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { ConvexProvider } from 'convex/react'
-import { ConvexReactClient } from 'convex/react'
-import './index.css'
-import App from './App.tsx'
-import { AuthProvider } from './contexts/AuthContext'
-import { AppErrorProvider } from './components/AppErrorProvider'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { ConvexProvider } from 'convex/react';
+import { ConvexReactClient } from 'convex/react';
+import './index.css';
+import App from './App.tsx';
+import { AuthProvider } from './contexts/AuthContext';
+import { AppErrorProvider } from './components/AppErrorProvider';
 
 // Environment variables validation
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 const DEFAULT_CONVEX_URL = 'https://notable-skunk-507.convex.cloud';
 const RESOLVED_CONVEX_URL =
-  CONVEX_URL && CONVEX_URL !== 'https://placeholder.convex.cloud'
-    ? CONVEX_URL
-    : DEFAULT_CONVEX_URL;
+  CONVEX_URL && CONVEX_URL !== 'https://placeholder.convex.cloud' ? CONVEX_URL : DEFAULT_CONVEX_URL;
 
 // Validate environment variables
 if (!CONVEX_URL) {
@@ -36,7 +34,7 @@ try {
   convex = new ConvexReactClient(DEFAULT_CONVEX_URL);
 }
 
-const root = createRoot(document.getElementById('root')!)
+const root = createRoot(document.getElementById('root')!);
 
 root.render(
   <StrictMode>
@@ -49,5 +47,5 @@ root.render(
         </AppErrorProvider>
       </ConvexProvider>
     </BrowserRouter>
-  </StrictMode>
-)
+  </StrictMode>,
+);

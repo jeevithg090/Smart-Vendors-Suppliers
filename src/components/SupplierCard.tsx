@@ -49,15 +49,13 @@ export default function SupplierCard({
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
     const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-    
+
     if (!supplier.businessHours.days.includes(currentDay)) {
       return false;
     }
-    
+
     return currentTime >= supplier.businessHours.open && currentTime <= supplier.businessHours.close;
   }, [supplier.businessHours]);
-
-
 
   const formatDistance = (distance: number) => {
     if (distance < 1) {
@@ -67,19 +65,15 @@ export default function SupplierCard({
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-orange-200 p-6"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-1">
-            {supplier.businessName}
-          </h3>
-          <p className="text-sm text-gray-600 mb-2">
-            by {supplier.ownerName}
-          </p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-1">{supplier.businessName}</h3>
+          <p className="text-sm text-gray-600 mb-2">by {supplier.ownerName}</p>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm text-gray-500">
               📍 {supplier.location.city}, {supplier.location.state}
@@ -91,23 +85,16 @@ export default function SupplierCard({
             )}
           </div>
         </div>
-        
+
         {/* Trust Score Badge */}
-        <TrustScoreDisplay 
-          supplierId={supplier._id as any}
-          size="sm"
-          className="flex-shrink-0"
-        />
+        <TrustScoreDisplay supplierId={supplier._id as any} size="sm" className="flex-shrink-0" />
       </div>
 
       {/* Categories */}
       <div className="mb-4">
         <div className="flex flex-wrap gap-1">
           {supplier.categories.slice(0, 3).map((category, index) => (
-            <span
-              key={index}
-              className="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded-full"
-            >
+            <span key={index} className="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded-full">
               {category}
             </span>
           ))}
@@ -146,7 +133,11 @@ export default function SupplierCard({
           {supplier.isVerified && (
             <div className="flex items-center gap-1">
               <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span className="text-xs text-blue-600 font-medium">Verified</span>
             </div>
@@ -171,7 +162,8 @@ export default function SupplierCard({
       {/* Business Hours Tooltip */}
       <div className="mt-2 flex flex-col gap-2 text-xs text-gray-500">
         <span>
-          {supplier.businessHours.open} - {supplier.businessHours.close} • {supplier.businessHours.days.join(', ')}
+          {supplier.businessHours.open} - {supplier.businessHours.close} •{' '}
+          {supplier.businessHours.days.join(', ')}
         </span>
         {onToggleComparison && (
           <button
@@ -185,11 +177,7 @@ export default function SupplierCard({
               isSelectedForComparison
                 ? 'border-blue-500 bg-blue-50 text-blue-700'
                 : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
-            } ${
-              comparisonDisabled && !isSelectedForComparison
-                ? 'cursor-not-allowed opacity-60'
-                : ''
-            }`}
+            } ${comparisonDisabled && !isSelectedForComparison ? 'cursor-not-allowed opacity-60' : ''}`}
           >
             {isSelectedForComparison ? 'Selected for compare' : 'Add to compare'}
           </button>

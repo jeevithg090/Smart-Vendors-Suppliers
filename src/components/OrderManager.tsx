@@ -13,27 +13,24 @@ type ViewMode = 'history' | 'place' | 'track' | 'confirmation';
 
 interface OrderManagerProps {
   initialView?: ViewMode;
-  supplierId?: Id<"suppliers">;
-  orderId?: Id<"orders">;
-  vendorId?: Id<"vendors">;
+  supplierId?: Id<'suppliers'>;
+  orderId?: Id<'orders'>;
+  vendorId?: Id<'vendors'>;
 }
 
 export const OrderManager: React.FC<OrderManagerProps> = ({
   initialView = 'history',
   supplierId,
   orderId,
-  vendorId
+  vendorId,
 }) => {
   const { user } = useAuth();
   const [currentView, setCurrentView] = useState<ViewMode>(initialView);
-  const [selectedSupplierId, setSelectedSupplierId] = useState<Id<"suppliers"> | null>(supplierId || null);
-  const [selectedOrderId, setSelectedOrderId] = useState<Id<"orders"> | null>(orderId || null);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<Id<'suppliers'> | null>(supplierId || null);
+  const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(orderId || null);
 
   // Get vendor profile
-  const vendor = useQuery(
-    api.vendors.getByUserId,
-    user ? { userId: user.id } : "skip"
-  );
+  const vendor = useQuery(api.vendors.getByUserId, user ? { userId: user.id } : 'skip');
   const effectiveVendorId = vendorId ?? vendor?._id;
 
   if (!user) {
@@ -55,12 +52,12 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
     );
   }
 
-  const handleOrderPlaced = (orderId: Id<"orders">) => {
+  const handleOrderPlaced = (orderId: Id<'orders'>) => {
     setSelectedOrderId(orderId);
     setCurrentView('confirmation');
   };
 
-  const handleViewOrder = (orderId: Id<"orders">) => {
+  const handleViewOrder = (orderId: Id<'orders'>) => {
     setSelectedOrderId(orderId);
     setCurrentView('track');
   };
@@ -135,11 +132,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
                 ← Back to Order History
               </button>
             </div>
-            <SimpleOrderTracking
-              orderId={selectedOrderId}
-              userRole="vendor"
-              onClose={handleBackToHistory}
-            />
+            <SimpleOrderTracking orderId={selectedOrderId} userRole="vendor" onClose={handleBackToHistory} />
           </div>
         );
 
@@ -170,10 +163,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
               </button>
             </div>
             <TrackingStatusBanner />
-            <OrderHistory
-              vendorId={effectiveVendorId}
-              onViewOrder={handleViewOrder}
-            />
+            <OrderHistory vendorId={effectiveVendorId} onViewOrder={handleViewOrder} />
           </div>
         );
     }
@@ -181,9 +171,7 @@ export const OrderManager: React.FC<OrderManagerProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {renderCurrentView()}
-      </div>
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{renderCurrentView()}</div>
     </div>
   );
 };

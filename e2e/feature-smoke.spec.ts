@@ -45,7 +45,10 @@ test.describe('Feature Smoke', () => {
   test('landing and auth role selection render correctly', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByText(/Smart Street/i).first()).toBeVisible();
-    await page.getByRole('link', { name: /get started/i }).first().click();
+    await page
+      .getByRole('link', { name: /get started/i })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/auth/);
     await expect(page.getByRole('button', { name: /^🏪\s*vendor/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /^🚚\s*supplier/i })).toBeVisible();
@@ -57,7 +60,10 @@ test.describe('Feature Smoke', () => {
     await dismissOnboardingIfPresent(page);
 
     // Supplier discovery
-    await page.getByRole('button', { name: /find suppliers/i }).first().click();
+    await page
+      .getByRole('button', { name: /find suppliers/i })
+      .first()
+      .click();
     await expect(page.getByRole('heading', { name: /^find suppliers$/i })).toBeVisible();
     await page.getByRole('button', { name: /filters/i }).click();
     await expect(page.getByText(/min trust score/i)).toBeVisible();
@@ -88,7 +94,10 @@ test.describe('Feature Smoke', () => {
     await page.getByRole('button', { name: /back to dashboard/i }).click();
 
     // Group orders
-    await page.getByRole('button', { name: /join group orders/i }).first().click();
+    await page
+      .getByRole('button', { name: /join group orders/i })
+      .first()
+      .click();
     await expect(page.getByRole('heading', { name: /^group orders$/i })).toBeVisible();
     await page.getByRole('button', { name: /back to dashboard/i }).click();
 
@@ -141,13 +150,18 @@ test.describe('Feature Smoke', () => {
       await page.getByRole('button', { name: /create supplier profile/i }).click();
     }
 
-    await expect(page.getByRole('navigation', { name: /supplier dashboard navigation/i })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByRole('navigation', { name: /supplier dashboard navigation/i })).toBeVisible({
+      timeout: 30000,
+    });
     await dismissOnboardingIfPresent(page);
 
     // Products + add product flow
     await page.getByRole('button', { name: /my products/i }).click();
     await expect(page.getByRole('heading', { name: /my product catalog/i })).toBeVisible();
-    await page.getByRole('button', { name: /add new product/i }).first().click();
+    await page
+      .getByRole('button', { name: /add new product/i })
+      .first()
+      .click();
     await expect(page.getByRole('heading', { name: /add new product/i })).toBeVisible();
     await page.getByLabel(/product name/i).fill('Smoke Tomatoes');
     await page.getByLabel(/^category/i).selectOption('Vegetables');

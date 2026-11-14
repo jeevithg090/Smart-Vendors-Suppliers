@@ -30,15 +30,30 @@ export interface ValidationError extends BaseError {
 
 export interface BusinessError extends BaseError {
   type: 'BUSINESS_ERROR';
-  code: 'INSUFFICIENT_STOCK' | 'ORDER_EXPIRED' | 'PAYMENT_FAILED' | 'SUPPLIER_UNAVAILABLE' | 'GROUP_ORDER_FULL' | 
-        'MINIMUM_ORDER_NOT_MET' | 'DELIVERY_AREA_NOT_SUPPORTED' | 'GROUP_ORDER_EXPIRED' | 'QUANTITY_EXCEEDS_CAPACITY' | 'INVALID_PAYMENT_AMOUNT';
+  code:
+    | 'INSUFFICIENT_STOCK'
+    | 'ORDER_EXPIRED'
+    | 'PAYMENT_FAILED'
+    | 'SUPPLIER_UNAVAILABLE'
+    | 'GROUP_ORDER_FULL'
+    | 'MINIMUM_ORDER_NOT_MET'
+    | 'DELIVERY_AREA_NOT_SUPPORTED'
+    | 'GROUP_ORDER_EXPIRED'
+    | 'QUANTITY_EXCEEDS_CAPACITY'
+    | 'INVALID_PAYMENT_AMOUNT';
   suggestions?: string[];
   actionable: boolean;
 }
 
 export interface SystemError extends BaseError {
   type: 'SYSTEM_ERROR';
-  code: 'UNKNOWN' | 'DATABASE_ERROR' | 'SERVICE_UNAVAILABLE' | 'CHUNK_LOAD_ERROR' | 'NETWORK_ERROR' | 'PERMISSION_ERROR';
+  code:
+    | 'UNKNOWN'
+    | 'DATABASE_ERROR'
+    | 'SERVICE_UNAVAILABLE'
+    | 'CHUNK_LOAD_ERROR'
+    | 'NETWORK_ERROR'
+    | 'PERMISSION_ERROR';
   stack?: string;
   componentStack?: string;
 }

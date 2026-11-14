@@ -6,13 +6,13 @@
  * environment variable `OPENROUTER_API_KEY` and never from source code.
  */
 
-export const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+export const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 export const DEFAULT_MODELS = [
-  "openai/gpt-4o-mini",
-  "anthropic/claude-3-haiku",
-  "meta-llama/llama-3.1-8b-instruct",
-  "google/gemini-flash-1.5",
+  'openai/gpt-4o-mini',
+  'anthropic/claude-3-haiku',
+  'meta-llama/llama-3.1-8b-instruct',
+  'google/gemini-flash-1.5',
 ] as const;
 
 export interface CompletionOptions {
@@ -25,8 +25,8 @@ export interface CompletionOptions {
 
 export class OpenRouterConfigError extends Error {
   constructor() {
-    super("OPENROUTER_API_KEY is not configured on the Convex deployment");
-    this.name = "OpenRouterConfigError";
+    super('OPENROUTER_API_KEY is not configured on the Convex deployment');
+    this.name = 'OpenRouterConfigError';
   }
 }
 
@@ -54,15 +54,15 @@ export async function completeWithFallback<T>(
   for (const model of models) {
     try {
       const response = await doFetch(OPENROUTER_ENDPOINT, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "X-Title": "Smart Street",
+          'Content-Type': 'application/json',
+          'X-Title': 'Smart Street',
         },
         body: JSON.stringify({
           model,
-          messages: [{ role: "user", content: prompt }],
+          messages: [{ role: 'user', content: prompt }],
           max_tokens: options.maxTokens ?? 1000,
           temperature: options.temperature ?? 0.3,
         }),
@@ -74,7 +74,7 @@ export async function completeWithFallback<T>(
 
       const data = (await response.json()) as ChatCompletionResponse;
       const content = data.choices?.[0]?.message?.content;
-      if (typeof content === "string") {
+      if (typeof content === 'string') {
         const parsed = parse(content);
         if (parsed !== null) {
           return parsed;
@@ -87,13 +87,13 @@ export async function completeWithFallback<T>(
     }
   }
 
-  const reason = lastError instanceof Error ? lastError.message : "all models failed";
+  const reason = lastError instanceof Error ? lastError.message : 'all models failed';
   throw new Error(`AI request failed: ${reason}`);
 }
 
 /** Extracts the first JSON array (`[...]`) or object (`{...}`) embedded in text. */
-export function extractJson(content: string, kind: "array" | "object"): unknown {
-  const pattern = kind === "array" ? /\[[\s\S]*\]/ : /\{[\s\S]*\}/;
+export function extractJson(content: string, kind: 'array' | 'object'): unknown {
+  const pattern = kind === 'array' ? /\[[\s\S]*\]/ : /\{[\s\S]*\}/;
   const match = content.match(pattern);
   if (!match) return null;
   try {

@@ -11,6 +11,7 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 ## ✨ Key Features
 
 ### 🏪 For Vendors
+
 - **Smart Supplier Discovery**: Find verified suppliers by location, ingredients, and quality ratings
 - **AI-Powered Recommendations**: Intelligent supplier matching based on preferences and trust scores
 - **Group Orders**: Collaborate with other vendors for bulk buying and cost reduction
@@ -21,6 +22,7 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 - **FSSAI Verification**: View supplier certification status
 
 ### 🏭 For Suppliers
+
 - **AI Inventory Forecasting**: Predict demand based on historical data and seasonal patterns
 - **Automated Stock Management**: Smart reordering and inventory optimization
 - **Quality Assurance**: Manage product quality and certifications
@@ -30,6 +32,7 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 - **Customer Loyalty Programs**: Reward repeat customers and build relationships
 
 ### 🤖 AI-Powered Features
+
 - **Inventory Forecasting**: Real-time predictions considering Indian festivals and seasonal patterns
 - **Voice Query Processing**: Multilingual voice commands with contextual responses
 - **Trust Score Calculation**: AI-calculated reliability scores for vendors and suppliers
@@ -39,6 +42,7 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 19** with TypeScript
 - **Vite** for fast development and building
 - **Tailwind CSS** for styling
@@ -46,28 +50,33 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 - **Recharts** for data visualization
 
 ### Backend & Database
+
 - **Convex** - Serverless database and real-time functions
 - **Real-time subscriptions** for live updates
 - **CRUD operations** with optimistic updates
 
 ### Authentication
+
 - **Convex-backed email/password auth** with role selection
 - **Role-based access control** (Vendor/Supplier)
 - **Session management** and protected routes
 
 ### AI & External Services
+
 - **OpenRouter AI** - Multiple AI models with fallback support
 - **Sarvam AI** - Multilingual speech-to-text
 - **OCR Space** - Certificate text extraction
 - **Google Translate** - Translation services
 
 ### Testing & Quality
+
 - **Vitest** for unit testing
 - **Playwright** for end-to-end testing
 - **ESLint** for code quality
 - **TypeScript** for type safety
 
 ### DevOps
+
 - **Docker** containerization
 - **Vercel** deployment ready
 - **CI/CD** with automated testing
@@ -76,19 +85,22 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 - Git
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/jeevithg090/Smart-Vendors-Suppliers.git
    cd Smart-Vendors-Suppliers
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
@@ -96,14 +108,15 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
 3. **Set up frontend environment variables**
 
    Create a `.env.local` file in the root directory (or copy from `.env.example`):
+
    ```env
    # Database
    VITE_CONVEX_URL=your_convex_deployment_url
-   
+
    # AI Services
    VITE_SARVAM_API_KEY=your_sarvam_api_key
    VITE_OPENROUTER_API_KEY=your_openrouter_api_key
-   
+
    # Optional
    VITE_GOOGLE_TRANSLATE_API_KEY=your_google_translate_key
    VITE_VISION_API_KEY=your_vision_api_key
@@ -114,13 +127,14 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
    ```
 
 4. **Set up Convex backend**
+
    ```bash
    # Install Convex CLI globally
    npm install -g convex
-   
+
    # Login to Convex
    npx convex login
-   
+
    # Deploy backend functions
    npx convex deploy
 
@@ -130,6 +144,7 @@ Smart Street is a B2B marketplace that connects street food vendors with verifie
    ```
 
 5. **Start development server**
+
    ```bash
    npm run dev
    ```
@@ -191,11 +206,13 @@ smart-street/
 ## 🧪 Testing
 
 ### Run all tests
+
 ```bash
 npm test
 ```
 
 ### Unit tests with Vitest
+
 ```bash
 npm run test:watch      # Watch mode
 npm run test:coverage   # With coverage report
@@ -203,6 +220,7 @@ npm run test:ui         # Visual UI
 ```
 
 ### End-to-end tests with Playwright
+
 ```bash
 npm run test:e2e        # Run E2E tests
 npm run test:e2e:ui     # Interactive mode
@@ -210,11 +228,13 @@ npm run test:e2e:debug  # Debug mode
 ```
 
 ### API smoke tests
+
 ```bash
 npm run test:api        # Convex API smoke checks
 ```
 
 ### Type checking
+
 ```bash
 npm run typecheck
 ```
@@ -224,15 +244,17 @@ npm run typecheck
 ### Deploy to Vercel (Recommended)
 
 1. **Deploy backend**
+
    ```bash
    npx convex deploy --prod
    ```
 
 2. **Connect to Vercel**
+
    ```bash
    # Install Vercel CLI
    npm install -g vercel
-   
+
    # Deploy
    vercel --prod
    ```
@@ -242,6 +264,7 @@ npm run typecheck
 ### Deploy with Docker
 
 1. **Build Docker image**
+
    ```bash
    npm run docker:build
    ```
@@ -254,26 +277,30 @@ npm run typecheck
 ## 🔧 Advanced Features
 
 ### Voice Query System
+
 - **Languages**: Hindi, Tamil, Telugu, English
 - **Features**: Speech-to-text, context-aware responses
 - **Usage**: Click mic button and ask questions naturally
-- **Examples**: 
+- **Examples**:
   - "मेरा कुल खर्च क्या है?" (What is my total spending?)
   - "कौन से सप्लायर सबसे अच्छे हैं?" (Which suppliers are the best?)
 
 ### AI Inventory Forecasting
+
 - **Festival Awareness**: Considers Diwali, Holi, Navratri, Eid
 - **Seasonal Patterns**: Monsoon, summer, winter demand
 - **Regional Preferences**: State-specific food preferences
 - **Confidence Scoring**: Reliability metrics for predictions
 
 ### FSSAI Certificate Verification
+
 - **OCR Technology**: Automatic text extraction from certificates
 - **AI Analysis**: Smart validation of certificate data
 - **Status Tracking**: Real-time verification status
 - **Business Matching**: Compares certificate with profile data
 
 ### Group Orders
+
 - **Cost Reduction**: Bulk buying for better prices
 - **Smart Matching**: AI suggests similar orders to join
 - **Coordination**: Built-in communication tools
@@ -320,6 +347,7 @@ npm run typecheck
 5. Open a Pull Request
 
 ### Development Guidelines
+
 - Follow TypeScript best practices
 - Write tests for new features
 - Use Tailwind for styling
@@ -329,21 +357,23 @@ npm run typecheck
 ## 📄 API Documentation
 
 ### Voice Query API
+
 ```typescript
 // Process voice query
 await api.voiceQuery.processVoiceQuery({
   audioBlob: File,
-  userRole: "vendor" | "supplier"
-})
+  userRole: 'vendor' | 'supplier',
+});
 ```
 
 ### FSSAI Verification API
+
 ```typescript
 // Verify FSSAI certificate
 await api.fssaiVerification.verifyFSSAICertificate({
-  supplierId: Id<"suppliers">,
-  imageBase64: string
-})
+  supplierId: Id<'suppliers'>,
+  imageBase64: string,
+});
 ```
 
 ## 🐛 Troubleshooting
@@ -401,6 +431,7 @@ The model uses **user-based collaborative filtering** with K-Nearest Neighbors (
 ### Data Structure
 
 The system processes rating data with the following structure:
+
 - `vendor_id`: Unique vendor identifier
 - `supplier_id`: Unique supplier identifier
 - `rating`: Computed average rating (1-5 scale)

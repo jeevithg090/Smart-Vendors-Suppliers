@@ -29,7 +29,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('No error')).toBeInTheDocument();
@@ -39,7 +39,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -50,25 +50,25 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(errorReporting.reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'SYSTEM_ERROR',
         code: 'UNKNOWN',
-        message: 'Test error'
-      })
+        message: 'Test error',
+      }),
     );
   });
 
   it('should show retry button and handle retry', async () => {
     const user = userEvent.setup();
-    
+
     const { rerender } = render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Try Again')).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('ErrorBoundary', () => {
     rerender(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('No error')).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe('ErrorBoundary', () => {
 
   it('should show reload button and handle reload', async () => {
     const user = userEvent.setup();
-    
+
     // Mock window.location.reload
     const mockReload = vi.fn();
     Object.defineProperty(window, 'location', {
@@ -99,7 +99,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Reload Page')).toBeInTheDocument();
@@ -110,14 +110,12 @@ describe('ErrorBoundary', () => {
   });
 
   it('should use custom fallback when provided', () => {
-    const customFallback = (error: Error) => (
-      <div>Custom error: {error.message}</div>
-    );
+    const customFallback = (error: Error) => <div>Custom error: {error.message}</div>;
 
     render(
       <ErrorBoundary fallback={customFallback}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Custom error: Test error')).toBeInTheDocument();
@@ -131,7 +129,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Error Details (Development)')).toBeInTheDocument();

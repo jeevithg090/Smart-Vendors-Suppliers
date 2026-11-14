@@ -54,7 +54,7 @@ export default function SmartProcurementPlanner({
   const [dailyOrders, setDailyOrders] = useState(120);
   const [strategy, setStrategy] = useState<Strategy>('balanced');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    preferredCategories.length > 0 ? preferredCategories : ['Vegetables', 'Grains', 'Spices']
+    preferredCategories.length > 0 ? preferredCategories : ['Vegetables', 'Grains', 'Spices'],
   );
 
   const inventory = useQuery(api.inventory.getAvailableInventory, {});
@@ -70,7 +70,7 @@ export default function SmartProcurementPlanner({
   }, [resolvedInventory]);
 
   const supplierById = useMemo(() => {
-    const map = new Map<Id<'suppliers'>, (typeof suppliers extends Array<infer T> ? T : never)>();
+    const map = new Map<Id<'suppliers'>, typeof suppliers extends Array<infer T> ? T : never>();
     (resolvedSuppliers || []).forEach((supplier) => map.set(supplier._id, supplier));
     return map;
   }, [resolvedSuppliers]);
@@ -118,8 +118,7 @@ export default function SmartProcurementPlanner({
         const priceScore =
           maxPrice === minPrice ? 1 : 1 - (item.pricePerUnit - minPrice) / (maxPrice - minPrice);
         const trustScore = clamp((supplier.trustScore || 0) / 5, 0, 1);
-        const cityScore =
-          supplier.location.city.toLowerCase() === vendorCity.toLowerCase() ? 1 : 0.65;
+        const cityScore = supplier.location.city.toLowerCase() === vendorCity.toLowerCase() ? 1 : 0.65;
 
         const weights =
           strategy === 'cost'
@@ -128,10 +127,7 @@ export default function SmartProcurementPlanner({
               ? { price: 0.2, trust: 0.6, city: 0.2 }
               : { price: 0.4, trust: 0.4, city: 0.2 };
 
-        const score =
-          priceScore * weights.price +
-          trustScore * weights.trust +
-          cityScore * weights.city;
+        const score = priceScore * weights.price + trustScore * weights.trust + cityScore * weights.city;
 
         if (score > bestScore) {
           bestScore = score;
@@ -144,7 +140,7 @@ export default function SmartProcurementPlanner({
 
       const baseWeeklyUnits = Math.max(
         bestItem.minimumOrder,
-        Math.round((dailyOrders * 7 * budgetPressure) / Math.max(6, groupedByItem.size))
+        Math.round((dailyOrders * 7 * budgetPressure) / Math.max(6, groupedByItem.size)),
       );
       const quantity = Math.max(1, Math.min(baseWeeklyUnits, bestItem.currentStock));
       const estimatedCost = quantity * bestItem.pricePerUnit;
@@ -178,8 +174,7 @@ export default function SmartProcurementPlanner({
         ...line,
         quantity: cappedQuantity,
         estimatedCost,
-        savingsVsMarket:
-          line.quantity > 0 ? (line.savingsVsMarket / line.quantity) * cappedQuantity : 0,
+        savingsVsMarket: line.quantity > 0 ? (line.savingsVsMarket / line.quantity) * cappedQuantity : 0,
       };
     });
 
@@ -195,7 +190,16 @@ export default function SmartProcurementPlanner({
       supplierCount,
       highRiskCount,
     };
-  }, [dailyOrders, resolvedInventory, resolvedSuppliers, selectedCategories, strategy, supplierById, vendorCity, weeklyBudget]);
+  }, [
+    dailyOrders,
+    resolvedInventory,
+    resolvedSuppliers,
+    selectedCategories,
+    strategy,
+    supplierById,
+    vendorCity,
+    weeklyBudget,
+  ]);
 
   const exportPlan = () => {
     const payload = {
@@ -303,7 +307,7 @@ export default function SmartProcurementPlanner({
                   key={category}
                   onClick={() =>
                     setSelectedCategories((prev) =>
-                      active ? prev.filter((entry) => entry !== category) : [...prev, category]
+                      active ? prev.filter((entry) => entry !== category) : [...prev, category],
                     )
                   }
                   className={`px-3 py-1 rounded-full text-xs border ${
@@ -323,11 +327,15 @@ export default function SmartProcurementPlanner({
       <div className="grid md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border p-4">
           <div className="text-sm text-gray-600">Projected Spend</div>
-          <div className="text-2xl font-bold text-gray-900">₹{Math.round(planning.projectedSpend).toLocaleString()}</div>
+          <div className="text-2xl font-bold text-gray-900">
+            ₹{Math.round(planning.projectedSpend).toLocaleString()}
+          </div>
         </div>
         <div className="bg-white rounded-lg border p-4">
           <div className="text-sm text-gray-600">Estimated Savings</div>
-          <div className="text-2xl font-bold text-green-600">₹{Math.round(planning.projectedSavings).toLocaleString()}</div>
+          <div className="text-2xl font-bold text-green-600">
+            ₹{Math.round(planning.projectedSavings).toLocaleString()}
+          </div>
         </div>
         <div className="bg-white rounded-lg border p-4">
           <div className="text-sm text-gray-600">Supplier Mix</div>
@@ -370,18 +378,26 @@ export default function SmartProcurementPlanner({
                       <div className="text-xs text-gray-500">{line.category}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-700">{line.supplierName}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">₹{line.pricePerUnit}/{line.unit}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{line.quantity} {line.unit}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">₹{Math.round(line.estimatedCost).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      ₹{line.pricePerUnit}/{line.unit}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {line.quantity} {line.unit}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                      ₹{Math.round(line.estimatedCost).toLocaleString()}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-700">{line.trustScore.toFixed(1)}/5</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        line.risk === 'low'
-                          ? 'bg-green-100 text-green-700'
-                          : line.risk === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-700'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          line.risk === 'low'
+                            ? 'bg-green-100 text-green-700'
+                            : line.risk === 'medium'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-700'
+                        }`}
+                      >
                         {line.risk}
                       </span>
                     </td>

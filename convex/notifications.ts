@@ -1,28 +1,28 @@
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { mutation, query } from './_generated/server';
+import { v } from 'convex/values';
 
 // Helper function to validate user authentication
 async function validateUser(ctx: any, userEmail: string) {
   // Check for empty email
   if (!userEmail || userEmail.trim() === '') {
-    throw new Error("Not authenticated");
+    throw new Error('Not authenticated');
   }
 
   const vendor = await ctx.db
-    .query("vendors")
-    .withIndex("by_user", (q: any) => q.eq("userId", userEmail))
+    .query('vendors')
+    .withIndex('by_user', (q: any) => q.eq('userId', userEmail))
     .first();
 
   const supplier = await ctx.db
-    .query("suppliers")
-    .withIndex("by_user", (q: any) => q.eq("userId", userEmail))
+    .query('suppliers')
+    .withIndex('by_user', (q: any) => q.eq('userId', userEmail))
     .first();
 
   if (!vendor && !supplier) {
-    throw new Error("Not authenticated");
+    throw new Error('Not authenticated');
   }
 
-  return { userEmail, role: vendor ? "vendor" : "supplier" };
+  return { userEmail, role: vendor ? 'vendor' : 'supplier' };
 }
 
 // Create a notification
@@ -33,13 +33,15 @@ export const createNotification = mutation({
     type: v.string(), // "order_update", "message", "price_alert", "group_order", "system"
     title: v.string(),
     message: v.string(),
-    data: v.optional(v.object({
-      orderId: v.optional(v.id("orders")),
-      messageId: v.optional(v.id("messages")),
-      supplierId: v.optional(v.id("suppliers")),
-      vendorId: v.optional(v.id("vendors")),
-      groupOrderId: v.optional(v.id("groupOrders")),
-    })),
+    data: v.optional(
+      v.object({
+        orderId: v.optional(v.id('orders')),
+        messageId: v.optional(v.id('messages')),
+        supplierId: v.optional(v.id('suppliers')),
+        vendorId: v.optional(v.id('vendors')),
+        groupOrderId: v.optional(v.id('groupOrders')),
+      }),
+    ),
     priority: v.optional(v.string()), // "low", "medium", "high", "urgent"
     expiresAt: v.optional(v.number()),
   },
@@ -47,7 +49,7 @@ export const createNotification = mutation({
     // Validate user authentication
     const identity = await validateUser(ctx, args.userEmail);
 
-    const notificationId = await ctx.db.insert("notifications", {
+    const notificationId = await ctx.db.insert('notifications', {
       userId: identity.userEmail,
       userType: args.userType,
       type: args.type,
@@ -55,7 +57,7 @@ export const createNotification = mutation({
       message: args.message,
       data: args.data,
       isRead: false,
-      priority: args.priority || "medium",
+      priority: args.priority || 'medium',
       createdAt: Date.now(),
       expiresAt: args.expiresAt,
     });
@@ -72,9 +74,9 @@ export const getUserNotifications = query({
     const identity = await validateUser(ctx, args.userEmail);
 
     const notifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.userEmail))
-      .order("desc")
+      .query('notifications')
+      .withIndex('by_user', (q) => q.eq('userId', identity.userEmail))
+      .order('desc')
       .collect();
 
     return notifications;
@@ -85,7 +87,7 @@ export const getUserNotifications = query({
 export const markNotificationAsRead = mutation({
   args: {
     userEmail: v.string(), // User's email for authentication
-    notificationId: v.id("notifications")
+    notificationId: v.id('notifications'),
   },
   handler: async (ctx, args) => {
     // Validate user authentication
@@ -93,11 +95,11 @@ export const markNotificationAsRead = mutation({
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
-      throw new Error("Notification not found");
+      throw new Error('Notification not found');
     }
 
     if (notification.userId !== identity.userEmail) {
-      throw new Error("Not authorized to mark this notification as read");
+      throw new Error('Not authorized to mark this notification as read');
     }
 
     await ctx.db.patch(args.notificationId, { isRead: true });
@@ -113,9 +115,9 @@ export const markAllNotificationsAsRead = mutation({
     const identity = await validateUser(ctx, args.userEmail);
 
     const unreadNotifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", identity.userEmail))
-      .filter((q) => q.eq(q.field("isRead"), false))
+      .query('notifications')
+      .withIndex('by_user', (q) => q.eq('userId', identity.userEmail))
+      .filter((q) => q.eq(q.field('isRead'), false))
       .collect();
 
     for (const notification of unreadNotifications) {
@@ -128,9 +130,9 @@ export const markAllNotificationsAsRead = mutation({
 
 // Delete a notification
 export const deleteNotification = mutation({
-  args: { 
+  args: {
     userEmail: v.string(), // User's email for authentication
-    notificationId: v.id("notifications") 
+    notificationId: v.id('notifications'),
   },
   handler: async (ctx, args) => {
     // Validate user authentication
@@ -138,11 +140,11 @@ export const deleteNotification = mutation({
 
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
-      throw new Error("Notification not found");
+      throw new Error('Notification not found');
     }
 
     if (notification.userId !== identity.userEmail) {
-      throw new Error("Not authorized to delete this notification");
+      throw new Error('Not authorized to delete this notification');
     }
 
     await ctx.db.delete(args.notificationId);
@@ -162,13 +164,13 @@ export const getUnreadCount = query({
 
       // Validate user exists with our manual auth system
       const vendor = await ctx.db
-        .query("vendors")
-        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .query('vendors')
+        .withIndex('by_user', (q) => q.eq('userId', args.userEmail))
         .first();
 
       const supplier = await ctx.db
-        .query("suppliers")
-        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
+        .query('suppliers')
+        .withIndex('by_user', (q) => q.eq('userId', args.userEmail))
         .first();
 
       if (!vendor && !supplier) {
@@ -176,14 +178,14 @@ export const getUnreadCount = query({
       }
 
       const unreadNotifications = await ctx.db
-        .query("notifications")
-        .withIndex("by_user", (q) => q.eq("userId", args.userEmail))
-        .filter((q) => q.eq(q.field("isRead"), false))
+        .query('notifications')
+        .withIndex('by_user', (q) => q.eq('userId', args.userEmail))
+        .filter((q) => q.eq(q.field('isRead'), false))
         .collect();
 
       return unreadNotifications.length;
     } catch (error) {
-      console.error("Error in getUnreadCount:", error);
+      console.error('Error in getUnreadCount:', error);
       return 0; // Return 0 on any error to prevent UI crashes
     }
   },
@@ -191,25 +193,25 @@ export const getUnreadCount = query({
 
 // Send message notification (helper function)
 export const sendMessageNotification = mutation({
-  args: { messageId: v.id("messages") },
+  args: { messageId: v.id('messages') },
   handler: async (ctx, args) => {
     const message = await ctx.db.get(args.messageId);
     if (!message) {
-      throw new Error("Message not found");
+      throw new Error('Message not found');
     }
 
     // Create notification for the receiver
-    const notificationId = await ctx.db.insert("notifications", {
+    const notificationId = await ctx.db.insert('notifications', {
       userId: message.receiverId,
       userType: message.receiverType,
-      type: "message",
-      title: "New Message",
+      type: 'message',
+      title: 'New Message',
       message: `You have a new message from ${message.senderType}`,
       data: {
         messageId: message._id,
       },
       isRead: false,
-      priority: "medium",
+      priority: 'medium',
       createdAt: Date.now(),
     });
 

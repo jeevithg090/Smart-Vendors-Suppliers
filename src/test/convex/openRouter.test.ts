@@ -18,7 +18,9 @@ describe('extractJson', () => {
 
 describe('completeWithFallback', () => {
   it('requires an API key', async () => {
-    await expect(completeWithFallback('hi', () => 1, { apiKey: '' })).rejects.toBeInstanceOf(OpenRouterConfigError);
+    await expect(completeWithFallback('hi', () => 1, { apiKey: '' })).rejects.toBeInstanceOf(
+      OpenRouterConfigError,
+    );
   });
 
   it('falls through failing and unparseable models until one succeeds', async () => {

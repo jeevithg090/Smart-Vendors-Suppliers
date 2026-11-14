@@ -31,7 +31,7 @@ export class FormValidator {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -47,7 +47,7 @@ export class FormValidator {
         value,
         message: `${field} is required`,
         timestamp: Date.now(),
-        constraints: ['required']
+        constraints: ['required'],
       });
       return errors; // Don't continue if required field is empty
     }
@@ -67,7 +67,7 @@ export class FormValidator {
           value,
           message: `${field} must be at least ${rules.minLength} characters long`,
           timestamp: Date.now(),
-          constraints
+          constraints,
         });
       }
 
@@ -79,7 +79,7 @@ export class FormValidator {
           value,
           message: `${field} must be no more than ${rules.maxLength} characters long`,
           timestamp: Date.now(),
-          constraints
+          constraints,
         });
       }
 
@@ -92,7 +92,7 @@ export class FormValidator {
           value,
           message: `${field} format is invalid`,
           timestamp: Date.now(),
-          constraints
+          constraints,
         });
       }
     }
@@ -107,7 +107,7 @@ export class FormValidator {
           value,
           message: `${field} must be at least ${rules.min}`,
           timestamp: Date.now(),
-          constraints
+          constraints,
         });
       }
 
@@ -119,7 +119,7 @@ export class FormValidator {
           value,
           message: `${field} must be no more than ${rules.max}`,
           timestamp: Date.now(),
-          constraints
+          constraints,
         });
       }
     }
@@ -135,7 +135,7 @@ export class FormValidator {
           value,
           message: customError,
           timestamp: Date.now(),
-          constraints
+          constraints,
         });
       }
     }
@@ -153,7 +153,7 @@ export const commonSchemas = {
         return 'Please enter a valid email address';
       }
       return null;
-    }
+    },
   },
 
   phone: {
@@ -164,7 +164,7 @@ export const commonSchemas = {
         return 'Phone number must be at least 10 digits';
       }
       return null;
-    }
+    },
   },
 
   password: {
@@ -180,7 +180,7 @@ export const commonSchemas = {
         return 'Password must contain at least one number';
       }
       return null;
-    }
+    },
   },
 
   quantity: {
@@ -190,7 +190,7 @@ export const commonSchemas = {
         return 'Quantity must be a whole number';
       }
       return null;
-    }
+    },
   },
 
   price: {
@@ -203,8 +203,8 @@ export const commonSchemas = {
         return 'Price can have at most 2 decimal places';
       }
       return null;
-    }
-  }
+    },
+  },
 };
 
 // Validation schemas for specific forms
@@ -216,39 +216,39 @@ export const validationSchemas = {
     phone: { required: true, ...commonSchemas.phone },
     password: { required: true, ...commonSchemas.password },
     businessType: { required: true },
-    address: { required: true, minLength: 10, maxLength: 200 }
+    address: { required: true, minLength: 10, maxLength: 200 },
   },
 
   orderPlacement: {
     supplierId: { required: true },
-    items: { 
+    items: {
       required: true,
       custom: (value: any[]) => {
         if (!Array.isArray(value) || value.length === 0) {
           return 'At least one item is required';
         }
         return null;
-      }
+      },
     },
-    deliveryAddress: { required: true, minLength: 10, maxLength: 200 }
+    deliveryAddress: { required: true, minLength: 10, maxLength: 200 },
   },
 
   supplierSearch: {
     query: { minLength: 2, maxLength: 100 },
     maxDistance: { min: 1, max: 100 },
-    minRating: { min: 1, max: 5 }
+    minRating: { min: 1, max: 5 },
   },
 
   groupOrderCreation: {
     itemName: { required: true, minLength: 2, maxLength: 100 },
     targetQuantity: { required: true, ...commonSchemas.quantity },
     pricePerUnit: { required: true, ...commonSchemas.price },
-    supplierId: { required: true }
+    supplierId: { required: true },
   },
 
   rating: {
     rating: { required: true, min: 1, max: 5 },
     review: { maxLength: 500 },
-    orderId: { required: true }
-  }
+    orderId: { required: true },
+  },
 };

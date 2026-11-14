@@ -68,7 +68,7 @@ const FOOD_CATEGORIES = [
   'Seafood',
   'Oil & Ghee',
   'Snacks & Beverages',
-  'Packaging Materials'
+  'Packaging Materials',
 ];
 
 const INDIAN_CITIES = [
@@ -81,7 +81,7 @@ const INDIAN_CITIES = [
   'Pune',
   'Ahmedabad',
   'Jaipur',
-  'Lucknow'
+  'Lucknow',
 ];
 
 export default function SupplierSearch({ vendorLocation, onSupplierSelect }: SupplierSearchProps) {
@@ -91,7 +91,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
     categories: [],
     minTrustScore: 0,
     maxDistance: 50,
-    sortBy: 'trustScore'
+    sortBy: 'trustScore',
   });
 
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
@@ -103,12 +103,12 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
 
   // Debounced search term
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(filters.searchTerm);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(filters.searchTerm);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, [filters.searchTerm]);
 
@@ -119,29 +119,31 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
     categories: filters.categories.length > 0 ? filters.categories : undefined,
     minTrustScore: filters.minTrustScore > 0 ? filters.minTrustScore : undefined,
     maxDistance: vendorLocation ? filters.maxDistance : undefined,
-    vendorLocation: vendorLocation ? {
-      lat: vendorLocation.lat,
-      lng: vendorLocation.lng
-    } : undefined,
+    vendorLocation: vendorLocation
+      ? {
+          lat: vendorLocation.lat,
+          lng: vendorLocation.lng,
+        }
+      : undefined,
     sortBy: filters.sortBy,
-    limit: 50
+    limit: 50,
   });
 
   const typedSuppliers = suppliers as SupplierSearchResult[] | undefined;
 
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
   const handleCategoryToggle = (category: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
+        ? prev.categories.filter((c) => c !== category)
+        : [...prev.categories, category],
     }));
   };
 
@@ -152,7 +154,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
       categories: [],
       minTrustScore: 0,
       maxDistance: 50,
-      sortBy: 'trustScore'
+      sortBy: 'trustScore',
     });
   };
 
@@ -194,9 +196,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
   useEffect(() => {
     if (!typedSuppliers) return;
     setComparisonSupplierIds((previousIds) =>
-      previousIds.filter((supplierId) =>
-        typedSuppliers.some((supplier) => supplier._id === supplierId)
-      )
+      previousIds.filter((supplierId) => typedSuppliers.some((supplier) => supplier._id === supplierId)),
     );
   }, [typedSuppliers]);
 
@@ -244,7 +244,10 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
       ['Delivery radius (km)', ...comparisonSuppliers.map((supplier) => supplier.deliveryRadius)],
       ['Verified', ...comparisonSuppliers.map((supplier) => supplier.isVerified)],
       ['FSSAI certified', ...comparisonSuppliers.map((supplier) => supplier.fssaiCertified)],
-      ['Top categories', ...comparisonSuppliers.map((supplier) => supplier.categories.slice(0, 3).join(' | '))]
+      [
+        'Top categories',
+        ...comparisonSuppliers.map((supplier) => supplier.categories.slice(0, 3).join(' | ')),
+      ],
     ];
 
     const csvContent = rows.map((row) => row.map(csvEscape).join(',')).join('\n');
@@ -260,7 +263,6 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
     setInfoMessage('Comparison exported as CSV.');
   };
 
-
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.searchTerm) count++;
@@ -274,10 +276,13 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
   const shortlistRecommendations = useMemo<SupplierRecommendation[]>(() => {
     if (!typedSuppliers || typedSuppliers.length === 0) return [];
 
-    const weightByMode: Record<ShortlistMode, { trust: number; affordability: number; proximity: number; compliance: number }> = {
-      balanced: { trust: 0.35, affordability: 0.25, proximity: 0.20, compliance: 0.20 },
-      lowBudget: { trust: 0.20, affordability: 0.50, proximity: 0.20, compliance: 0.10 },
-      qualityFirst: { trust: 0.45, affordability: 0.10, proximity: 0.10, compliance: 0.35 }
+    const weightByMode: Record<
+      ShortlistMode,
+      { trust: number; affordability: number; proximity: number; compliance: number }
+    > = {
+      balanced: { trust: 0.35, affordability: 0.25, proximity: 0.2, compliance: 0.2 },
+      lowBudget: { trust: 0.2, affordability: 0.5, proximity: 0.2, compliance: 0.1 },
+      qualityFirst: { trust: 0.45, affordability: 0.1, proximity: 0.1, compliance: 0.35 },
     };
 
     const weights = weightByMode[shortlistMode];
@@ -285,7 +290,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
     const maxDistance = Math.max(
       ...typedSuppliers.map((supplier) => supplier.distance ?? filters.maxDistance),
       filters.maxDistance,
-      1
+      1,
     );
     const avgMinimumOrder = marketSnapshot?.avgMinimumOrder ?? maxMinimumOrder;
 
@@ -313,7 +318,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
         return {
           supplier,
           score: Math.round(score),
-          reasons: reasons.slice(0, 2)
+          reasons: reasons.slice(0, 2),
         };
       })
       .sort((a, b) => b.score - a.score)
@@ -345,8 +350,18 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
         <div className="flex flex-col gap-3 md:gap-4">
           <div className="flex-1">
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
               <input
                 type="text"
@@ -357,18 +372,23 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
               />
             </div>
           </div>
-          
+
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex-1 md:flex-none px-4 py-3 rounded-lg border font-medium transition-colors flex items-center justify-center ${
-                showFilters 
-                  ? 'bg-orange-500 text-white border-orange-500' 
+                showFilters
+                  ? 'bg-orange-500 text-white border-orange-500'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               }`}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
               </svg>
               <span className="hidden xs:inline">Filters</span>
               {activeFiltersCount > 0 && (
@@ -377,7 +397,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
                 </span>
               )}
             </button>
-            
+
             {activeFiltersCount > 0 && (
               <button
                 onClick={clearFilters}
@@ -395,26 +415,24 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* City Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                 <select
                   value={filters.city}
                   onChange={(e) => handleFilterChange('city', e.target.value)}
                   className="form-input"
                 >
                   <option value="">All Cities</option>
-                  {INDIAN_CITIES.map(city => (
-                    <option key={city} value={city}>{city}</option>
+                  {INDIAN_CITIES.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Trust Score Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Min Trust Score
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Min Trust Score</label>
                 <select
                   value={filters.minTrustScore}
                   onChange={(e) => handleFilterChange('minTrustScore', Number(e.target.value))}
@@ -448,9 +466,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
 
               {/* Sort By */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sort By
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
@@ -465,11 +481,9 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
 
             {/* Category Filter */}
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Categories
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
               <div className="flex flex-wrap gap-2">
-                {FOOD_CATEGORIES.map(category => (
+                {FOOD_CATEGORIES.map((category) => (
                   <button
                     key={category}
                     onClick={() => handleCategoryToggle(category)}
@@ -506,7 +520,8 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
             onClick={() => setShowComparisonPanel((value) => !value)}
             className="rounded-md border border-blue-300 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100"
           >
-            {showComparisonPanel ? 'Hide' : 'Compare'} {comparisonSupplierIds.length} supplier{comparisonSupplierIds.length > 1 ? 's' : ''}
+            {showComparisonPanel ? 'Hide' : 'Compare'} {comparisonSupplierIds.length} supplier
+            {comparisonSupplierIds.length > 1 ? 's' : ''}
           </button>
         )}
       </div>
@@ -516,23 +531,36 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
         <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-lg border border-orange-100 bg-orange-50 p-3">
             <div className="text-xs font-semibold uppercase tracking-wide text-orange-700">Average Trust</div>
-            <div className="mt-1 text-xl font-bold text-orange-900">{marketSnapshot.avgTrustScore.toFixed(1)}/5</div>
+            <div className="mt-1 text-xl font-bold text-orange-900">
+              {marketSnapshot.avgTrustScore.toFixed(1)}/5
+            </div>
           </div>
           <div className="rounded-lg border border-green-100 bg-green-50 p-3">
-            <div className="text-xs font-semibold uppercase tracking-wide text-green-700">Average Min Order</div>
-            <div className="mt-1 text-xl font-bold text-green-900">₹{Math.round(marketSnapshot.avgMinimumOrder)}</div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-green-700">
+              Average Min Order
+            </div>
+            <div className="mt-1 text-xl font-bold text-green-900">
+              ₹{Math.round(marketSnapshot.avgMinimumOrder)}
+            </div>
           </div>
           <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-            <div className="text-xs font-semibold uppercase tracking-wide text-blue-700">Verified Suppliers</div>
-            <div className="mt-1 text-xl font-bold text-blue-900">{marketSnapshot.verifiedSuppliers}/{marketSnapshot.total}</div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+              Verified Suppliers
+            </div>
+            <div className="mt-1 text-xl font-bold text-blue-900">
+              {marketSnapshot.verifiedSuppliers}/{marketSnapshot.total}
+            </div>
           </div>
           <div className="rounded-lg border border-purple-100 bg-purple-50 p-3">
-            <div className="text-xs font-semibold uppercase tracking-wide text-purple-700">Best Value Pick</div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-purple-700">
+              Best Value Pick
+            </div>
             <div className="mt-1 text-sm font-semibold text-purple-900">
               {marketSnapshot.bestValueSupplier.businessName}
             </div>
             <div className="mt-1 text-xs text-purple-700">
-              Trust {marketSnapshot.bestValueSupplier.trustScore.toFixed(1)} • Min ₹{marketSnapshot.bestValueSupplier.minimumOrder}
+              Trust {marketSnapshot.bestValueSupplier.trustScore.toFixed(1)} • Min ₹
+              {marketSnapshot.bestValueSupplier.minimumOrder}
             </div>
           </div>
         </div>
@@ -634,7 +662,6 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
         </div>
       )}
 
-
       {/* Comparison panel */}
       {showComparisonPanel && comparisonSuppliers.length > 0 && (
         <div className="mb-5 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
@@ -661,9 +688,14 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
             <table className="min-w-full border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Metric</th>
+                  <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Metric
+                  </th>
                   {comparisonSuppliers.map((supplier) => (
-                    <th key={supplier._id} className="border-b border-gray-200 px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                    <th
+                      key={supplier._id}
+                      className="border-b border-gray-200 px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                    >
                       {supplier.businessName}
                     </th>
                   ))}
@@ -671,35 +703,64 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
               </thead>
               <tbody>
                 <tr>
-                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">Trust score</td>
+                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">
+                    Trust score
+                  </td>
                   {comparisonSuppliers.map((supplier) => (
-                    <td key={`${supplier._id}-trust`} className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800">{supplier.trustScore.toFixed(1)}</td>
+                    <td
+                      key={`${supplier._id}-trust`}
+                      className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800"
+                    >
+                      {supplier.trustScore.toFixed(1)}
+                    </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">Minimum order</td>
+                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">
+                    Minimum order
+                  </td>
                   {comparisonSuppliers.map((supplier) => (
-                    <td key={`${supplier._id}-min-order`} className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800">₹{supplier.minimumOrder}</td>
+                    <td
+                      key={`${supplier._id}-min-order`}
+                      className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800"
+                    >
+                      ₹{supplier.minimumOrder}
+                    </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">Delivery radius</td>
+                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">
+                    Delivery radius
+                  </td>
                   {comparisonSuppliers.map((supplier) => (
-                    <td key={`${supplier._id}-radius`} className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800">{supplier.deliveryRadius} km</td>
+                    <td
+                      key={`${supplier._id}-radius`}
+                      className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800"
+                    >
+                      {supplier.deliveryRadius} km
+                    </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">Verification</td>
+                  <td className="border-b border-gray-100 px-3 py-2 text-sm font-medium text-gray-700">
+                    Verification
+                  </td>
                   {comparisonSuppliers.map((supplier) => (
-                    <td key={`${supplier._id}-verification`} className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800">
-                      {supplier.isVerified ? 'Verified' : 'Unverified'} • {supplier.fssaiCertified ? 'FSSAI' : 'No FSSAI'}
+                    <td
+                      key={`${supplier._id}-verification`}
+                      className="border-b border-gray-100 px-3 py-2 text-sm text-gray-800"
+                    >
+                      {supplier.isVerified ? 'Verified' : 'Unverified'} •{' '}
+                      {supplier.fssaiCertified ? 'FSSAI' : 'No FSSAI'}
                     </td>
                   ))}
                 </tr>
                 <tr>
                   <td className="px-3 py-2 text-sm font-medium text-gray-700">Top categories</td>
                   {comparisonSuppliers.map((supplier) => (
-                    <td key={`${supplier._id}-categories`} className="px-3 py-2 text-sm text-gray-800">{supplier.categories.slice(0, 3).join(', ')}</td>
+                    <td key={`${supplier._id}-categories`} className="px-3 py-2 text-sm text-gray-800">
+                      {supplier.categories.slice(0, 3).join(', ')}
+                    </td>
                   ))}
                 </tr>
               </tbody>
@@ -729,9 +790,7 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
         ) : (
           <div className="text-center py-8 md:py-12">
             <div className="text-3xl md:text-4xl mb-4">🔍</div>
-            <h3 className="text-lg font-medium text-gray-700 mb-2">
-              No suppliers found
-            </h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-2">No suppliers found</h3>
             <p className="text-gray-600 max-w-md mx-auto text-sm md:text-base px-4">
               Try adjusting your search criteria or filters to find more suppliers.
             </p>

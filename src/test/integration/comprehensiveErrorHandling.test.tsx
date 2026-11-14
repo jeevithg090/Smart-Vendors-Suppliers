@@ -24,7 +24,8 @@ vi.mock('../../services/performanceMonitoring', () => ({
 
 // Test component that uses error handling
 function TestComponent() {
-  const { executeOperation, validateBusinessLogic, handleError, isLoading, error, retry, clearError } = useAppError();
+  const { executeOperation, validateBusinessLogic, handleError, isLoading, error, retry, clearError } =
+    useAppError();
 
   const handleNetworkOperation = async () => {
     await executeOperation(
@@ -32,7 +33,7 @@ function TestComponent() {
         throw new Error('Network timeout');
       },
       'testNetworkOperation',
-      { testContext: true }
+      { testContext: true },
     );
   };
 
@@ -41,7 +42,7 @@ function TestComponent() {
       supplierId: 'test-supplier',
       items: [{ itemName: 'Test Item', quantity: 5 }],
       totalCost: 500,
-      deliveryAddress: 'Test Address'
+      deliveryAddress: 'Test Address',
     });
   };
 
@@ -53,7 +54,7 @@ function TestComponent() {
     <div>
       <div data-testid="loading">{isLoading ? 'Loading...' : 'Not loading'}</div>
       <div data-testid="error">{error ? error.message : 'No error'}</div>
-      
+
       <button onClick={handleNetworkOperation} data-testid="network-button">
         Network Operation
       </button>
@@ -86,11 +87,11 @@ describe('Comprehensive Error Handling Integration', () => {
 
   it('should handle network errors with retry capability', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     // Initially no error
@@ -101,9 +102,12 @@ describe('Comprehensive Error Handling Integration', () => {
     await user.click(screen.getByTestId('network-button'));
 
     // Should show loading state briefly, then error
-    await waitFor(() => {
-      expect(screen.getByTestId('error')).toHaveTextContent('Network timeout');
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('error')).toHaveTextContent('Network timeout');
+      },
+      { timeout: 5000 },
+    );
 
     // Should report error
     expect(errorReporting.reportError).toHaveBeenCalledWith(
@@ -111,10 +115,10 @@ describe('Comprehensive Error Handling Integration', () => {
         message: 'Network timeout',
         context: expect.objectContaining({
           testContext: true,
-          operationName: 'testNetworkOperation'
-        })
+          operationName: 'testNetworkOperation',
+        }),
       }),
-      undefined
+      undefined,
     );
 
     // Should track performance
@@ -122,18 +126,18 @@ describe('Comprehensive Error Handling Integration', () => {
       expect.any(Error),
       expect.objectContaining({
         testContext: true,
-        operationName: 'testNetworkOperation'
-      })
+        operationName: 'testNetworkOperation',
+      }),
     );
   });
 
   it('should handle business validation errors', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     // Trigger business validation
@@ -147,11 +151,11 @@ describe('Comprehensive Error Handling Integration', () => {
 
   it('should handle manual errors with recovery actions', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     // Trigger manual error
@@ -167,20 +171,20 @@ describe('Comprehensive Error Handling Integration', () => {
         message: 'Manual error',
         context: expect.objectContaining({
           manual: true,
-          recoveryActions: ['Try again', 'Contact support']
-        })
+          recoveryActions: ['Try again', 'Contact support'],
+        }),
       }),
-      undefined
+      undefined,
     );
   });
 
   it('should allow clearing errors', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     // Trigger error
@@ -206,7 +210,7 @@ describe('Comprehensive Error Handling Integration', () => {
         <ErrorBoundary>
           <ThrowingComponent />
         </ErrorBoundary>
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     // Should show error boundary UI
@@ -218,14 +222,14 @@ describe('Comprehensive Error Handling Integration', () => {
     expect(errorReporting.reportError).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'SYSTEM_ERROR',
-        message: 'Unhandled component error'
-      })
+        message: 'Unhandled component error',
+      }),
     );
   });
 
   it('should handle offline scenarios', async () => {
     const user = userEvent.setup();
-    
+
     // Mock offline state
     Object.defineProperty(navigator, 'onLine', {
       writable: true,
@@ -235,15 +239,18 @@ describe('Comprehensive Error Handling Integration', () => {
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     // Trigger network operation while offline
     await user.click(screen.getByTestId('network-button'));
 
-    await waitFor(() => {
-      expect(screen.getByTestId('error')).toHaveTextContent('Network timeout');
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('error')).toHaveTextContent('Network timeout');
+      },
+      { timeout: 5000 },
+    );
 
     // Should still report error (will be queued for when online)
     expect(errorReporting.reportError).toHaveBeenCalled();
@@ -251,57 +258,63 @@ describe('Comprehensive Error Handling Integration', () => {
 
   it('should handle rapid successive errors', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     // Trigger multiple errors rapidly
     await Promise.all([
       user.click(screen.getByTestId('network-button')),
-      user.click(screen.getByTestId('manual-error-button'))
+      user.click(screen.getByTestId('manual-error-button')),
     ]);
 
     // Should handle both errors even when retries and manual handling overlap
-    await waitFor(() => {
-      expect(vi.mocked(errorReporting.reportError).mock.calls.length).toBeGreaterThanOrEqual(2);
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(vi.mocked(errorReporting.reportError).mock.calls.length).toBeGreaterThanOrEqual(2);
+      },
+      { timeout: 5000 },
+    );
   });
 
   it('should track performance metrics during error handling', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     await user.click(screen.getByTestId('network-button'));
 
-    await waitFor(() => {
-      expect(performanceMonitoring.recordMetric).toHaveBeenCalledWith(
-        'Error Handling Duration',
-        expect.any(Number),
-        expect.objectContaining({
-          errorType: 'SYSTEM_ERROR'
-        })
-      );
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(performanceMonitoring.recordMetric).toHaveBeenCalledWith(
+          'Error Handling Duration',
+          expect.any(Number),
+          expect.objectContaining({
+            errorType: 'SYSTEM_ERROR',
+          }),
+        );
+      },
+      { timeout: 5000 },
+    );
   });
 
   it('should handle error reporting failures gracefully', async () => {
     const user = userEvent.setup();
-    
+
     // Mock error reporting to fail
     vi.mocked(errorReporting.reportError).mockRejectedValue(new Error('Reporting service down'));
-    
+
     render(
       <AppErrorProvider>
         <TestComponent />
-      </AppErrorProvider>
+      </AppErrorProvider>,
     );
 
     await user.click(screen.getByTestId('manual-error-button'));
@@ -312,9 +325,6 @@ describe('Comprehensive Error Handling Integration', () => {
     });
 
     // Should log warning about reporting failure
-    expect(console.warn).toHaveBeenCalledWith(
-      'Failed to report error:',
-      expect.any(Error)
-    );
+    expect(console.warn).toHaveBeenCalledWith('Failed to report error:', expect.any(Error));
   });
 });

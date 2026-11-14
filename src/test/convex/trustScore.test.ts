@@ -6,7 +6,10 @@ const DAY = 24 * 60 * 60 * 1000;
 
 describe('calculateTrustScore', () => {
   it('starts new suppliers at the base score', () => {
-    const result = calculateTrustScore({ ratings: [], orders: [], fssaiCertified: false, isVerified: false }, NOW);
+    const result = calculateTrustScore(
+      { ratings: [], orders: [], fssaiCertified: false, isVerified: false },
+      NOW,
+    );
     expect(result.currentScore).toBe(2);
     expect(result.breakdown).toMatchObject({ totalOrders: 0, averageRating: 0, onTimeDeliveryRate: 0 });
   });

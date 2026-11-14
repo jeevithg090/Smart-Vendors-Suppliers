@@ -19,7 +19,7 @@ vi.mock('../../config/voiceQuery', () => ({
     RETRY_ATTEMPTS: 3,
     VOICE_PROCESSING: {
       confidenceThreshold: 0.7,
-      maxProcessingTime: 5000
+      maxProcessingTime: 5000,
     },
     IMAGE_ANALYSIS: {
       maxImageSize: 4 * 1024 * 1024,
@@ -28,22 +28,22 @@ vi.mock('../../config/voiceQuery', () => ({
       maxProcessingTime: 10000,
       providers: {
         google: { baseUrl: 'https://vision.googleapis.com/v1' },
-        clarifai: { baseUrl: 'https://api.clarifai.com/v2' }
-      }
+        clarifai: { baseUrl: 'https://api.clarifai.com/v2' },
+      },
     },
     AI_SERVICES: {
       sarvam: {
         baseUrl: 'https://api.sarvam.ai',
         model: 'sarvam-2b',
-        maxTokens: 500
+        maxTokens: 500,
       },
       openRouter: {
         baseUrl: 'https://openrouter.ai/api/v1',
         model: 'gpt-4o-mini',
         maxTokens: 500,
-        temperature: 0.7
-      }
-    }
+        temperature: 0.7,
+      },
+    },
   },
   FOOD_CATEGORIES: {
     VEGETABLES: ['tomato', 'onion', 'potato'],
@@ -51,18 +51,18 @@ vi.mock('../../config/voiceQuery', () => ({
     GRAINS: ['rice', 'wheat', 'barley'],
     SPICES: ['turmeric', 'chili', 'coriander'],
     PULSES: ['lentils', 'chickpeas'],
-    DAIRY: ['milk', 'cheese']
+    DAIRY: ['milk', 'cheese'],
   },
   INGREDIENT_ALTERNATIVES: {
     tomato: ['tamatar'],
     onion: ['pyaz'],
-    potato: ['aloo']
+    potato: ['aloo'],
   },
   ERROR_MESSAGES: {
     SARVAM_API_ERROR: 'Speech recognition service is unavailable',
     OPENROUTER_API_ERROR: 'AI response service is unavailable',
-    VISION_API_ERROR: 'Image analysis service is unavailable'
-  }
+    VISION_API_ERROR: 'Image analysis service is unavailable',
+  },
 }));
 
 // Mock fetch for API calls
@@ -75,11 +75,12 @@ describe('Enhanced Voice Processing Infrastructure', () => {
     // Mock successful API responses
     (global.fetch as any).mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        transcript: 'test transcript',
-        language: 'en',
-        confidence: 0.9
-      })
+      json: () =>
+        Promise.resolve({
+          transcript: 'test transcript',
+          language: 'en',
+          confidence: 0.9,
+        }),
     });
   });
 
@@ -125,18 +126,19 @@ describe('Enhanced Voice Processing Infrastructure', () => {
 
     it('should handle speech-to-text processing', async () => {
       const mockAudioBlob = new Blob(['test audio'], { type: 'audio/wav' });
-      
+
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          transcript: 'मुझे टमाटर चाहिए',
-          language: 'hi',
-          confidence: 0.9
-        })
+        json: () =>
+          Promise.resolve({
+            transcript: 'मुझे टमाटर चाहिए',
+            language: 'hi',
+            confidence: 0.9,
+          }),
       });
 
       const result = await aiServiceIntegration.speechToText(mockAudioBlob, 'hi');
-      
+
       expect(result).toBeDefined();
       expect(result.transcript).toBe('मुझे टमाटर चाहिए');
       expect(result.language).toBe('hi');
@@ -146,17 +148,20 @@ describe('Enhanced Voice Processing Infrastructure', () => {
     it('should handle translation', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          choices: [{
-            message: {
-              content: 'I need tomatoes'
-            }
-          }]
-        })
+        json: () =>
+          Promise.resolve({
+            choices: [
+              {
+                message: {
+                  content: 'I need tomatoes',
+                },
+              },
+            ],
+          }),
       });
 
       const result = await aiServiceIntegration.translateText('मुझे टमाटर चाहिए', 'hi', 'en');
-      
+
       expect(result).toBeDefined();
       expect(result.translatedText).toBe('I need tomatoes');
       expect(result.sourceLanguage).toBe('hi');
@@ -166,20 +171,23 @@ describe('Enhanced Voice Processing Infrastructure', () => {
     it('should generate AI responses', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          choices: [{
-            message: {
-              content: 'I found 5 suppliers near you with fresh tomatoes.'
-            }
-          }]
-        })
+        json: () =>
+          Promise.resolve({
+            choices: [
+              {
+                message: {
+                  content: 'I found 5 suppliers near you with fresh tomatoes.',
+                },
+              },
+            ],
+          }),
       });
 
-      const result = await aiServiceIntegration.generateAIResponse(
-        'Find tomato suppliers',
-        { userRole: 'vendor', location: 'Mumbai' }
-      );
-      
+      const result = await aiServiceIntegration.generateAIResponse('Find tomato suppliers', {
+        userRole: 'vendor',
+        location: 'Mumbai',
+      });
+
       expect(result).toBeDefined();
       expect(result.response).toContain('suppliers');
       expect(result.confidence).toBeGreaterThan(0);
@@ -205,49 +213,56 @@ describe('Enhanced Voice Processing Infrastructure', () => {
         userRole: 'vendor' as const,
         location: {
           city: 'Mumbai',
-          coordinates: { lat: 19.0760, lng: 72.8777 }
+          coordinates: { lat: 19.076, lng: 72.8777 },
         },
         preferences: {
           language: 'hi',
           categories: ['vegetables'],
-          budgetRange: { min: 20, max: 100 }
+          budgetRange: { min: 20, max: 100 },
         },
-        orderHistory: []
+        orderHistory: [],
       };
 
       // Mock the transcription response
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            transcript: 'टमाटर के सप्लायर दिखाओ',
-            language: 'hi',
-            confidence: 0.9
-          })
+          json: () =>
+            Promise.resolve({
+              transcript: 'टमाटर के सप्लायर दिखाओ',
+              language: 'hi',
+              confidence: 0.9,
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: 'Show tomato suppliers'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content: 'Show tomato suppliers',
+                  },
+                },
+              ],
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: '{"items": ["tomato"], "filters": {}, "searchType": "item"}'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content: '{"items": ["tomato"], "filters": {}, "searchType": "item"}',
+                  },
+                },
+              ],
+            }),
         });
 
       const result = await voiceProcessor.processVoiceSearch(mockAudioData, mockUserContext);
-      
+
       expect(result).toBeDefined();
       expect(result.originalQuery).toBe('टमाटर के सप्लायर दिखाओ');
       expect(result.language).toBe('hi');
@@ -258,42 +273,49 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       const mockAudioData = new Uint8Array([1, 2, 3, 4, 5]);
       const currentFilters = {
         location: 'Mumbai',
-        categories: ['vegetables']
+        categories: ['vegetables'],
       };
 
       // Mock the responses
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            transcript: 'केवल FSSAI certified suppliers दिखाओ',
-            language: 'hi',
-            confidence: 0.85
-          })
+          json: () =>
+            Promise.resolve({
+              transcript: 'केवल FSSAI certified suppliers दिखाओ',
+              language: 'hi',
+              confidence: 0.85,
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: 'Show only FSSAI certified suppliers'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content: 'Show only FSSAI certified suppliers',
+                  },
+                },
+              ],
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: '{"fssaiRequired": true}'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content: '{"fssaiRequired": true}',
+                  },
+                },
+              ],
+            }),
         });
 
       const result = await voiceProcessor.processVoiceFilter(mockAudioData, currentFilters);
-      
+
       expect(result).toBeDefined();
       expect(result.fssaiRequired).toBe(true);
     });
@@ -304,44 +326,50 @@ describe('Enhanced Voice Processing Infrastructure', () => {
         userRole: 'vendor' as const,
         location: {
           city: 'Mumbai',
-          coordinates: { lat: 19.0760, lng: 72.8777 }
+          coordinates: { lat: 19.076, lng: 72.8777 },
         },
         preferences: {
           language: 'hi',
           categories: ['vegetables'],
-          budgetRange: { min: 20, max: 100 }
+          budgetRange: { min: 20, max: 100 },
         },
-        orderHistory: []
+        orderHistory: [],
       };
 
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: 'I found 3 vegetable suppliers near you in Mumbai.'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content: 'I found 3 vegetable suppliers near you in Mumbai.',
+                  },
+                },
+              ],
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: 'मुंबई में आपके पास 3 सब्जी सप्लायर मिले हैं।'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content: 'मुंबई में आपके पास 3 सब्जी सप्लायर मिले हैं।',
+                  },
+                },
+              ],
+            }),
         });
 
       const result = await voiceProcessor.generateVoiceResponse(
         'Find vegetable suppliers',
         mockContext,
-        'hi'
+        'hi',
       );
-      
+
       expect(result).toBeDefined();
       expect(result.answer).toContain('सप्लायर');
       expect(result.language).toBe('hi');
@@ -366,22 +394,25 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       // Mock vision API response
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          responses: [{
-            localizedObjectAnnotations: [
-              { name: 'Tomato', score: 0.95 },
-              { name: 'Onion', score: 0.87 }
+        json: () =>
+          Promise.resolve({
+            responses: [
+              {
+                localizedObjectAnnotations: [
+                  { name: 'Tomato', score: 0.95 },
+                  { name: 'Onion', score: 0.87 },
+                ],
+                labelAnnotations: [
+                  { description: 'Vegetable', score: 0.9 },
+                  { description: 'Food', score: 0.95 },
+                ],
+              },
             ],
-            labelAnnotations: [
-              { description: 'Vegetable', score: 0.9 },
-              { description: 'Food', score: 0.95 }
-            ]
-          }]
-        })
+          }),
       });
 
       const result = await imageAnalysisService.analyzeImage(mockImageFile);
-      
+
       expect(result).toBeDefined();
       expect(result.identifiedItems).toBeDefined();
       expect(result.ingredients).toBeDefined();
@@ -395,8 +426,9 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       // Mock API error
       (global.fetch as any).mockRejectedValueOnce(new Error('API Error'));
 
-      await expect(imageAnalysisService.analyzeImage(mockImageFile))
-        .rejects.toThrow('Failed to analyze image');
+      await expect(imageAnalysisService.analyzeImage(mockImageFile)).rejects.toThrow(
+        'Failed to analyze image',
+      );
     });
   });
 
@@ -418,21 +450,22 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       // Mock successful analysis for valid file
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          responses: [{
-            localizedObjectAnnotations: [],
-            labelAnnotations: []
-          }]
-        })
+        json: () =>
+          Promise.resolve({
+            responses: [
+              {
+                localizedObjectAnnotations: [],
+                labelAnnotations: [],
+              },
+            ],
+          }),
       });
 
       // Valid file should work
-      await expect(computerVisionManager.analyzeFoodImage(validImageFile))
-        .resolves.toBeDefined();
+      await expect(computerVisionManager.analyzeFoodImage(validImageFile)).resolves.toBeDefined();
 
       // Invalid file should throw error
-      await expect(computerVisionManager.analyzeFoodImage(invalidImageFile))
-        .rejects.toThrow();
+      await expect(computerVisionManager.analyzeFoodImage(invalidImageFile)).rejects.toThrow();
     });
   });
 
@@ -444,14 +477,14 @@ describe('Enhanced Voice Processing Infrastructure', () => {
         userRole: 'vendor' as const,
         location: {
           city: 'Mumbai',
-          coordinates: { lat: 19.0760, lng: 72.8777 }
+          coordinates: { lat: 19.076, lng: 72.8777 },
         },
         preferences: {
           language: 'hi',
           categories: ['vegetables'],
-          budgetRange: { min: 20, max: 100 }
+          budgetRange: { min: 20, max: 100 },
         },
-        orderHistory: []
+        orderHistory: [],
       };
 
       const voiceProcessor = new EnhancedVoiceProcessor();
@@ -460,35 +493,43 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            transcript: 'मुझे प्याज चाहिए',
-            language: 'hi',
-            confidence: 0.9
-          })
+          json: () =>
+            Promise.resolve({
+              transcript: 'मुझे प्याज चाहिए',
+              language: 'hi',
+              confidence: 0.9,
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: 'I need onions'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content: 'I need onions',
+                  },
+                },
+              ],
+            }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({
-            choices: [{
-              message: {
-                content: '{"items": ["onion"], "filters": {"categories": ["vegetables"]}, "searchType": "item"}'
-              }
-            }]
-          })
+          json: () =>
+            Promise.resolve({
+              choices: [
+                {
+                  message: {
+                    content:
+                      '{"items": ["onion"], "filters": {"categories": ["vegetables"]}, "searchType": "item"}',
+                  },
+                },
+              ],
+            }),
         });
 
       const result = await voiceProcessor.processVoiceSearch(mockAudioData, mockUserContext);
-      
+
       expect(result).toBeDefined();
       expect(result.originalQuery).toBe('मुझे प्याज चाहिए');
       expect(result.translatedQuery).toBe('I need onions');
@@ -501,22 +542,25 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       // Mock vision API response
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          responses: [{
-            localizedObjectAnnotations: [
-              { name: 'Potato', score: 0.92 },
-              { name: 'Onion', score: 0.88 }
+        json: () =>
+          Promise.resolve({
+            responses: [
+              {
+                localizedObjectAnnotations: [
+                  { name: 'Potato', score: 0.92 },
+                  { name: 'Onion', score: 0.88 },
+                ],
+                labelAnnotations: [
+                  { description: 'Vegetable', score: 0.95 },
+                  { description: 'Root vegetable', score: 0.85 },
+                ],
+              },
             ],
-            labelAnnotations: [
-              { description: 'Vegetable', score: 0.95 },
-              { description: 'Root vegetable', score: 0.85 }
-            ]
-          }]
-        })
+          }),
       });
 
       const result = await computerVisionManager.analyzeFoodImage(mockImageFile);
-      
+
       expect(result).toBeDefined();
       expect(result.identifiedItems.length).toBeGreaterThan(0);
       expect(result.ingredients.length).toBeGreaterThan(0);
@@ -531,8 +575,7 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       // Mock timeout error
       (global.fetch as any).mockRejectedValueOnce(new Error('Timeout'));
 
-      await expect(aiServiceIntegration.speechToText(mockAudioBlob))
-        .rejects.toThrow();
+      await expect(aiServiceIntegration.speechToText(mockAudioBlob)).rejects.toThrow();
     });
 
     it('should handle network errors gracefully', async () => {
@@ -541,8 +584,7 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       // Mock network error
       (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(computerVisionManager.analyzeFoodImage(mockImageFile))
-        .rejects.toThrow();
+      await expect(computerVisionManager.analyzeFoodImage(mockImageFile)).rejects.toThrow();
     });
 
     it('should handle invalid API responses', async () => {
@@ -551,11 +593,10 @@ describe('Enhanced Voice Processing Infrastructure', () => {
       // Mock invalid response
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
-        statusText: 'Bad Request'
+        statusText: 'Bad Request',
       });
 
-      await expect(aiServiceIntegration.speechToText(mockAudioBlob))
-        .rejects.toThrow();
+      await expect(aiServiceIntegration.speechToText(mockAudioBlob)).rejects.toThrow();
     });
   });
 });

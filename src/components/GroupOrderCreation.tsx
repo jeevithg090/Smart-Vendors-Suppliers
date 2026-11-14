@@ -5,14 +5,14 @@ import type { Id } from '../../convex/_generated/dataModel';
 import { validateNumber, safePercentage, safeMultiply, safeRound } from '../utils/numberValidation';
 
 interface GroupOrderCreationProps {
-  vendorId: Id<"vendors">;
+  vendorId: Id<'vendors'>;
   vendorLocation: string;
-  onOrderCreated: (groupOrderId: Id<"groupOrders">) => void;
+  onOrderCreated: (groupOrderId: Id<'groupOrders'>) => void;
   onCancel: () => void;
 }
 
 interface Supplier {
-  _id: Id<"suppliers">;
+  _id: Id<'suppliers'>;
   businessName: string;
   location: {
     city: string;
@@ -22,8 +22,8 @@ interface Supplier {
 }
 
 interface InventoryItem {
-  _id: Id<"inventory">;
-  supplierId: Id<"suppliers">;
+  _id: Id<'inventory'>;
+  supplierId: Id<'suppliers'>;
   itemName: string;
   category: string;
   currentStock: number;
@@ -40,7 +40,7 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
   onOrderCreated,
   onCancel,
 }) => {
-  const [selectedSupplier, setSelectedSupplier] = useState<Id<"suppliers"> | null>(null);
+  const [selectedSupplier, setSelectedSupplier] = useState<Id<'suppliers'> | null>(null);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [targetQuantity, setTargetQuantity] = useState<number>(10);
   const [customPrice, setCustomPrice] = useState<number | null>(null);
@@ -58,7 +58,7 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
   // Get inventory for selected supplier
   const inventory = useQuery(
     api.suppliers.getSupplierInventory,
-    selectedSupplier ? { supplierId: selectedSupplier } : "skip"
+    selectedSupplier ? { supplierId: selectedSupplier } : 'skip',
   ) as InventoryItem[] | undefined;
 
   const validateForm = () => {
@@ -94,13 +94,13 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm() || !selectedItem) return;
 
     setIsSubmitting(true);
-    
+
     try {
-      const expiresAt = Date.now() + (expirationHours * 60 * 60 * 1000);
+      const expiresAt = Date.now() + expirationHours * 60 * 60 * 1000;
       const pricePerUnit = customPrice || selectedItem.pricePerUnit;
 
       const groupOrderId = await createGroupOrder({
@@ -126,13 +126,13 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
   };
 
   const handleSupplierChange = (supplierId: string) => {
-    setSelectedSupplier(supplierId as Id<"suppliers">);
+    setSelectedSupplier(supplierId as Id<'suppliers'>);
     setSelectedItem(null);
     setCustomPrice(null);
   };
 
   const handleItemChange = (itemId: string) => {
-    const item = inventory?.find(i => i._id === itemId);
+    const item = inventory?.find((i) => i._id === itemId);
     setSelectedItem(item || null);
     setCustomPrice(item ? item.pricePerUnit : null);
   };
@@ -141,17 +141,14 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
     if (!selectedItem || !customPrice) return 0;
     const regularPrice = validateNumber(selectedItem.pricePerUnit, 0);
     const groupPrice = validateNumber(customPrice, 0);
-    return safePercentage((regularPrice - groupPrice), regularPrice, 0);
+    return safePercentage(regularPrice - groupPrice, regularPrice, 0);
   };
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Create Group Order</h2>
-        <button
-          onClick={onCancel}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -161,9 +158,7 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Supplier Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Supplier
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Supplier</label>
           <select
             value={selectedSupplier || ''}
             onChange={(e) => handleSupplierChange(e.target.value)}
@@ -176,32 +171,29 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
               </option>
             ))}
           </select>
-          {errors.supplier && (
-            <p className="text-red-500 text-sm mt-1">{errors.supplier}</p>
-          )}
+          {errors.supplier && <p className="text-red-500 text-sm mt-1">{errors.supplier}</p>}
         </div>
 
         {/* Item Selection */}
         {selectedSupplier && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Item
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Item</label>
             <select
               value={selectedItem?._id || ''}
               onChange={(e) => handleItemChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Choose an item...</option>
-              {inventory?.filter(item => item.isAvailable && item.currentStock > 0).map((item) => (
-                <option key={item._id} value={item._id}>
-                  {item.itemName} - ₹{item.pricePerUnit}/{item.unit} (Stock: {item.currentStock} {item.unit})
-                </option>
-              ))}
+              {inventory
+                ?.filter((item) => item.isAvailable && item.currentStock > 0)
+                .map((item) => (
+                  <option key={item._id} value={item._id}>
+                    {item.itemName} - ₹{item.pricePerUnit}/{item.unit} (Stock: {item.currentStock} {item.unit}
+                    )
+                  </option>
+                ))}
             </select>
-            {errors.item && (
-              <p className="text-red-500 text-sm mt-1">{errors.item}</p>
-            )}
+            {errors.item && <p className="text-red-500 text-sm mt-1">{errors.item}</p>}
           </div>
         )}
 
@@ -220,11 +212,15 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
               </div>
               <div>
                 <span className="text-gray-600">Regular Price:</span>
-                <span className="ml-2 font-medium">₹{selectedItem.pricePerUnit}/{selectedItem.unit}</span>
+                <span className="ml-2 font-medium">
+                  ₹{selectedItem.pricePerUnit}/{selectedItem.unit}
+                </span>
               </div>
               <div>
                 <span className="text-gray-600">Available Stock:</span>
-                <span className="ml-2 font-medium">{selectedItem.currentStock} {selectedItem.unit}</span>
+                <span className="ml-2 font-medium">
+                  {selectedItem.currentStock} {selectedItem.unit}
+                </span>
               </div>
             </div>
           </div>
@@ -244,11 +240,10 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <p className="text-sm text-gray-500 mt-1">
-            Minimum 5 {selectedItem?.unit || 'kg'}, Maximum {selectedItem?.currentStock || 1000} {selectedItem?.unit || 'kg'}
+            Minimum 5 {selectedItem?.unit || 'kg'}, Maximum {selectedItem?.currentStock || 1000}{' '}
+            {selectedItem?.unit || 'kg'}
           </p>
-          {errors.targetQuantity && (
-            <p className="text-red-500 text-sm mt-1">{errors.targetQuantity}</p>
-          )}
+          {errors.targetQuantity && <p className="text-red-500 text-sm mt-1">{errors.targetQuantity}</p>}
         </div>
 
         {/* Custom Price */}
@@ -270,16 +265,12 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
               Potential savings: {calculatePotentialSavings().toFixed(1)}% per {selectedItem.unit}
             </p>
           )}
-          {errors.customPrice && (
-            <p className="text-red-500 text-sm mt-1">{errors.customPrice}</p>
-          )}
+          {errors.customPrice && <p className="text-red-500 text-sm mt-1">{errors.customPrice}</p>}
         </div>
 
         {/* Expiration Time */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Order Expires In (Hours)
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Order Expires In (Hours)</label>
           <select
             value={expirationHours}
             onChange={(e) => setExpirationHours(parseInt(e.target.value))}
@@ -292,9 +283,7 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
             <option value={72}>72 hours (3 days)</option>
             <option value={168}>168 hours (7 days)</option>
           </select>
-          {errors.expirationHours && (
-            <p className="text-red-500 text-sm mt-1">{errors.expirationHours}</p>
-          )}
+          {errors.expirationHours && <p className="text-red-500 text-sm mt-1">{errors.expirationHours}</p>}
         </div>
 
         {/* Order Summary */}
@@ -308,7 +297,9 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
               </div>
               <div className="flex justify-between">
                 <span>Target Quantity:</span>
-                <span>{targetQuantity} {selectedItem.unit}</span>
+                <span>
+                  {targetQuantity} {selectedItem.unit}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Price per {selectedItem.unit}:</span>
@@ -316,7 +307,14 @@ const GroupOrderCreation: React.FC<GroupOrderCreationProps> = ({
               </div>
               <div className="flex justify-between font-medium">
                 <span>Total Value:</span>
-                <span>₹{safeRound(safeMultiply(validateNumber(targetQuantity, 0), validateNumber(customPrice, 0), 0), 2, 0).toFixed(2)}</span>
+                <span>
+                  ₹
+                  {safeRound(
+                    safeMultiply(validateNumber(targetQuantity, 0), validateNumber(customPrice, 0), 0),
+                    2,
+                    0,
+                  ).toFixed(2)}
+                </span>
               </div>
             </div>
           </div>

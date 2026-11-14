@@ -68,7 +68,9 @@ interface Props {
 }
 
 export default function MarketIntelligence({ vendorId, location }: Props) {
-  const [activeTab, setActiveTab] = useState<'alerts' | 'trends' | 'competitors' | 'seasonal' | 'reports'>('alerts');
+  const [activeTab, setActiveTab] = useState<'alerts' | 'trends' | 'competitors' | 'seasonal' | 'reports'>(
+    'alerts',
+  );
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d' | '90d'>('7d');
   const [message, setMessage] = useState('');
   const [showAlertPreferences, setShowAlertPreferences] = useState(false);
@@ -78,9 +80,15 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
 
   const priceAlertsData = useQuery(api.priceAlerts.getVendorPriceAlerts, { vendorId });
   const inventory = useQuery(api.inventory.getAvailableInventory, {});
-  const competitorInsights = useQuery(api.marketIntelligence.getCompetitorInsights, { vendorId }) as CompetitorInsight[] | undefined;
-  const seasonalInsights = useQuery(api.marketIntelligence.getSeasonalInsights, { vendorId }) as SeasonalInsight[] | undefined;
-  const reportHistory = useQuery(api.marketIntelligence.getMarketReports, { vendorId }) as ReportHistoryItem[] | undefined;
+  const competitorInsights = useQuery(api.marketIntelligence.getCompetitorInsights, { vendorId }) as
+    | CompetitorInsight[]
+    | undefined;
+  const seasonalInsights = useQuery(api.marketIntelligence.getSeasonalInsights, { vendorId }) as
+    | SeasonalInsight[]
+    | undefined;
+  const reportHistory = useQuery(api.marketIntelligence.getMarketReports, { vendorId }) as
+    | ReportHistoryItem[]
+    | undefined;
 
   const createCompetitorInsight = useMutation(api.marketIntelligence.createCompetitorInsight);
   const createMarketReport = useMutation(api.marketIntelligence.createMarketReport);
@@ -94,33 +102,37 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
   const trendDays = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 90;
   const priceTrends = useQuery(
     api.inventory.getBulkPriceTrends,
-    itemNames.length > 0 ? { itemNames, days: trendDays } : "skip"
-  ) as Array<{
-    itemName: string;
-    currentPrice: number;
-    change: number;
-    changePercent: number;
-    trend: string;
-    dataPoints: number;
-  }> | undefined;
+    itemNames.length > 0 ? { itemNames, days: trendDays } : 'skip',
+  ) as
+    | Array<{
+        itemName: string;
+        currentPrice: number;
+        change: number;
+        changePercent: number;
+        trend: string;
+        dataPoints: number;
+      }>
+    | undefined;
 
   const priceTrendsMonthly = useQuery(
     api.inventory.getBulkPriceTrends,
-    itemNames.length > 0 ? { itemNames, days: 30 } : "skip"
-  ) as Array<{
-    itemName: string;
-    currentPrice: number;
-    change: number;
-    changePercent: number;
-    trend: string;
-    dataPoints: number;
-  }> | undefined;
+    itemNames.length > 0 ? { itemNames, days: 30 } : 'skip',
+  ) as
+    | Array<{
+        itemName: string;
+        currentPrice: number;
+        change: number;
+        changePercent: number;
+        trend: string;
+        dataPoints: number;
+      }>
+    | undefined;
 
   const marketTrends: MarketTrend[] = useMemo(() => {
     if (!inventory || !priceTrends) return [];
 
     const monthlyMap = new Map(
-      (priceTrendsMonthly ?? []).map((trend) => [trend.itemName.toLowerCase(), trend])
+      (priceTrendsMonthly ?? []).map((trend) => [trend.itemName.toLowerCase(), trend]),
     );
 
     return priceTrends.map((trend) => {
@@ -149,7 +161,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
   const priceAlerts: PriceAlert[] = useMemo(() => {
     const alerts: PriceAlert[] = [];
     const categoryByItem = new Map<string, string>(
-      (inventory ?? []).map((item) => [item.itemName.toLowerCase(), item.category])
+      (inventory ?? []).map((item) => [item.itemName.toLowerCase(), item.category]),
     );
 
     (priceAlertsData ?? []).forEach((alert) => {
@@ -163,9 +175,10 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
         category: categoryByItem.get(alert.itemName.toLowerCase()) || 'General',
         region: location.city,
         alertType: alert.currentPrice <= alert.targetPrice ? 'opportunity' : 'significant_increase',
-        message: alert.currentPrice <= alert.targetPrice
-          ? 'Price alert triggered at or below target.'
-          : 'Price above target.',
+        message:
+          alert.currentPrice <= alert.targetPrice
+            ? 'Price alert triggered at or below target.'
+            : 'Price above target.',
         timestamp: new Date(alert.lastTriggered || alert.createdAt),
       });
     });
@@ -184,9 +197,10 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
           category: categoryByItem.get(trend.itemName.toLowerCase()) || 'General',
           region: location.city,
           alertType,
-          message: trend.changePercent > 0
-            ? 'Prices rising based on recent transactions.'
-            : 'Prices dropping based on recent transactions.',
+          message:
+            trend.changePercent > 0
+              ? 'Prices rising based on recent transactions.'
+              : 'Prices dropping based on recent transactions.',
           timestamp: new Date(),
         });
       });
@@ -200,24 +214,32 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
     competitorName: '',
     businessType: 'Street Food Cart',
     location: '',
-    priceStrategy: 'competitive' as CompetitorInsight['priceStrategy']
+    priceStrategy: 'competitive' as CompetitorInsight['priceStrategy'],
   });
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up': return '📈';
-      case 'down': return '📉';
-      case 'stable': return '➡️';
-      default: return '➡️';
+      case 'up':
+        return '📈';
+      case 'down':
+        return '📉';
+      case 'stable':
+        return '➡️';
+      default:
+        return '➡️';
     }
   };
 
   const getAlertColor = (alertType: string) => {
     switch (alertType) {
-      case 'significant_increase': return 'bg-red-50 border-red-200 text-red-800';
-      case 'significant_decrease': return 'bg-blue-50 border-blue-200 text-blue-800';
-      case 'opportunity': return 'bg-green-50 border-green-200 text-green-800';
-      default: return 'bg-gray-50 border-gray-200 text-gray-800';
+      case 'significant_increase':
+        return 'bg-red-50 border-red-200 text-red-800';
+      case 'significant_decrease':
+        return 'bg-blue-50 border-blue-200 text-blue-800';
+      case 'opportunity':
+        return 'bg-green-50 border-green-200 text-green-800';
+      default:
+        return 'bg-gray-50 border-gray-200 text-gray-800';
     }
   };
 
@@ -249,19 +271,27 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
 
   const exportTrendsReport = () => {
     const csvRows = [
-      ['Item', 'Category', 'Current Price', 'Weekly Change', 'Monthly Change', 'Forecast 7 Days', 'Confidence'],
-      ...marketTrends.map(trend => [
+      [
+        'Item',
+        'Category',
+        'Current Price',
+        'Weekly Change',
+        'Monthly Change',
+        'Forecast 7 Days',
+        'Confidence',
+      ],
+      ...marketTrends.map((trend) => [
         trend.item,
         trend.category,
         trend.currentPrice.toString(),
         trend.weeklyChange.toString(),
         trend.monthlyChange.toString(),
         trend.forecast7Days.toString(),
-        `${trend.confidence}%`
-      ])
+        `${trend.confidence}%`,
+      ]),
     ];
 
-    const csv = csvRows.map(row => row.join(',')).join('\\n');
+    const csv = csvRows.map((row) => row.join(',')).join('\\n');
     const fileName = `market-trends-${location.city.toLowerCase().replace(/\\s+/g, '-')}.csv`;
     downloadReport(fileName, csv);
     notify('Trends report exported.');
@@ -285,13 +315,22 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
       `Generated: ${new Date().toLocaleString()}`,
       '',
       'Key Alerts:',
-      ...priceAlerts.map(alert => `- ${alert.itemName}: ${alert.message}`),
+      ...priceAlerts.map((alert) => `- ${alert.itemName}: ${alert.message}`),
       '',
       'Top Trend Items:',
-      ...marketTrends.slice(0, 3).map(trend => `- ${trend.item}: ₹${trend.currentPrice} (${trend.weeklyChange > 0 ? '+' : ''}${trend.weeklyChange.toFixed(1)}%)`)
+      ...marketTrends
+        .slice(0, 3)
+        .map(
+          (trend) =>
+            `- ${trend.item}: ₹${trend.currentPrice} (${trend.weeklyChange > 0 ? '+' : ''}${trend.weeklyChange.toFixed(1)}%)`,
+        ),
     ].join('\\n');
 
-    await createReportEntry(`Weekly Market Summary - ${new Date().toLocaleDateString()}`, 'Weekly Summary', content);
+    await createReportEntry(
+      `Weekly Market Summary - ${new Date().toLocaleDateString()}`,
+      'Weekly Summary',
+      content,
+    );
   };
 
   const generateCustomReport = async () => {
@@ -303,7 +342,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
       'Recommended Actions:',
       '- Review high-volatility ingredients',
       '- Compare price movements against competitor positioning',
-      '- Update weekly purchase plan based on forecast'
+      '- Update weekly purchase plan based on forecast',
     ].join('\\n');
 
     await createReportEntry(`${customReportType} - ${location.city}`, 'Custom', content);
@@ -332,7 +371,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
       competitorName: '',
       businessType: 'Street Food Cart',
       location: '',
-      priceStrategy: 'competitive'
+      priceStrategy: 'competitive',
     });
     notify(`${newCompetitor.competitorName} added to competitor watchlist.`);
   };
@@ -368,8 +407,8 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
               { id: 'trends', label: 'Market Trends', icon: '📈' },
               { id: 'competitors', label: 'Competitor Analysis', icon: '🔍' },
               { id: 'seasonal', label: 'Seasonal Insights', icon: '🗓️' },
-              { id: 'reports', label: 'Custom Reports', icon: '📊' }
-            ].map(tab => (
+              { id: 'reports', label: 'Custom Reports', icon: '📊' },
+            ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -418,19 +457,19 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
             <div className="grid md:grid-cols-3 gap-4 mb-6">
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                 <div className="text-2xl font-bold text-red-600">
-                  {priceAlerts.filter(a => a.alertType === 'significant_increase').length}
+                  {priceAlerts.filter((a) => a.alertType === 'significant_increase').length}
                 </div>
                 <div className="text-red-700 text-sm">Price Increases</div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <div className="text-2xl font-bold text-green-600">
-                  {priceAlerts.filter(a => a.alertType === 'opportunity').length}
+                  {priceAlerts.filter((a) => a.alertType === 'opportunity').length}
                 </div>
                 <div className="text-green-700 text-sm">Opportunities</div>
               </div>
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <div className="text-2xl font-bold text-blue-600">
-                  {priceAlerts.filter(a => a.alertType === 'significant_decrease').length}
+                  {priceAlerts.filter((a) => a.alertType === 'significant_decrease').length}
                 </div>
                 <div className="text-blue-700 text-sm">Price Drops</div>
               </div>
@@ -443,7 +482,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   No alerts yet. Create price alerts to track item movements.
                 </div>
               )}
-              {priceAlerts.map(alert => (
+              {priceAlerts.map((alert) => (
                 <div key={alert.id} className={`border rounded-lg p-4 ${getAlertColor(alert.alertType)}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -454,9 +493,9 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                           {alert.category}
                         </span>
                       </div>
-                      
+
                       <p className="text-sm mb-3">{alert.message}</p>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="font-medium">Current Price:</span>
@@ -469,7 +508,8 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                         <div>
                           <span className="font-medium">Change:</span>
                           <div className={alert.changePercent > 0 ? 'text-red-600' : 'text-green-600'}>
-                            {alert.changePercent > 0 ? '+' : ''}{alert.changePercent.toFixed(1)}%
+                            {alert.changePercent > 0 ? '+' : ''}
+                            {alert.changePercent.toFixed(1)}%
                           </div>
                         </div>
                         <div>
@@ -478,11 +518,9 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="text-right">
-                      <div className="text-xs opacity-75">
-                        {alert.timestamp.toLocaleTimeString()}
-                      </div>
+                      <div className="text-xs opacity-75">{alert.timestamp.toLocaleTimeString()}</div>
                       <button
                         onClick={() => {
                           setSelectedAlert(alert);
@@ -517,14 +555,30 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
               <table className="min-w-full bg-white border border-gray-200 rounded-lg">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Price</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weekly Change</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Change</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pattern</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">7-Day Forecast</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confidence</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suppliers</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Item
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Current Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Weekly Change
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Monthly Change
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Pattern
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      7-Day Forecast
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Confidence
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Suppliers
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -538,27 +592,39 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                         <div className="text-sm font-medium text-gray-900">₹{trend.currentPrice}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`text-sm font-medium ${
-                          trend.weeklyChange > 0 ? 'text-red-600' : 'text-green-600'
-                        }`}>
-                          {trend.weeklyChange > 0 ? '+' : ''}{trend.weeklyChange.toFixed(1)}%
+                        <div
+                          className={`text-sm font-medium ${
+                            trend.weeklyChange > 0 ? 'text-red-600' : 'text-green-600'
+                          }`}
+                        >
+                          {trend.weeklyChange > 0 ? '+' : ''}
+                          {trend.weeklyChange.toFixed(1)}%
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`text-sm font-medium ${
-                          trend.monthlyChange > 0 ? 'text-red-600' : 'text-green-600'
-                        }`}>
-                          {trend.monthlyChange > 0 ? '+' : ''}{trend.monthlyChange.toFixed(1)}%
+                        <div
+                          className={`text-sm font-medium ${
+                            trend.monthlyChange > 0 ? 'text-red-600' : 'text-green-600'
+                          }`}
+                        >
+                          {trend.monthlyChange > 0 ? '+' : ''}
+                          {trend.monthlyChange.toFixed(1)}%
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          trend.seasonalPattern.includes('peak') ? 'bg-red-100 text-red-800' :
-                          trend.seasonalPattern.includes('low') ? 'bg-green-100 text-green-800' :
-                          trend.seasonalPattern === 'increasing' ? 'bg-yellow-100 text-yellow-800' :
-                          trend.seasonalPattern === 'decreasing' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            trend.seasonalPattern.includes('peak')
+                              ? 'bg-red-100 text-red-800'
+                              : trend.seasonalPattern.includes('low')
+                                ? 'bg-green-100 text-green-800'
+                                : trend.seasonalPattern === 'increasing'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : trend.seasonalPattern === 'decreasing'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {trend.seasonalPattern.replace('_', ' ')}
                         </span>
                       </td>
@@ -616,15 +682,21 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                 <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-lg mb-2">{competitor.competitorName}</h4>
+                      <h4 className="font-semibold text-gray-900 text-lg mb-2">
+                        {competitor.competitorName}
+                      </h4>
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
                         <span>{competitor.businessType}</span>
                         <span>📍 {competitor.location}</span>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          competitor.priceStrategy === 'premium' ? 'bg-purple-100 text-purple-800' :
-                          competitor.priceStrategy === 'competitive' ? 'bg-blue-100 text-blue-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            competitor.priceStrategy === 'premium'
+                              ? 'bg-purple-100 text-purple-800'
+                              : competitor.priceStrategy === 'competitive'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-green-100 text-green-800'
+                          }`}
+                        >
                           {competitor.priceStrategy} pricing
                         </span>
                       </div>
@@ -711,7 +783,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
         {activeTab === 'seasonal' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Seasonal Market Insights</h3>
-            
+
             <div className="grid gap-6">
               {(seasonalInsights ?? []).length === 0 && (
                 <div className="rounded-lg border border-dashed border-gray-200 p-6 text-sm text-gray-600">
@@ -784,12 +856,13 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
         {activeTab === 'reports' && (
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">Custom Market Reports</h3>
-            
+
             <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-4">📊 Weekly Market Summary</h4>
                 <p className="text-sm text-gray-600 mb-4">
-                  Comprehensive weekly report covering price changes, trend analysis, and actionable insights for your business.
+                  Comprehensive weekly report covering price changes, trend analysis, and actionable insights
+                  for your business.
                 </p>
                 <div className="space-y-2 text-sm text-gray-700 mb-4">
                   <div>✓ Price trend analysis</div>
@@ -808,7 +881,8 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-800 mb-4">🎯 Custom Analysis</h4>
                 <p className="text-sm text-gray-600 mb-4">
-                  Create custom reports focusing on specific items, competitors, or time periods that matter to your business.
+                  Create custom reports focusing on specific items, competitors, or time periods that matter
+                  to your business.
                 </p>
                 <div className="space-y-3">
                   <select
@@ -836,7 +910,10 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
               <h4 className="font-semibold text-gray-800 mb-4">Report History</h4>
               <div className="space-y-3">
                 {reportHistoryList.map((report) => (
-                  <div key={report._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={report._id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
                       <div className="font-medium text-gray-900">{report.title}</div>
                       <div className="text-sm text-gray-500">
@@ -845,7 +922,10 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                     </div>
                     <button
                       onClick={() => {
-                        downloadReport(`${report.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.txt`, report.content);
+                        downloadReport(
+                          `${report.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.txt`,
+                          report.content,
+                        );
                         notify(`${report.title} downloaded.`);
                       }}
                       className="text-indigo-600 hover:text-indigo-800 font-medium text-sm"
@@ -874,7 +954,8 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                 </button>
               </div>
               <p className="text-sm text-gray-600">
-                Alerts are currently configured for the <span className="font-medium">{timeframe}</span> timeframe in {location.city}.
+                Alerts are currently configured for the <span className="font-medium">{timeframe}</span>{' '}
+                timeframe in {location.city}.
               </p>
               <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
                 <li>Notify on price increase above 8%</li>
@@ -902,7 +983,9 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div className="p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">{selectedAlert.itemName} Alert Details</h3>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {selectedAlert.itemName} Alert Details
+                </h3>
                 <button
                   onClick={() => setSelectedAlert(null)}
                   className="text-gray-500 hover:text-gray-700 text-xl"
@@ -922,8 +1005,11 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                 </div>
                 <div>
                   <div className="text-gray-500">Change</div>
-                  <div className={`font-semibold ${selectedAlert.changePercent > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {selectedAlert.changePercent > 0 ? '+' : ''}{selectedAlert.changePercent.toFixed(1)}%
+                  <div
+                    className={`font-semibold ${selectedAlert.changePercent > 0 ? 'text-red-600' : 'text-green-600'}`}
+                  >
+                    {selectedAlert.changePercent > 0 ? '+' : ''}
+                    {selectedAlert.changePercent.toFixed(1)}%
                   </div>
                 </div>
                 <div>
@@ -964,7 +1050,9 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   <input
                     type="text"
                     value={newCompetitor.competitorName}
-                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, competitorName: e.target.value }))}
+                    onChange={(e) =>
+                      setNewCompetitor((prev) => ({ ...prev, competitorName: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -973,7 +1061,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   <input
                     type="text"
                     value={newCompetitor.businessType}
-                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, businessType: e.target.value }))}
+                    onChange={(e) => setNewCompetitor((prev) => ({ ...prev, businessType: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -982,7 +1070,7 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   <input
                     type="text"
                     value={newCompetitor.location}
-                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) => setNewCompetitor((prev) => ({ ...prev, location: e.target.value }))}
                     placeholder="e.g. 1.2 km away"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
@@ -991,7 +1079,12 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Price Strategy</label>
                   <select
                     value={newCompetitor.priceStrategy}
-                    onChange={(e) => setNewCompetitor(prev => ({ ...prev, priceStrategy: e.target.value as CompetitorInsight['priceStrategy'] }))}
+                    onChange={(e) =>
+                      setNewCompetitor((prev) => ({
+                        ...prev,
+                        priceStrategy: e.target.value as CompetitorInsight['priceStrategy'],
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="premium">Premium</option>

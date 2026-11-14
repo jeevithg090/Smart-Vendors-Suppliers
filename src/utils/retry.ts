@@ -30,7 +30,11 @@ export class RetryManager {
       if (['INVALID_ARGUMENT', 'UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND', 'VALIDATION_ERROR'].includes(code)) {
         return false;
       }
-      if (['TIMEOUT', 'CONNECTION_FAILED', 'OVERLOADED', 'INTERNAL_SERVER_ERROR', 'NETWORK_ERROR'].includes(code)) {
+      if (
+        ['TIMEOUT', 'CONNECTION_FAILED', 'OVERLOADED', 'INTERNAL_SERVER_ERROR', 'NETWORK_ERROR'].includes(
+          code,
+        )
+      ) {
         return true;
       }
 
@@ -45,13 +49,10 @@ export class RetryManager {
       // Default to retry for unknown transient failures.
       return true;
     },
-    onRetry: () => {}
+    onRetry: () => {},
   };
 
-  static async withRetry<T>(
-    operation: () => Promise<T>,
-    options: RetryOptions = {}
-  ): Promise<T> {
+  static async withRetry<T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
     const config = { ...this.defaultOptions, ...options };
     let lastError: any;
 
@@ -72,10 +73,7 @@ export class RetryManager {
         }
 
         // Calculate delay with exponential backoff
-        const delay = Math.min(
-          config.baseDelay * Math.pow(config.backoffFactor, attempt),
-          config.maxDelay
-        );
+        const delay = Math.min(config.baseDelay * Math.pow(config.backoffFactor, attempt), config.maxDelay);
 
         // Add jitter to prevent thundering herd
         const jitterWindow = Math.min(100, Math.max(1, Math.floor(config.baseDelay * 0.1)));
@@ -91,16 +89,13 @@ export class RetryManager {
   }
 
   private static sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
 // Specialized retry for Convex operations
 export class ConvexRetryManager {
-  static async withConvexRetry<T>(
-    operation: () => Promise<T>,
-    options: RetryOptions = {}
-  ): Promise<T> {
+  static async withConvexRetry<T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
     const convexOptions: RetryOptions = {
       maxRetries: 3,
       baseDelay: 500,
@@ -115,7 +110,7 @@ export class ConvexRetryManager {
         }
         return false;
       },
-      ...options
+      ...options,
     };
 
     return RetryManager.withRetry(operation, convexOptions);
@@ -136,7 +131,7 @@ export class OfflineOperationQueue {
         this.isOnline = true;
         this.processQueue();
       });
-      
+
       window.addEventListener('offline', () => {
         this.isOnline = false;
       });
@@ -168,7 +163,7 @@ export class OfflineOperationQueue {
       ...operation,
       id: operation.id || crypto.randomUUID(),
       timestamp: Date.now(),
-      attempts: 0
+      attempts: 0,
     });
 
     this.persistQueue();
@@ -192,14 +187,14 @@ export class OfflineOperationQueue {
       if (!this.isOnline) break;
 
       const operation = this.queue[0];
-      
+
       try {
         await this.executeOperation(operation);
         this.queue.shift(); // Remove successful operation
         this.persistQueue();
       } catch (error) {
         operation.attempts = (operation.attempts || 0) + 1;
-        
+
         if (operation.attempts >= (operation.maxRetries || 3)) {
           // Remove failed operation after max retries
           this.queue.shift();
@@ -208,11 +203,11 @@ export class OfflineOperationQueue {
           // Move to end of queue for retry
           this.queue.push(this.queue.shift()!);
         }
-        
+
         this.persistQueue();
-        
+
         // Wait before processing next operation
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
@@ -248,7 +243,7 @@ export class OfflineOperationQueue {
           return false;
         }
         return true;
-      }
+      },
     });
   }
 
@@ -275,7 +270,7 @@ export class OfflineOperationQueue {
   getQueueStatus(): { pending: number; processing: boolean } {
     return {
       pending: this.queue.length,
-      processing: this.isProcessing
+      processing: this.isProcessing,
     };
   }
 }
@@ -297,36 +292,36 @@ export const offlineQueue = OfflineOperationQueue.getInstance();
 export async function retryWithBackoff<T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
-  baseDelay: number = 1000
+  baseDelay: number = 1000,
 ): Promise<T> {
   let lastError: any;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
       lastError = error;
-      
+
       if (attempt === maxRetries) {
         break;
       }
-      
+
       // Calculate delay with exponential backoff and jitter
       const exponentialDelay = baseDelay * Math.pow(2, attempt);
       const jitter = Math.random() * 1000; // Add up to 1 second of jitter
       const delay = Math.min(exponentialDelay + jitter, 30000); // Cap at 30 seconds
-      
+
       // Track retry attempt
       performanceMonitoring.recordMetric('Retry Attempt', attempt + 1, {
         error: (error as Error).message,
         delay,
-        operation: operation.name || 'anonymous'
+        operation: operation.name || 'anonymous',
       });
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-  
+
   throw lastError;
 }
 
@@ -336,37 +331,37 @@ export function useRetryableOperation() {
   const [retryCount, setRetryCount] = useState(0);
   const { handleError } = useErrorHandler();
 
-  const executeWithRetry = useCallback(async <T>(
-    operation: () => Promise<T>,
-    options: RetryOptions = {}
-  ): Promise<T> => {
-    setIsRetrying(true);
-    setRetryCount(0);
+  const executeWithRetry = useCallback(
+    async <T>(operation: () => Promise<T>, options: RetryOptions = {}): Promise<T> => {
+      setIsRetrying(true);
+      setRetryCount(0);
 
-    try {
-      const result = await RetryManager.withRetry(operation, {
-        ...options,
-        onRetry: (attempt, error) => {
-          setRetryCount(attempt);
-          options.onRetry?.(attempt, error);
-        }
-      });
-      
-      setIsRetrying(false);
-      setRetryCount(0);
-      return result;
-    } catch (error) {
-      setIsRetrying(false);
-      setRetryCount(0);
-      await handleError(error as Error);
-      throw error;
-    }
-  }, [handleError]);
+      try {
+        const result = await RetryManager.withRetry(operation, {
+          ...options,
+          onRetry: (attempt, error) => {
+            setRetryCount(attempt);
+            options.onRetry?.(attempt, error);
+          },
+        });
+
+        setIsRetrying(false);
+        setRetryCount(0);
+        return result;
+      } catch (error) {
+        setIsRetrying(false);
+        setRetryCount(0);
+        await handleError(error as Error);
+        throw error;
+      }
+    },
+    [handleError],
+  );
 
   return {
     executeWithRetry,
     isRetrying,
-    retryCount
+    retryCount,
   };
 }
 
@@ -383,7 +378,7 @@ export class CircuitBreaker {
   constructor(
     threshold = 5,
     timeout = 60000, // 1 minute
-    _monitoringPeriod = 10000 // 10 seconds
+    _monitoringPeriod = 10000, // 10 seconds
   ) {
     this.threshold = threshold;
     this.timeout = timeout;
@@ -435,5 +430,5 @@ export class CircuitBreaker {
 export const circuitBreakers = {
   convex: new CircuitBreaker(3, 30000), // More sensitive for database
   external: new CircuitBreaker(5, 60000), // Less sensitive for external APIs
-  payment: new CircuitBreaker(2, 120000) // Very sensitive for payment
+  payment: new CircuitBreaker(2, 120000), // Very sensitive for payment
 };

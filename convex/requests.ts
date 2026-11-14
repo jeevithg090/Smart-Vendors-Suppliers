@@ -1,12 +1,12 @@
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
-import { getIdentityByEmail } from "./lib/identity";
+import { mutation, query } from './_generated/server';
+import { v } from 'convex/values';
+import { getIdentityByEmail } from './lib/identity';
 
 // Create a new demand request
 export const createDemandRequest = mutation({
   args: {
     userEmail: v.optional(v.string()),
-    vendorId: v.optional(v.id("vendors")),
+    vendorId: v.optional(v.id('vendors')),
     itemName: v.string(),
     quantity: v.number(),
     unit: v.string(),
@@ -19,47 +19,46 @@ export const createDemandRequest = mutation({
   },
   handler: async (ctx, args) => {
     // Prefer explicit vendorId when provided.
-    let vendor =
-      args.vendorId ? await ctx.db.get(args.vendorId) : null;
+    let vendor = args.vendorId ? await ctx.db.get(args.vendorId) : null;
 
     // Try authenticated lookup when email is provided.
     if (!vendor && args.userEmail) {
       const identity = await getIdentityByEmail(ctx, args.userEmail);
       if (identity) {
         vendor = await ctx.db
-          .query("vendors")
-          .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+          .query('vendors')
+          .withIndex('by_user', (q) => q.eq('userId', identity.subject))
           .first();
       }
 
       // Development fallback: local auth mode stores userId as email.
       if (!vendor) {
         vendor = await ctx.db
-          .query("vendors")
-          .withIndex("by_user", (q) => q.eq("userId", args.userEmail!))
+          .query('vendors')
+          .withIndex('by_user', (q) => q.eq('userId', args.userEmail!))
           .first();
       }
     }
 
     // Last fallback to keep demo mode functional.
     if (!vendor) {
-      vendor = await ctx.db.query("vendors").first();
+      vendor = await ctx.db.query('vendors').first();
     }
 
-    if (!vendor) throw new Error("Vendor not found");
+    if (!vendor) throw new Error('Vendor not found');
 
     // Validate quantity
     if (args.quantity <= 0) {
-      throw new Error("Quantity must be greater than 0");
+      throw new Error('Quantity must be greater than 0');
     }
 
     // Validate price range if provided
     if (args.priceMin && args.priceMax && args.priceMin > args.priceMax) {
-      throw new Error("Minimum price cannot be greater than maximum price");
+      throw new Error('Minimum price cannot be greater than maximum price');
     }
 
     // Create the request
-    const requestId = await ctx.db.insert("requests", {
+    const requestId = await ctx.db.insert('requests', {
       vendorId: vendor._id,
       itemName: args.itemName,
       quantity: args.quantity,
@@ -70,7 +69,7 @@ export const createDemandRequest = mutation({
       location: args.location,
       notes: args.notes,
       requireFssai: args.requireFssai,
-      status: "open",
+      status: 'open',
       responses: [],
       createdAt: Date.now(),
     });
@@ -92,17 +91,15 @@ export const getSimilarRequests = query({
     const limit = Math.max(1, Math.min(args.limit || 6, 20));
 
     const requests = await ctx.db
-      .query("requests")
-      .withIndex("by_status", (q) => q.eq("status", "open"))
-      .order("desc")
+      .query('requests')
+      .withIndex('by_status', (q) => q.eq('status', 'open'))
+      .order('desc')
       .take(200);
 
     return requests
       .filter((request) => {
         const itemMatch = request.itemName.toLowerCase().includes(item);
-        const locationMatch = location
-          ? request.location.toLowerCase().includes(location)
-          : true;
+        const locationMatch = location ? request.location.toLowerCase().includes(location) : true;
         return itemMatch && locationMatch;
       })
       .slice(0, limit);
@@ -116,22 +113,22 @@ export const getVendorRequests = query({
     // Get user identity using manual auth
     const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated');
     }
 
     const vendor = await ctx.db
-      .query("vendors")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .query('vendors')
+      .withIndex('by_user', (q) => q.eq('userId', identity.subject))
       .first();
 
     if (!vendor) {
-      throw new Error("Vendor not found");
+      throw new Error('Vendor not found');
     }
 
     const requests = await ctx.db
-      .query("requests")
-      .withIndex("by_vendor", (q) => q.eq("vendorId", vendor._id))
-      .order("desc")
+      .query('requests')
+      .withIndex('by_vendor', (q) => q.eq('vendorId', vendor._id))
+      .order('desc')
       .collect();
 
     return requests;
@@ -145,13 +142,13 @@ export const getOpenRequests = query({
     // Get user identity using manual auth
     const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated');
     }
 
     const requests = await ctx.db
-      .query("requests")
-      .withIndex("by_status", (q) => q.eq("status", "open"))
-      .order("desc")
+      .query('requests')
+      .withIndex('by_status', (q) => q.eq('status', 'open'))
+      .order('desc')
       .collect();
 
     return requests;
@@ -162,7 +159,7 @@ export const getOpenRequests = query({
 export const respondToRequest = mutation({
   args: {
     userEmail: v.string(), // User's email for authentication
-    requestId: v.id("requests"),
+    requestId: v.id('requests'),
     quote: v.optional(v.number()),
     message: v.optional(v.string()),
   },
@@ -170,25 +167,25 @@ export const respondToRequest = mutation({
     // Get user identity using manual auth
     const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated');
     }
 
     const supplier = await ctx.db
-      .query("suppliers")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .query('suppliers')
+      .withIndex('by_user', (q) => q.eq('userId', identity.subject))
       .first();
 
     if (!supplier) {
-      throw new Error("Supplier not found");
+      throw new Error('Supplier not found');
     }
 
     const request = await ctx.db.get(args.requestId);
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error('Request not found');
     }
 
-    if (request.status !== "open") {
-      throw new Error("Request is no longer open for responses");
+    if (request.status !== 'open') {
+      throw new Error('Request is no longer open for responses');
     }
 
     // Add response to the request
@@ -211,33 +208,33 @@ export const respondToRequest = mutation({
 export const closeRequest = mutation({
   args: {
     userEmail: v.string(), // User's email for authentication
-    requestId: v.id("requests"),
+    requestId: v.id('requests'),
   },
   handler: async (ctx, args) => {
     // Get user identity using manual auth
     const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
-      throw new Error("Not authenticated");
+      throw new Error('Not authenticated');
     }
 
     const request = await ctx.db.get(args.requestId);
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error('Request not found');
     }
 
     const vendor = await ctx.db
-      .query("vendors")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .query('vendors')
+      .withIndex('by_user', (q) => q.eq('userId', identity.subject))
       .first();
 
     if (!vendor || request.vendorId !== vendor._id) {
-      throw new Error("Not authorized to close this request");
+      throw new Error('Not authorized to close this request');
     }
 
     await ctx.db.patch(args.requestId, {
-      status: "closed",
+      status: 'closed',
     });
 
     return true;
   },
-}); 
+});

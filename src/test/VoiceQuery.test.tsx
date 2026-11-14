@@ -19,17 +19,17 @@ Object.defineProperty(navigator, 'mediaDevices', {
 // Mock MediaRecorder
 class MockMediaRecorder {
   static isTypeSupported = vi.fn(() => true);
-  
+
   constructor(stream: any, options?: any) {
     this.stream = stream;
     this.mimeType = options?.mimeType || 'audio/webm';
   }
-  
+
   stream: any;
   mimeType: string;
   ondataavailable: ((event: any) => void) | null = null;
   onstop: (() => void) | null = null;
-  
+
   start = vi.fn();
   stop = vi.fn(() => {
     if (this.onstop) {
@@ -65,7 +65,7 @@ global.AudioContext = MockAudioContext as any;
 describe('Enhanced VoiceQuery Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock successful getUserMedia
     mockGetUserMedia.mockResolvedValue({
       getTracks: () => [{ stop: vi.fn() }],
@@ -76,7 +76,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" mode="search" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     expect(screen.getByText('🔍 Search Mode')).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" mode="filter" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     expect(screen.getByText('🔧 Filter Mode')).toBeInTheDocument();
@@ -96,7 +96,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" mode="general" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     expect(screen.getByText('💬 General Mode')).toBeInTheDocument();
@@ -106,7 +106,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const languageSelect = screen.getByDisplayValue('Auto-detect');
@@ -117,7 +117,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const historyButton = screen.getByTitle('Voice History');
@@ -128,7 +128,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const micButton = screen.getByTitle('Start general query');
@@ -150,7 +150,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const micButton = screen.getByTitle('Start general query');
@@ -167,7 +167,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const micButton = screen.getByTitle('Start general query');
@@ -182,7 +182,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     // Initially no confidence indicator should be shown
@@ -193,17 +193,17 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const historyButton = screen.getByTitle('Voice History');
-    
+
     // Initially history should not be shown
     expect(screen.queryByText('Voice History')).not.toBeInTheDocument();
-    
+
     // Click to show history
     fireEvent.click(historyButton);
-    
+
     // History panel should now be visible
     expect(screen.getByText('Voice History')).toBeInTheDocument();
   });
@@ -212,23 +212,23 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const languageSelect = screen.getByDisplayValue('Auto-detect') as HTMLSelectElement;
-    
+
     fireEvent.change(languageSelect, { target: { value: 'hi' } });
-    
+
     expect(languageSelect.value).toBe('hi');
   });
 
   it('should call onResults callback when search results are available', () => {
     const mockOnResults = vi.fn();
-    
+
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" mode="search" onResults={mockOnResults} />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     // The callback should be available for when results are processed
@@ -237,11 +237,11 @@ describe('Enhanced VoiceQuery Component', () => {
 
   it('should call onFiltersApplied callback when filters are applied', () => {
     const mockOnFiltersApplied = vi.fn();
-    
+
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" mode="filter" onFiltersApplied={mockOnFiltersApplied} />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     // The callback should be available for when filters are applied
@@ -252,7 +252,7 @@ describe('Enhanced VoiceQuery Component', () => {
     render(
       <ConvexProvider client={mockConvex}>
         <VoiceQuery userRole="vendor" />
-      </ConvexProvider>
+      </ConvexProvider>,
     );
 
     const micButton = screen.getByTitle('Start general query');

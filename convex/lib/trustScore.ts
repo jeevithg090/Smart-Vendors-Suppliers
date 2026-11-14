@@ -46,7 +46,7 @@ export function calculateTrustScore(input: TrustScoreInputs, now: number = Date.
   const ratingScore = averageRating * 0.4;
 
   // Completed orders add 0.05 each, capped at 1.0
-  const completedOrders = input.orders.filter((o) => o.status === "delivered").length;
+  const completedOrders = input.orders.filter((o) => o.status === 'delivered').length;
   const volumeBonus = Math.min(completedOrders * 0.05, 1.0);
 
   // On-time delivery rate over the last 30 days contributes up to 0.8
