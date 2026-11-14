@@ -1,8 +1,7 @@
-import { mutation } from './_generated/server';
-import { query } from './_generated/server';
+import { internalMutation, internalQuery } from './_generated/server';
 
 // Sample data for testing supplier search functionality
-export const addSampleSuppliers = mutation({
+export const addSampleSuppliers = internalMutation({
   args: {},
   handler: async (ctx) => {
     const sampleSuppliers = [
@@ -263,7 +262,7 @@ export const addSampleSuppliers = mutation({
 });
 
 // Add sample vendor data for testing recommendations
-export const addSampleVendor = mutation({
+export const addSampleVendor = internalMutation({
   args: {},
   handler: async (ctx) => {
     const sampleVendor = {
@@ -426,7 +425,7 @@ export const addSampleVendor = mutation({
 });
 
 // Add sample group orders for testing
-export const addSampleGroupOrders = mutation({
+export const addSampleGroupOrders = internalMutation({
   args: {},
   handler: async (ctx) => {
     // Get existing vendors and suppliers
@@ -584,7 +583,7 @@ export const addSampleGroupOrders = mutation({
 });
 
 // Clean up sample data
-export const cleanupSampleData = mutation({
+export const cleanupSampleData = internalMutation({
   args: {},
   handler: async (ctx) => {
     // Delete sample vendors
@@ -685,7 +684,7 @@ export const cleanupSampleData = mutation({
 });
 
 // Add sample ratings for testing the rating system
-export const addSampleRatings = mutation({
+export const addSampleRatings = internalMutation({
   args: {},
   handler: async (ctx) => {
     // Get existing vendors, suppliers, and orders
@@ -793,7 +792,7 @@ export const addSampleRatings = mutation({
 });
 
 // Add sample financial records for testing financial analytics
-export const addSampleFinancialRecords = mutation({
+export const addSampleFinancialRecords = internalMutation({
   args: {},
   handler: async (ctx) => {
     // Get existing vendors and suppliers
@@ -932,7 +931,7 @@ export const addSampleFinancialRecords = mutation({
 });
 
 // Query to get sample workflow state and data for the sample vendor
-export const getSampleWorkflowState = query({
+export const getSampleWorkflowState = internalQuery({
   args: {},
   handler: async (ctx) => {
     // Find the sample vendor
