@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+const MIN_PASSWORD_LENGTH = 8;
+
 interface SignupProps {
   onSwitchToLogin: () => void;
   preSelectedRole: 'vendor' | 'supplier';
@@ -19,29 +21,21 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
     e.preventDefault();
     setError('');
 
-    console.log('Signup attempt:', { email, firstName, lastName, role: preSelectedRole, passwordLength: password.length });
-
     if (!email || !password || !firstName) {
       setError('Please fill in all required fields');
       return;
     }
 
-    if (password.length < 4) {
-      setError('Password must be at least 4 characters');
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
       return;
     }
 
-    try {
-      const success = await signup(email, password, firstName, lastName, preSelectedRole);
-      console.log('Signup result:', success);
-      if (!success) {
-        setError('Signup failed. Please try again.');
-      }
-      // If successful, the user will be redirected automatically via the auth state change
-    } catch (error) {
-      console.error('Signup component error:', error);
-      setError('Signup failed due to connection issues. Please try again.');
+    const result = await signup(email, password, firstName, lastName, preSelectedRole);
+    if (!result.success) {
+      setError(result.error || 'Signup failed. Please try again.');
     }
+    // On success the auth state change redirects to the dashboard.
   };
 
   return (
@@ -148,7 +142,7 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
           </div>
 
           {error && (
-            <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-md">
+            <div role="alert" className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-md">
               {error}
             </div>
           )}

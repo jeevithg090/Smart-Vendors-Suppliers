@@ -2,9 +2,20 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  // Password credentials for the built-in email/password auth.
+  // Kept separate from profile tables so hashes are never returned to clients.
+  credentials: defineTable({
+    email: v.string(),
+    passwordHash: v.string(),
+    salt: v.string(),
+    iterations: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_email", ["email"]),
+
   // Vendors table (enhanced)
   vendors: defineTable({
-    userId: v.string(), // Clerk user ID
+    userId: v.string(), // Account email (manual auth)
     businessName: v.string(),
     ownerName: v.string(),
     email: v.string(),
@@ -53,7 +64,7 @@ export default defineSchema({
 
   // Suppliers table (enhanced)
   suppliers: defineTable({
-    userId: v.string(), // Clerk user ID
+    userId: v.string(), // Account email (manual auth)
     businessName: v.string(),
     ownerName: v.string(),
     email: v.string(),
@@ -416,7 +427,7 @@ export default defineSchema({
 
   // Notifications table
   notifications: defineTable({
-    userId: v.string(), // Clerk user ID
+    userId: v.string(), // Account email (manual auth)
     userType: v.string(), // "vendor", "supplier", "support"
     type: v.string(), // "order_update", "message", "price_alert", "group_order", "system"
     title: v.string(),
@@ -440,7 +451,7 @@ export default defineSchema({
 
   // Support Tickets table
   supportTickets: defineTable({
-    userId: v.string(), // Clerk user ID
+    userId: v.string(), // Account email (manual auth)
     userType: v.string(), // "vendor" or "supplier"
     subject: v.string(),
     description: v.string(),
@@ -496,7 +507,7 @@ export default defineSchema({
 
   // Enhanced Voice Queries table
   voiceQueries: defineTable({
-    userId: v.string(), // Clerk user ID
+    userId: v.string(), // Account email (manual auth)
     userRole: v.string(), // "vendor" or "supplier"
     queryType: v.string(), // "search", "filter", "general", "image_description"
     queryText: v.string(), // Original transcribed text

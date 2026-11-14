@@ -1,7 +1,29 @@
-import { query, mutation } from "./_generated/server";
+import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
+import {
+  MIN_PASSWORD_LENGTH,
+  hashPassword,
+  isValidEmail,
+  normalizeEmail,
+  verifyPassword,
+} from "./lib/password";
 
-// Simple test query to check if Convex is working
+type Role = "vendor" | "supplier";
+
+interface AuthUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+  profileId: string;
+}
+
+// Generic message so login responses don't reveal which part was wrong.
+const INVALID_CREDENTIALS = "Invalid email or password";
+
+// Simple health-check query used by the client to confirm connectivity
 export const testConnection = query({
   args: {},
   handler: async () => {
@@ -9,74 +31,109 @@ export const testConnection = query({
   },
 });
 
-// Simple hello world query
-export const helloWorld = query({
-  args: {},
-  handler: async () => {
-    return { message: "Hello World from the backend!" };
-  },
-});
-
-// Manual authentication functions - UPDATED 2025-01-26
 export const authenticateUser = mutation({
   args: {
     email: v.string(),
     password: v.string(),
-    role: v.string(), // "vendor" or "supplier"
+    role: v.union(v.literal("vendor"), v.literal("supplier")),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
-    isSignup: v.boolean()
+    isSignup: v.boolean(),
   },
-  handler: async (ctx, args) => {
-    try {
-      console.log("Auth request:", { email: args.email, role: args.role, isSignup: args.isSignup });
-      
-      // Basic validation
-      if (!args.email || args.password.length < 4) {
-        throw new Error("Invalid credentials");
-      }
-
-      if (args.isSignup) {
-        return await handleSignup(ctx, args);
-      } else {
-        return await handleLogin(ctx, args);
-      }
-    } catch (error) {
-      console.error("Auth error:", error);
-      throw new Error(`Authentication failed: ${error.message}`);
+  handler: async (ctx, args): Promise<{ success: true; user: AuthUser }> => {
+    const email = normalizeEmail(args.email);
+    if (!isValidEmail(email)) {
+      throw new Error("Please enter a valid email address");
     }
+    if (!args.password) {
+      throw new Error(INVALID_CREDENTIALS);
+    }
+    return args.isSignup
+      ? handleSignup(ctx, { ...args, email })
+      : handleLogin(ctx, { ...args, email, rawEmail: args.email.trim() });
   },
 });
 
-// Separate signup handler
-async function handleSignup(ctx: any, args: any) {
-  console.log("Processing signup for:", args.role);
-  
-  if (args.role === "vendor") {
-    // Check if vendor already exists
-    const existingVendor = await ctx.db
+function splitName(ownerName: string | undefined) {
+  const parts = (ownerName ?? "").trim().split(/\s+/).filter(Boolean);
+  return { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") };
+}
+
+function toAuthUser(profile: Doc<"vendors"> | Doc<"suppliers">, role: Role): AuthUser {
+  return {
+    id: profile.userId,
+    email: profile.email,
+    ...splitName(profile.ownerName),
+    role,
+    profileId: profile._id,
+  };
+}
+
+async function findProfiles(ctx: QueryCtx, emails: string[]) {
+  for (const email of new Set(emails)) {
+    const vendor = await ctx.db
       .query("vendors")
-      .withIndex("by_user", (q: any) => q.eq("userId", args.email))
+      .withIndex("by_user", (q) => q.eq("userId", email))
       .first();
+    const supplier = await ctx.db
+      .query("suppliers")
+      .withIndex("by_user", (q) => q.eq("userId", email))
+      .first();
+    if (vendor || supplier) return { vendor, supplier };
+  }
+  return { vendor: null, supplier: null };
+}
 
-    if (existingVendor) {
-      throw new Error("A vendor account with this email already exists");
-    }
+async function storeCredential(ctx: MutationCtx, email: string, password: string) {
+  const { hash, salt, iterations } = await hashPassword(password);
+  const now = Date.now();
+  await ctx.db.insert("credentials", {
+    email,
+    passwordHash: hash,
+    salt,
+    iterations,
+    createdAt: now,
+    updatedAt: now,
+  });
+}
 
-    // Create new vendor
-    const vendorData = {
+async function handleSignup(
+  ctx: MutationCtx,
+  args: { email: string; password: string; role: Role; firstName?: string; lastName?: string },
+): Promise<{ success: true; user: AuthUser }> {
+  if (args.password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+  }
+
+  const { vendor, supplier } = await findProfiles(ctx, [args.email]);
+  const existingCredential = await ctx.db
+    .query("credentials")
+    .withIndex("by_email", (q) => q.eq("email", args.email))
+    .first();
+  if (vendor || supplier || existingCredential) {
+    throw new Error("An account with this email already exists. Please log in instead.");
+  }
+
+  const ownerName = `${args.firstName ?? ""} ${args.lastName ?? ""}`.trim();
+  const now = Date.now();
+  const location = {
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+    coordinates: { lat: 0, lng: 0 },
+  };
+
+  await storeCredential(ctx, args.email, args.password);
+
+  if (args.role === "vendor") {
+    const vendorId = await ctx.db.insert("vendors", {
       userId: args.email,
-      businessName: `${args.firstName || 'New'} Vendor`,
-      ownerName: `${args.firstName || ''} ${args.lastName || ''}`.trim(),
+      businessName: `${args.firstName || "New"} Vendor`,
+      ownerName,
       email: args.email,
       phone: "",
-      location: {
-        address: "",
-        city: "",
-        state: "",
-        pincode: "",
-        coordinates: { lat: 0, lng: 0 }
-      },
+      location,
       businessType: "",
       isVerified: false,
       trustScore: 0,
@@ -85,176 +142,86 @@ async function handleSignup(ctx: any, args: any) {
         preferredCategories: [],
         budgetRange: { min: 0, max: 10000 },
         qualityPreference: "medium",
-        deliveryTimePreference: "flexible"
+        deliveryTimePreference: "flexible",
       },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-
-    const vendorId = await ctx.db.insert("vendors", vendorData);
-    console.log("Vendor created with ID:", vendorId);
-    
-    return {
-      success: true,
-      user: {
-        id: vendorData.userId,
-        email: vendorData.email,
-        firstName: vendorData.ownerName?.split(' ')[0] || '',
-        lastName: vendorData.ownerName?.split(' ').slice(1).join(' ') || '',
-        role: "vendor",
-        profileId: vendorId
-      }
-    };
-  } else {
-    // Check if supplier already exists
-    const existingSupplier = await ctx.db
-      .query("suppliers")
-      .withIndex("by_user", (q: any) => q.eq("userId", args.email))
-      .first();
-
-    if (existingSupplier) {
-      throw new Error("A supplier account with this email already exists");
-    }
-
-    // Create new supplier
-    const supplierData = {
-      userId: args.email,
-      businessName: `${args.firstName || 'New'} Supplier`,
-      ownerName: `${args.firstName || ''} ${args.lastName || ''}`.trim(),
-      email: args.email,
-      phone: "",
-      location: {
-        address: "",
-        city: "",
-        state: "",
-        pincode: "",
-        coordinates: { lat: 0, lng: 0 }
-      },
-      categories: [],
-      fssaiCertified: false,
-      isVerified: false,
-      trustScore: 0,
-      businessHours: {
-        open: "09:00",
-        close: "18:00",
-        days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
-      },
-      deliveryRadius: 5,
-      minimumOrder: 100,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-
-    const supplierId = await ctx.db.insert("suppliers", supplierData);
-    console.log("Supplier created with ID:", supplierId);
-    
-    return {
-      success: true,
-      user: {
-        id: supplierData.userId,
-        email: supplierData.email,
-        firstName: supplierData.ownerName?.split(' ')[0] || '',
-        lastName: supplierData.ownerName?.split(' ').slice(1).join(' ') || '',
-        role: "supplier",
-        profileId: supplierId
-      }
-    };
+      createdAt: now,
+      updatedAt: now,
+    });
+    const created = await ctx.db.get(vendorId);
+    return { success: true, user: toAuthUser(created!, "vendor") };
   }
+
+  const supplierId = await ctx.db.insert("suppliers", {
+    userId: args.email,
+    businessName: `${args.firstName || "New"} Supplier`,
+    ownerName,
+    email: args.email,
+    phone: "",
+    location,
+    categories: [],
+    fssaiCertified: false,
+    isVerified: false,
+    trustScore: 0,
+    businessHours: {
+      open: "09:00",
+      close: "18:00",
+      days: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    },
+    deliveryRadius: 5,
+    minimumOrder: 100,
+    createdAt: now,
+    updatedAt: now,
+  });
+  const created = await ctx.db.get(supplierId);
+  return { success: true, user: toAuthUser(created!, "supplier") };
 }
 
-// Separate login handler
-async function handleLogin(ctx: any, args: any) {
-  console.log("Processing login for:", args.role, "email:", args.email);
-  
-  try {
-    // Query for both vendor and supplier
-    const vendor = await ctx.db
-      .query("vendors")
-      .withIndex("by_user", (q: any) => q.eq("userId", args.email))
-      .first();
+async function handleLogin(
+  ctx: MutationCtx,
+  args: { email: string; rawEmail: string; password: string; role: Role },
+): Promise<{ success: true; user: AuthUser }> {
+  const { vendor, supplier } = await findProfiles(ctx, [args.email, args.rawEmail]);
+  const profile = args.role === "vendor" ? vendor : supplier;
 
-    const supplier = await ctx.db
-      .query("suppliers")
-      .withIndex("by_user", (q: any) => q.eq("userId", args.email))
-      .first();
-
-    console.log("Login query results - vendor exists:", !!vendor, "supplier exists:", !!supplier);
-
-    // Check if any account exists
-    if (!vendor && !supplier) {
-      throw new Error("No account found with this email. Please sign up first.");
+  if (!profile) {
+    if (vendor || supplier) {
+      const other = vendor ? "Vendor" : "Supplier";
+      throw new Error(`This email is registered as a ${other.toLowerCase()}. Please select '${other}' to log in.`);
     }
-
-    // Check role-specific access
-    if (args.role === "vendor") {
-      if (!vendor) {
-        if (supplier) {
-          throw new Error("You have a supplier account with this email. Please select 'Supplier' to log in.");
-        } else {
-          throw new Error("No vendor account found with this email. Please sign up as a vendor.");
-        }
-      }
-      
-      return {
-        success: true,
-        user: {
-          id: vendor.userId,
-          email: vendor.email,
-          firstName: vendor.ownerName?.split(' ')[0] || '',
-          lastName: vendor.ownerName?.split(' ').slice(1).join(' ') || '',
-          role: "vendor",
-          profileId: vendor._id
-        }
-      };
-    } else { // supplier
-      if (!supplier) {
-        if (vendor) {
-          throw new Error("You have a vendor account with this email. Please select 'Vendor' to log in.");
-        } else {
-          throw new Error("No supplier account found with this email. Please sign up as a supplier.");
-        }
-      }
-      
-      return {
-        success: true,
-        user: {
-          id: supplier.userId,
-          email: supplier.email,
-          firstName: supplier.ownerName?.split(' ')[0] || '',
-          lastName: supplier.ownerName?.split(' ').slice(1).join(' ') || '',
-          role: "supplier",
-          profileId: supplier._id
-        }
-      };
-    }
-  } catch (dbError) {
-    console.error("Database error during login:", dbError);
-    throw new Error(`Login failed: ${dbError.message}`);
+    throw new Error(INVALID_CREDENTIALS);
   }
+
+  const credential = await ctx.db
+    .query("credentials")
+    .withIndex("by_email", (q) => q.eq("email", args.email))
+    .first();
+
+  if (credential) {
+    const ok = await verifyPassword(args.password, {
+      hash: credential.passwordHash,
+      salt: credential.salt,
+      iterations: credential.iterations,
+    });
+    if (!ok) throw new Error(INVALID_CREDENTIALS);
+  } else {
+    // Accounts created before passwords were stored have no credential yet.
+    // The first successful login sets their password.
+    if (args.password.length < MIN_PASSWORD_LENGTH) {
+      throw new Error(`Please choose a password of at least ${MIN_PASSWORD_LENGTH} characters`);
+    }
+    await storeCredential(ctx, args.email, args.password);
+  }
+
+  return { success: true, user: toAuthUser(profile, args.role) };
 }
 
 // Get user profile by email
 export const getUserProfile = query({
   args: { email: v.string() },
   handler: async (ctx, args) => {
-    const vendor = await ctx.db
-      .query("vendors")
-      .withIndex("by_user", (q: any) => q.eq("userId", args.email))
-      .first();
-    
-    const supplier = await ctx.db
-      .query("suppliers")
-      .withIndex("by_user", (q: any) => q.eq("userId", args.email))
-      .first();
-
-    if (!vendor && !supplier) {
-      return null;
-    }
-
+    const { vendor, supplier } = await findProfiles(ctx, [normalizeEmail(args.email), args.email]);
     const user = vendor || supplier;
-    return {
-      ...user,
-      role: vendor ? "vendor" : "supplier"
-    };
+    if (!user) return null;
+    return { ...user, role: vendor ? "vendor" : "supplier" };
   },
 });
