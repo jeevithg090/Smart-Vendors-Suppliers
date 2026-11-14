@@ -51,7 +51,10 @@ function persistUser(user: User | null) {
 
 interface AuthContextType {
   user: User | null;
+  /** True while the saved session is being restored on startup. */
   isLoading: boolean;
+  /** True while a login or signup request is in flight. */
+  isSubmitting: boolean;
   login: (email: string, password: string, role: 'vendor' | 'supplier') => Promise<AuthResult>;
   signup: (
     email: string,
@@ -69,6 +72,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const fallbackAuthContext: AuthContextType = {
   user: null,
   isLoading: false,
+  isSubmitting: false,
   login: async () => ({ success: false, error: 'Authentication is unavailable' }),
   signup: async () => ({ success: false, error: 'Authentication is unavailable' }),
   logout: () => {},
@@ -90,6 +94,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const authenticateUser = useMutation(api.auth.authenticateUser);
 
@@ -131,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     args: Parameters<typeof authenticateUser>[0],
     fallbackMessage: string,
   ): Promise<AuthResult> => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       const result = await withTimeout(authenticateUser(args), AUTH_TIMEOUT_MS);
       return completeAuth({
@@ -153,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return { success: false, error: extractServerErrorMessage(error, fallbackMessage) };
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -174,6 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value: AuthContextType = {
     user,
     isLoading,
+    isSubmitting,
     login,
     signup,
     logout,

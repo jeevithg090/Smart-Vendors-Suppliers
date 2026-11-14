@@ -13,7 +13,7 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isLoading } = useAuth();
+  const { login, isSubmitting } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,10 +115,10 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Signing in...
