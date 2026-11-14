@@ -18,7 +18,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
 
   const notifications = useQuery(
     api.notifications.getUserNotifications,
-    user?.email && !isDevelopmentUser ? { userEmail: user.email } : 'skip',
+    user?.id && !isDevelopmentUser ? { userEmail: user.id } : 'skip',
   );
 
   const markAsRead = useMutation(api.notifications.markNotificationAsRead);
@@ -31,7 +31,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
       return;
     }
     try {
-      await markAsRead({ userEmail: user?.email || '', notificationId });
+      await markAsRead({ userEmail: user?.id || '', notificationId });
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
@@ -43,7 +43,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
       return;
     }
     try {
-      await markAllAsRead({ userEmail: user?.email || '' });
+      await markAllAsRead({ userEmail: user?.id || '' });
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
     }
@@ -55,7 +55,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
       return;
     }
     try {
-      await deleteNotification({ userEmail: user?.email || '', notificationId });
+      await deleteNotification({ userEmail: user?.id || '', notificationId });
     } catch (error) {
       console.error('Failed to delete notification:', error);
     }
@@ -323,23 +323,28 @@ export const NotificationBell: React.FC<{
 
   const unreadCount = useQuery(
     api.notifications.getUnreadCount,
-    user?.email && !isDevelopmentUser ? { userEmail: user.email } : 'skip',
+    user?.id && !isDevelopmentUser ? { userEmail: user.id } : 'skip',
   );
 
   return (
-    <button onClick={onClick} className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors">
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+      className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-current transition-colors hover:bg-white/15"
+    >
+      <svg aria-hidden="true" className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 00-15 0v5h5l-5 5-5-5h5V7a9.5 9.5 0 0119 0v10z"
+          d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0m6 0H9"
         />
       </svg>
       {unreadCount !== undefined && unreadCount > 0 && (
-        <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-          <span className="text-xs text-white font-semibold">{unreadCount > 9 ? '9+' : unreadCount}</span>
-        </div>
+        <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-semibold text-white">
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </span>
       )}
     </button>
   );

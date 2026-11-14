@@ -6,7 +6,8 @@ import { api } from '../../convex/_generated/api';
 import WorkflowIntegration from '../components/WorkflowIntegration';
 import VendorProfileManagement from '../components/VendorProfileManagement';
 import SupplierSearch from '../components/SupplierSearch';
-import VoiceQuery from '../components/VoiceQuery';
+import DashboardHeader from '../components/DashboardHeader';
+import SectionErrorBoundary from '../components/SectionErrorBoundary';
 import { OrderManager } from '../components/OrderManager';
 import GroupOrderManager from '../components/GroupOrderManager';
 import FinancialAnalytics from '../components/FinancialAnalytics';
@@ -53,33 +54,6 @@ export default function VendorDashboard() {
     }
   }, [vendor, vendorStats]);
 
-  const PageLayout = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-2xl mr-3">🏪</span>
-              <h1 className="text-xl font-semibold text-gray-800">Smart Street</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.firstName || 'User'}!</span>
-              <VoiceQuery userRole="vendor" className="mr-4" />
-              <button
-                onClick={logout}
-                className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      {children}
-    </div>
-  );
-
   // Loading state
   if (!vendor && vendorQuery === undefined) {
     return (
@@ -93,7 +67,7 @@ export default function VendorDashboard() {
   }
   if (!vendor && vendorQuery === null) {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-4xl mx-auto p-6">
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="text-blue-800 font-medium">Complete your vendor profile</h3>
@@ -110,7 +84,7 @@ export default function VendorDashboard() {
   // Profile Management Tab
   if (activeTab === 'profile') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -132,7 +106,7 @@ export default function VendorDashboard() {
   // Supplier Search Tab
   if (activeTab === 'suppliers') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -160,7 +134,7 @@ export default function VendorDashboard() {
   // Workflow Integration Tab
   if (activeTab === 'workflow') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -182,7 +156,7 @@ export default function VendorDashboard() {
   // Group Orders Tab
   if (activeTab === 'groupOrders') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -204,7 +178,7 @@ export default function VendorDashboard() {
   // Orders Tab
   if (activeTab === 'orders') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -226,7 +200,7 @@ export default function VendorDashboard() {
   // Analytics Tab
   if (activeTab === 'analytics') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -248,7 +222,7 @@ export default function VendorDashboard() {
   // Recipe Costing Tab
   if (activeTab === 'recipes') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -270,7 +244,7 @@ export default function VendorDashboard() {
   // Negotiations Tab
   if (activeTab === 'negotiations') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -292,7 +266,7 @@ export default function VendorDashboard() {
   // Market Intelligence Tab
   if (activeTab === 'market') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -314,7 +288,7 @@ export default function VendorDashboard() {
   // Smart Procurement Planner Tab
   if (activeTab === 'planner') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -341,7 +315,7 @@ export default function VendorDashboard() {
   // Growth Suite Tab (feature hub)
   if (activeTab === 'growth') {
     return (
-      <PageLayout>
+      <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-6">
             <button
@@ -362,18 +336,17 @@ export default function VendorDashboard() {
 
   // Main Dashboard
   return (
-    <PageLayout>
-      <div className="max-w-7xl mx-auto p-6">
+    <PageLayout firstName={user?.firstName} onLogout={logout} section={activeTab}>
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Onboarding Banner */}
         {showOnboarding && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 animate-fade-in">
             <div className="flex items-center">
               <div className="text-blue-500 mr-3 text-2xl">👋</div>
               <div>
-                <h3 className="text-blue-800 font-medium">Welcome to Smart Vendors!</h3>
-                <p className="text-blue-700 text-sm">
+                <h2 className="text-blue-900 font-semibold">Welcome to Smart Street!</h2>
+                <p className="text-blue-800 text-sm">
                   Get started by searching for suppliers, placing your first order, or joining a group order.
-                  Need help? Click the <span className="font-bold">Help</span> button in the menu.
                 </p>
                 <button
                   onClick={() => setShowOnboarding(false)}
@@ -386,19 +359,6 @@ export default function VendorDashboard() {
             </div>
           </div>
         )}
-        {/* Backend Connected Banner */}
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
-          <div className="flex items-center">
-            <div className="text-green-500 mr-3">✅</div>
-            <div>
-              <h3 className="text-green-800 font-medium">Backend Connected</h3>
-              <p className="text-green-700 text-sm">
-                Connected to Convex backend. Your data is synced and all features are fully functional.
-              </p>
-            </div>
-          </div>
-        </div>
-
         <RoleOnboardingWizard role="vendor" userId={user?.id} />
 
         <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in">
@@ -696,5 +656,31 @@ export default function VendorDashboard() {
         </div>
       )}
     </PageLayout>
+  );
+}
+
+function PageLayout({
+  children,
+  firstName,
+  onLogout,
+  section = 'main',
+}: {
+  children: React.ReactNode;
+  firstName?: string;
+  onLogout: () => void;
+  section?: string;
+}) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <DashboardHeader
+        role="vendor"
+        title="Smart Street"
+        subtitle={`Welcome, ${firstName || 'there'}!`}
+        onLogout={onLogout}
+      />
+      <main id="main-content">
+        <SectionErrorBoundary resetKey={section}>{children}</SectionErrorBoundary>
+      </main>
+    </div>
   );
 }
