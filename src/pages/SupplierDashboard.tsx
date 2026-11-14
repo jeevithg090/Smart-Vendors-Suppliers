@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import type { Id } from '../../convex/_generated/dataModel';
 import InventoryForecast from '../components/InventoryForecast';
 import FSSAIVerification from '../components/FSSAIVerification';
-import VoiceQuery from '../components/VoiceQuery';
+import DashboardHeader from '../components/DashboardHeader';
+import SectionErrorBoundary from '../components/SectionErrorBoundary';
 import { NotificationBell, NotificationCenter } from '../components/NotificationCenter';
 import SupplierAnalytics from '../components/SupplierAnalytics';
 import SmartPricingEngine from '../components/SmartPricingEngine';
@@ -525,25 +526,12 @@ export default function SupplierDashboard() {
   if (isProfileSetup) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-gradient-to-r from-green-600 to-green-700 shadow-lg">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-2xl mr-3">🏪</span>
-                <h1 className="text-xl font-semibold text-white">Smart Suppliers - Setup Your Store</h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <VoiceQuery userRole="supplier" className="mr-4" />
-                <button
-                  onClick={logout}
-                  className="text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-md transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+        <DashboardHeader
+          role="supplier"
+          title="Smart Suppliers"
+          subtitle="Set up your store"
+          onLogout={logout}
+        />
 
         <div className="max-w-4xl mx-auto p-6">
           <div className="bg-white rounded-lg shadow-lg p-8">
@@ -552,8 +540,14 @@ export default function SupplierDashboard() {
             <form onSubmit={handleCreateProfile} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                  <label
+                    htmlFor="supplierdashboard-business-name"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Business Name *
+                  </label>
                   <input
+                    id="supplierdashboard-business-name"
                     type="text"
                     required
                     value={profileForm.businessName}
@@ -562,8 +556,14 @@ export default function SupplierDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Owner Name *</label>
+                  <label
+                    htmlFor="supplierdashboard-owner-name"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Owner Name *
+                  </label>
                   <input
+                    id="supplierdashboard-owner-name"
                     type="text"
                     required
                     value={profileForm.ownerName}
@@ -572,8 +572,14 @@ export default function SupplierDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+                  <label
+                    htmlFor="supplierdashboard-phone"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Phone *
+                  </label>
                   <input
+                    id="supplierdashboard-phone"
                     type="tel"
                     required
                     value={profileForm.phone}
@@ -582,8 +588,14 @@ export default function SupplierDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                  <label
+                    htmlFor="supplierdashboard-city"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    City *
+                  </label>
                   <input
+                    id="supplierdashboard-city"
                     type="text"
                     required
                     value={profileForm.city}
@@ -594,8 +606,14 @@ export default function SupplierDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                <label
+                  htmlFor="supplierdashboard-address"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Address *
+                </label>
                 <textarea
+                  id="supplierdashboard-address"
                   required
                   value={profileForm.address}
                   onChange={(e) => setProfileForm((prev) => ({ ...prev, address: e.target.value }))}
@@ -606,8 +624,14 @@ export default function SupplierDashboard() {
 
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                  <label
+                    htmlFor="supplierdashboard-state"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    State *
+                  </label>
                   <input
+                    id="supplierdashboard-state"
                     type="text"
                     required
                     value={profileForm.state}
@@ -616,8 +640,14 @@ export default function SupplierDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
+                  <label
+                    htmlFor="supplierdashboard-pincode"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Pincode *
+                  </label>
                   <input
+                    id="supplierdashboard-pincode"
                     type="text"
                     required
                     value={profileForm.pincode}
@@ -626,8 +656,14 @@ export default function SupplierDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius (km)</label>
+                  <label
+                    htmlFor="supplierdashboard-delivery-radius-km"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Delivery Radius (km)
+                  </label>
                   <input
+                    id="supplierdashboard-delivery-radius-km"
                     type="number"
                     value={profileForm.deliveryRadius}
                     onChange={(e) =>
@@ -640,8 +676,14 @@ export default function SupplierDashboard() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Latitude *</label>
+                  <label
+                    htmlFor="supplierdashboard-latitude"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Latitude *
+                  </label>
                   <input
+                    id="supplierdashboard-latitude"
                     type="number"
                     required
                     step="0.000001"
@@ -653,8 +695,14 @@ export default function SupplierDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Longitude *</label>
+                  <label
+                    htmlFor="supplierdashboard-longitude"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Longitude *
+                  </label>
                   <input
+                    id="supplierdashboard-longitude"
                     type="number"
                     required
                     step="0.000001"
@@ -669,8 +717,14 @@ export default function SupplierDashboard() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Open Time *</label>
+                  <label
+                    htmlFor="supplierdashboard-open-time"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Open Time *
+                  </label>
                   <input
+                    id="supplierdashboard-open-time"
                     type="time"
                     required
                     value={profileForm.businessHoursOpen}
@@ -681,8 +735,14 @@ export default function SupplierDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Close Time *</label>
+                  <label
+                    htmlFor="supplierdashboard-close-time"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Close Time *
+                  </label>
                   <input
+                    id="supplierdashboard-close-time"
                     type="time"
                     required
                     value={profileForm.businessHoursClose}
@@ -754,51 +814,39 @@ export default function SupplierDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-green-600 to-green-700 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-2xl mr-3">🏪</span>
-              <div>
-                <h1 className="text-xl font-semibold text-white">Smart Suppliers</h1>
-                <p className="text-green-100 text-sm">{supplierProfile?.businessName}</p>
+      <DashboardHeader
+        role="supplier"
+        title="Smart Suppliers"
+        subtitle={supplierProfile?.businessName}
+        onLogout={logout}
+        actions={
+          <>
+            <div className="text-sm text-white/90">
+              <div className="flex items-center">
+                <span className="text-yellow-300">★</span>
+                <span className="ml-1">{supplierProfile?.trustScore?.toFixed(1)}</span>
+                {supplierProfile?.isVerified && (
+                  <span className="ml-2 bg-white/20 text-white px-2 py-0.5 rounded-full text-xs">
+                    Verified
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-white/90">
-                <div className="flex items-center">
-                  <span className="text-yellow-300">★</span>
-                  <span className="ml-1">{supplierProfile?.trustScore?.toFixed(1)}</span>
-                  {supplierProfile?.isVerified && (
-                    <span className="ml-2 bg-white/20 text-white px-2 py-0.5 rounded-full text-xs">
-                      Verified
-                    </span>
-                  )}
-                </div>
-              </div>
-              <VoiceQuery userRole="supplier" className="mr-4" />
-              <NotificationBell onClick={() => setNotificationOpen(true)} />
-              <button
-                onClick={logout}
-                className="text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-md transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+            <NotificationBell onClick={() => setNotificationOpen(true)} />
+          </>
+        }
+      />
 
       <NotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} />
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div id="main-content" className="max-w-7xl mx-auto p-4 sm:p-6">
         {/* Onboarding Banner */}
         {showOnboarding && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 animate-fade-in">
             <div className="flex items-center">
               <div className="text-blue-500 mr-3 text-2xl">👋</div>
               <div>
-                <h3 className="text-blue-800 font-medium">Welcome to Smart Suppliers!</h3>
+                <h2 className="text-blue-900 font-semibold">Welcome to Smart Street!</h2>
                 <p className="text-blue-700 text-sm">
                   Get started by adding your first product, managing orders, or viewing analytics. Your
                   products will be visible to vendors in your area.
@@ -818,7 +866,10 @@ export default function SupplierDashboard() {
         {/* Navigation Tabs - Supplier focused */}
         <div className="bg-white rounded-lg shadow-lg mb-6">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-4 overflow-x-auto" aria-label="Supplier dashboard navigation">
+            <nav
+              className="-mb-px flex gap-1 overflow-x-auto px-2"
+              aria-label="Supplier dashboard navigation"
+            >
               {[
                 { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
                 { id: 'products', label: 'My Products', icon: '📦' },
@@ -833,13 +884,16 @@ export default function SupplierDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`py-4 px-6 border-b-2 font-medium text-sm transition-colors ${
+                  aria-current={activeTab === tab.id ? 'page' : undefined}
+                  className={`shrink-0 whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
                       ? 'border-green-500 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  <span className="mr-2">{tab.icon}</span>
+                  <span className="mr-2" aria-hidden="true">
+                    {tab.icon}
+                  </span>
                   {tab.label}
                 </button>
               ))}
@@ -847,805 +901,840 @@ export default function SupplierDashboard() {
           </div>
         </div>
 
-        {/* Dashboard Tab */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <RoleOnboardingWizard role="supplier" userId={user?.id} />
-            {/* Quick Actions */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <button
-                onClick={() => setShowAddProduct(true)}
-                className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
-              >
-                <div className="text-3xl mb-3">➕</div>
-                <div className="font-semibold text-lg">Add New Product</div>
-                <div className="text-sm opacity-90">Upload items to your catalog</div>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('orders')}
-                className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
-              >
-                <div className="text-3xl mb-3">📋</div>
-                <div className="font-semibold text-lg">Manage Orders</div>
-                <div className="text-sm opacity-90">Process vendor orders</div>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('analytics')}
-                className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
-              >
-                <div className="text-3xl mb-3">📈</div>
-                <div className="font-semibold text-lg">View Analytics</div>
-                <div className="text-sm opacity-90">Track your performance</div>
-              </button>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-gray-800">{stats.activeOrders}</div>
-                    <div className="text-sm text-gray-600">Active Orders</div>
-                  </div>
-                  <div className="text-3xl text-blue-500">📋</div>
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-gray-800">{stats.availableProducts}</div>
-                    <div className="text-sm text-gray-600">Available Products</div>
-                  </div>
-                  <div className="text-3xl text-green-500">📦</div>
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-yellow-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-yellow-600">{stats.lowStockItems}</div>
-                    <div className="text-sm text-gray-600">Low Stock Alerts</div>
-                  </div>
-                  <div className="text-3xl text-yellow-500">⚠️</div>
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">
-                      ₹{stats.totalRevenue.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-600">Total Earnings</div>
-                  </div>
-                  <div className="text-3xl text-purple-500">💰</div>
-                </div>
-              </div>
-            </div>
-
-            {/* AI Forecast Summary */}
-            {forecasts.length > 0 && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-800">AI Forecast Summary</h3>
-                  <span className="text-sm text-gray-500">Next 7 days</span>
-                </div>
-                <div className="space-y-3">
-                  {forecasts.slice(0, 3).map((forecast: any, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100"
-                    >
-                      <div>
-                        <div className="font-medium text-gray-900">{forecast.item}</div>
-                        <div className="text-sm text-gray-600">
-                          Predicted: {forecast.predictedQty.toFixed(1)} units
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div
-                          className={`text-sm px-2 py-1 rounded-full font-medium ${
-                            forecast.confidence >= 0.8
-                              ? 'bg-green-100 text-green-800'
-                              : forecast.confidence >= 0.6
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {Math.round(forecast.confidence * 100)}% confidence
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {forecasts.length > 3 && (
-                    <div className="text-center pt-2">
-                      <button
-                        onClick={() => setActiveTab('analytics')}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        View all {forecasts.length} forecasts →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Recent Orders */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-medium text-gray-800 mb-4">Recent Orders</h3>
-              {orders.length > 0 ? (
-                <div className="space-y-3">
-                  {orders.slice(0, 5).map((order: Order) => (
-                    <div
-                      key={order._id}
-                      className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100"
-                    >
-                      <div>
-                        <div className="font-semibold text-gray-800">Order #{order._id.slice(-6)}</div>
-                        <div className="text-sm text-gray-600">{order.items.length} items ordered</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-green-600">₹{order.totalAmount}</div>
-                        <div
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            order.status === 'confirmed'
-                              ? 'bg-green-100 text-green-800'
-                              : order.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : order.status === 'processing'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : order.status === 'delivered'
-                                    ? 'bg-purple-100 text-purple-800'
-                                    : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📋</div>
-                  <h3 className="text-xl font-medium text-gray-700 mb-2">No Orders Yet</h3>
-                  <p className="text-gray-500">
-                    Orders from vendors will appear here once you add products to your catalog
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Products Tab */}
-        {activeTab === 'products' && (
-          <div className="space-y-6">
-            {/* Product Management Header */}
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">My Product Catalog</h2>
-              <button
-                onClick={() => setShowAddProduct(true)}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center shadow-lg"
-              >
-                <span className="mr-2">➕</span>
-                Add New Product
-              </button>
-            </div>
-
-            {/* Product Grid */}
-            {inventory.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {inventory.map((item: InventoryItem) => (
-                  <div
-                    key={item._id}
-                    className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-                  >
-                    <div className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800">{item.itemName}</h3>
-                          <p className="text-sm text-gray-600">{item.category}</p>
-                        </div>
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            item.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {item.isAvailable ? 'Available' : 'Out of Stock'}
-                        </span>
-                      </div>
-
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Stock:</span>
-                          <span
-                            className={`font-medium ${
-                              item.currentStock < 10 ? 'text-red-600' : 'text-gray-800'
-                            }`}
-                          >
-                            {item.currentStock} {item.unit}
-                            {item.currentStock < 10 && <span className="ml-1 text-red-500">⚠️</span>}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Price:</span>
-                          <span className="font-semibold text-green-600">
-                            ₹{item.pricePerUnit}/{item.unit}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Min Order:</span>
-                          <span className="text-gray-800">
-                            {item.minimumOrder} {item.unit}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Quality:</span>
-                          <span className="text-gray-800 capitalize">{item.quality}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => setEditingProduct(item)}
-                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleToggleAvailability(item._id, !item.isAvailable)}
-                          className={`flex-1 px-3 py-2 rounded-md text-sm transition-colors ${
-                            item.isAvailable
-                              ? 'bg-red-500 hover:bg-red-600 text-white'
-                              : 'bg-green-500 hover:bg-green-600 text-white'
-                          }`}
-                        >
-                          {item.isAvailable ? 'Disable' : 'Enable'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <div className="text-6xl mb-4">📦</div>
-                <h3 className="text-xl font-medium text-gray-700 mb-2">No Products Yet</h3>
-                <p className="text-gray-500 mb-6">Start by adding your first product to your catalog</p>
+        <SectionErrorBoundary resetKey={activeTab}>
+          {/* Dashboard Tab */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              <RoleOnboardingWizard role="supplier" userId={user?.id} />
+              {/* Quick Actions */}
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
                 <button
                   onClick={() => setShowAddProduct(true)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
                 >
-                  Add Your First Product
+                  <div className="text-3xl mb-3">➕</div>
+                  <div className="font-semibold text-lg">Add New Product</div>
+                  <div className="text-sm opacity-90">Upload items to your catalog</div>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <div className="text-3xl mb-3">📋</div>
+                  <div className="font-semibold text-lg">Manage Orders</div>
+                  <div className="text-sm opacity-90">Process vendor orders</div>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <div className="text-3xl mb-3">📈</div>
+                  <div className="font-semibold text-lg">View Analytics</div>
+                  <div className="text-sm opacity-90">Track your performance</div>
                 </button>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Order Management Tab */}
-        {activeTab === 'orders' && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-2">Order Management</h2>
-              <p className="opacity-90">Process and fulfill vendor orders efficiently</p>
-            </div>
-
-            <TrackingStatusBanner />
-
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">Vendor Orders</h3>
-              {ordersLoading ? (
-                <div className="flex justify-center items-center p-8 animate-fade-in">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              {/* Stats Grid */}
+              <div className="grid md:grid-cols-4 gap-6">
+                <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{stats.activeOrders}</div>
+                      <div className="text-sm text-gray-600">Active Orders</div>
+                    </div>
+                    <div className="text-3xl text-blue-500">📋</div>
+                  </div>
                 </div>
-              ) : orders.length > 0 ? (
-                <div className="space-y-4">
-                  {orders.map((order: Order) => (
-                    <div key={order._id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-3">
+                <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{stats.availableProducts}</div>
+                      <div className="text-sm text-gray-600">Available Products</div>
+                    </div>
+                    <div className="text-3xl text-green-500">📦</div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-yellow-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-yellow-600">{stats.lowStockItems}</div>
+                      <div className="text-sm text-gray-600">Low Stock Alerts</div>
+                    </div>
+                    <div className="text-3xl text-yellow-500">⚠️</div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">
+                        ₹{stats.totalRevenue.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-600">Total Earnings</div>
+                    </div>
+                    <div className="text-3xl text-purple-500">💰</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Forecast Summary */}
+              {forecasts.length > 0 && (
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-800">AI Forecast Summary</h3>
+                    <span className="text-sm text-gray-500">Next 7 days</span>
+                  </div>
+                  <div className="space-y-3">
+                    {forecasts.slice(0, 3).map((forecast: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100"
+                      >
                         <div>
-                          <h4 className="font-medium">Order #{order._id.slice(-8)}</h4>
-                          <p className="text-sm text-gray-600">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </p>
-                          {order.vendor && (
-                            <p className="text-sm text-blue-600">{order.vendor.businessName}</p>
-                          )}
+                          <div className="font-medium text-gray-900">{forecast.item}</div>
+                          <div className="text-sm text-gray-600">
+                            Predicted: {forecast.predictedQty.toFixed(1)} units
+                          </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-medium">₹{order.totalAmount}</div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                order.status === 'confirmed'
-                                  ? 'bg-green-100 text-green-800'
-                                  : order.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : order.status === 'processing'
-                                      ? 'bg-purple-100 text-purple-800'
-                                      : order.status === 'shipped'
-                                        ? 'bg-orange-100 text-orange-800'
-                                        : order.status === 'delivered'
-                                          ? 'bg-blue-100 text-blue-800'
-                                          : 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              {order.status}
-                            </span>
-                            {order.status === 'shipped' && (
-                              <span className="bg-green-100 text-green-800 px-2 py-1 text-xs rounded-full">
-                                📦 Shipped
-                              </span>
-                            )}
+                          <div
+                            className={`text-sm px-2 py-1 rounded-full font-medium ${
+                              forecast.confidence >= 0.8
+                                ? 'bg-green-100 text-green-800'
+                                : forecast.confidence >= 0.6
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {Math.round(forecast.confidence * 100)}% confidence
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-600 mb-3">{order.items.length} items ordered</div>
-                      <div className="flex flex-wrap gap-2">
-                        {order.status === 'pending' && (
-                          <button
-                            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs disabled:opacity-50"
-                            disabled={updatingOrderId === order._id}
-                            onClick={async () => {
-                              setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({
-                                orderId: order._id as Id<'orders'>,
-                                status: 'confirmed',
-                              });
-                              setUpdatingOrderId(null);
-                            }}
-                          >
-                            {updatingOrderId === order._id ? 'Confirming...' : 'Confirm'}
-                          </button>
-                        )}
-                        {order.status === 'confirmed' && (
-                          <button
-                            className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs disabled:opacity-50"
-                            disabled={updatingOrderId === order._id}
-                            onClick={async () => {
-                              setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({
-                                orderId: order._id as Id<'orders'>,
-                                status: 'processing',
-                              });
-                              setUpdatingOrderId(null);
-                            }}
-                          >
-                            {updatingOrderId === order._id ? 'Processing...' : 'Process'}
-                          </button>
-                        )}
-                        {order.status === 'processing' && (
-                          <button
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
-                            disabled={updatingOrderId === order._id}
-                            onClick={async () => {
-                              setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({
-                                orderId: order._id as Id<'orders'>,
-                                status: 'shipped',
-                              });
-                              setUpdatingOrderId(null);
-                            }}
-                          >
-                            {updatingOrderId === order._id ? 'Shipping...' : 'Mark as Shipped'}
-                          </button>
-                        )}
-                        {order.status === 'shipped' && (
-                          <button
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
-                            disabled={updatingOrderId === order._id}
-                            onClick={async () => {
-                              setUpdatingOrderId(order._id as Id<'orders'>);
-                              await updateOrderStatus({
-                                orderId: order._id as Id<'orders'>,
-                                status: 'delivered',
-                              });
-                              setUpdatingOrderId(null);
-                            }}
-                          >
-                            {updatingOrderId === order._id ? 'Delivering...' : 'Mark as Delivered'}
-                          </button>
-                        )}
+                    ))}
+                    {forecasts.length > 3 && (
+                      <div className="text-center pt-2">
                         <button
-                          className="px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 text-xs"
-                          onClick={() => setSelectedOrderId(order._id as Id<'orders'>)}
+                          onClick={() => setActiveTab('analytics')}
+                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                         >
-                          Details
+                          View all {forecasts.length} forecasts →
                         </button>
-                        {(order.status === 'confirmed' ||
-                          order.status === 'processing' ||
-                          order.status === 'shipped') && (
-                          <button
-                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs"
-                            onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Orders */}
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">Recent Orders</h3>
+                {orders.length > 0 ? (
+                  <div className="space-y-3">
+                    {orders.slice(0, 5).map((order: Order) => (
+                      <div
+                        key={order._id}
+                        className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100"
+                      >
+                        <div>
+                          <div className="font-semibold text-gray-800">Order #{order._id.slice(-6)}</div>
+                          <div className="text-sm text-gray-600">{order.items.length} items ordered</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-green-600">₹{order.totalAmount}</div>
+                          <div
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              order.status === 'confirmed'
+                                ? 'bg-green-100 text-green-800'
+                                : order.status === 'pending'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : order.status === 'processing'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : order.status === 'delivered'
+                                      ? 'bg-purple-100 text-purple-800'
+                                      : 'bg-gray-100 text-gray-800'
+                            }`}
                           >
-                            Manage Tracking
+                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📋</div>
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">No Orders Yet</h3>
+                    <p className="text-gray-500">
+                      Orders from vendors will appear here once you add products to your catalog
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Products Tab */}
+          {activeTab === 'products' && (
+            <div className="space-y-6">
+              {/* Product Management Header */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">My Product Catalog</h2>
+                <button
+                  onClick={() => setShowAddProduct(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center shadow-lg"
+                >
+                  <span className="mr-2">➕</span>
+                  Add New Product
+                </button>
+              </div>
+
+              {/* Product Grid */}
+              {inventory.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {inventory.map((item: InventoryItem) => (
+                    <div
+                      key={item._id}
+                      className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                    >
+                      <div className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-800">{item.itemName}</h3>
+                            <p className="text-sm text-gray-600">{item.category}</p>
+                          </div>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              item.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {item.isAvailable ? 'Available' : 'Out of Stock'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Stock:</span>
+                            <span
+                              className={`font-medium ${
+                                item.currentStock < 10 ? 'text-red-600' : 'text-gray-800'
+                              }`}
+                            >
+                              {item.currentStock} {item.unit}
+                              {item.currentStock < 10 && <span className="ml-1 text-red-500">⚠️</span>}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Price:</span>
+                            <span className="font-semibold text-green-600">
+                              ₹{item.pricePerUnit}/{item.unit}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Min Order:</span>
+                            <span className="text-gray-800">
+                              {item.minimumOrder} {item.unit}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Quality:</span>
+                            <span className="text-gray-800 capitalize">{item.quality}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => setEditingProduct(item)}
+                            className="flex-1 min-h-10 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 transition-colors hover:bg-slate-50"
+                          >
+                            Edit
                           </button>
-                        )}
+                          <button
+                            onClick={() => handleToggleAvailability(item._id, !item.isAvailable)}
+                            className={`flex-1 px-3 py-2 rounded-md text-sm transition-colors ${
+                              item.isAvailable
+                                ? 'border border-red-200 bg-red-50 font-medium text-red-700 hover:bg-red-100'
+                                : 'border border-green-200 bg-green-50 font-medium text-green-700 hover:bg-green-100'
+                            }`}
+                          >
+                            {item.isAvailable ? 'Disable' : 'Enable'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <div className="text-6xl mb-4">📋</div>
-                  <h3 className="text-xl font-medium text-gray-700 mb-2">No Orders Received</h3>
-                  <p className="text-gray-500 mb-6">
-                    Vendor orders will appear here once you have products in your catalog
-                  </p>
+                  <div className="text-6xl mb-4">📦</div>
+                  <h3 className="text-xl font-medium text-gray-700 mb-2">No Products Yet</h3>
+                  <p className="text-gray-500 mb-6">Start by adding your first product to your catalog</p>
                   <button
-                    onClick={() => setActiveTab('products')}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    onClick={() => setShowAddProduct(true)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                   >
-                    Manage Products
+                    Add Your First Product
                   </button>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Analytics Tab */}
-        {activeTab === 'analytics' && supplierProfile && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-2">Business Analytics</h2>
-              <p className="opacity-90">Track your performance and grow your business</p>
-            </div>
+          {/* Order Management Tab */}
+          {activeTab === 'orders' && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6">
+                <h2 className="text-2xl font-bold mb-2">Order Management</h2>
+                <p className="opacity-90">Process and fulfill vendor orders efficiently</p>
+              </div>
 
-            {hasBackendSupplier ? (
-              <>
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <SupplierAnalytics supplierId={supplierProfile._id as Id<'suppliers'>} />
-                </div>
+              <TrackingStatusBanner />
 
-                {/* AI Forecast Section */}
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-gray-800">AI Demand Forecast</h3>
-                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                      AI-Powered
-                    </span>
-                  </div>
-                  <InventoryForecast supplierId={supplierProfile._id as Id<'suppliers'>} />
-                </div>
-              </>
-            ) : (
               <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-3">Supplier Analytics</h2>
-                <p className="text-gray-600">
-                  Live analytics will appear when backend connectivity is restored. Your dashboard remains
-                  available in local mode.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Smart Pricing Tab */}
-        {activeTab === 'pricing' && supplierProfile && (
-          <div className="space-y-6">
-            {hasBackendSupplier ? (
-              <SmartPricingEngine supplierId={supplierProfile._id as Id<'suppliers'>} />
-            ) : (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800">Smart Pricing Engine</h2>
-                <p className="text-gray-600 mt-2">
-                  Pricing insights are temporarily unavailable without live inventory data.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Automation Tab */}
-        {activeTab === 'automation' && supplierProfile && (
-          <div className="space-y-6">
-            {hasBackendSupplier ? (
-              <InventoryAutomation supplierId={supplierProfile._id as Id<'suppliers'>} />
-            ) : (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800">Inventory Automation</h2>
-                <p className="text-gray-600 mt-2">
-                  Automation rules will activate once backend data sync is available.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Quality Control Tab */}
-        {activeTab === 'quality' && supplierProfile && (
-          <div className="space-y-6">
-            {hasBackendSupplier ? (
-              <QualityAssurance supplierId={supplierProfile._id as Id<'suppliers'>} />
-            ) : (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800">Quality Assurance</h2>
-                <p className="text-gray-600 mt-2">
-                  Quality metrics need live order and inventory feeds to compute accurately.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Loyalty Program Tab */}
-        {activeTab === 'loyalty' && supplierProfile && (
-          <div className="space-y-6">
-            {hasBackendSupplier ? (
-              <SupplierLoyalty supplierId={supplierProfile._id as Id<'suppliers'>} />
-            ) : (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800">Vendor Loyalty Program</h2>
-                <p className="text-gray-600 mt-2">
-                  Loyalty insights will load after reconnecting to backend order history.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Profile Tab */}
-        {activeTab === 'profile' && supplierProfile && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-2">Store Profile</h2>
-              <p className="opacity-90">Manage your store information and verification status</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-800">Business Information</h3>
-                <button
-                  onClick={() => setEditingProfile(!editingProfile)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    editingProfile
-                      ? 'bg-gray-500 hover:bg-gray-600 text-white'
-                      : 'bg-blue-500 hover:bg-blue-600 text-white'
-                  }`}
-                >
-                  {editingProfile ? 'Cancel' : 'Edit Profile'}
-                </button>
-              </div>
-
-              {editingProfile ? (
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={editProfileForm.businessName}
-                        onChange={(e) =>
-                          setEditProfileForm((prev) => ({ ...prev, businessName: e.target.value }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Delivery Radius (km) *
-                      </label>
-                      <input
-                        type="number"
-                        required
-                        min="1"
-                        max="100"
-                        value={editProfileForm.deliveryRadius}
-                        onChange={(e) =>
-                          setEditProfileForm((prev) => ({ ...prev, deliveryRadius: Number(e.target.value) }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Minimum Order Amount (₹) *
-                      </label>
-                      <input
-                        type="number"
-                        required
-                        min="0"
-                        value={editProfileForm.minimumOrder}
-                        onChange={(e) =>
-                          setEditProfileForm((prev) => ({ ...prev, minimumOrder: Number(e.target.value) }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-6">Vendor Orders</h3>
+                {ordersLoading ? (
+                  <div className="flex justify-center items-center p-8 animate-fade-in">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Business Categories
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {MARKETPLACE_CATEGORIES.map((category) => (
-                        <label key={category} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editProfileForm.categories.includes(category)}
-                            onChange={() => handleCategoryToggle(category)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">{category}</span>
-                        </label>
-                      ))}
-                    </div>
+                ) : orders.length > 0 ? (
+                  <div className="space-y-4">
+                    {orders.map((order: Order) => (
+                      <div key={order._id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h4 className="font-medium">Order #{order._id.slice(-8)}</h4>
+                            <p className="text-sm text-gray-600">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
+                            {order.vendor && (
+                              <p className="text-sm text-blue-600">{order.vendor.businessName}</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="font-medium">₹{order.totalAmount}</div>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  order.status === 'confirmed'
+                                    ? 'bg-green-100 text-green-800'
+                                    : order.status === 'pending'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : order.status === 'processing'
+                                        ? 'bg-purple-100 text-purple-800'
+                                        : order.status === 'shipped'
+                                          ? 'bg-orange-100 text-orange-800'
+                                          : order.status === 'delivered'
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {order.status}
+                              </span>
+                              {order.status === 'shipped' && (
+                                <span className="bg-green-100 text-green-800 px-2 py-1 text-xs rounded-full">
+                                  📦 Shipped
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600 mb-3">{order.items.length} items ordered</div>
+                        <div className="flex flex-wrap gap-2">
+                          {order.status === 'pending' && (
+                            <button
+                              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs disabled:opacity-50"
+                              disabled={updatingOrderId === order._id}
+                              onClick={async () => {
+                                setUpdatingOrderId(order._id as Id<'orders'>);
+                                await updateOrderStatus({
+                                  orderId: order._id as Id<'orders'>,
+                                  status: 'confirmed',
+                                });
+                                setUpdatingOrderId(null);
+                              }}
+                            >
+                              {updatingOrderId === order._id ? 'Confirming...' : 'Confirm'}
+                            </button>
+                          )}
+                          {order.status === 'confirmed' && (
+                            <button
+                              className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-xs disabled:opacity-50"
+                              disabled={updatingOrderId === order._id}
+                              onClick={async () => {
+                                setUpdatingOrderId(order._id as Id<'orders'>);
+                                await updateOrderStatus({
+                                  orderId: order._id as Id<'orders'>,
+                                  status: 'processing',
+                                });
+                                setUpdatingOrderId(null);
+                              }}
+                            >
+                              {updatingOrderId === order._id ? 'Processing...' : 'Process'}
+                            </button>
+                          )}
+                          {order.status === 'processing' && (
+                            <button
+                              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
+                              disabled={updatingOrderId === order._id}
+                              onClick={async () => {
+                                setUpdatingOrderId(order._id as Id<'orders'>);
+                                await updateOrderStatus({
+                                  orderId: order._id as Id<'orders'>,
+                                  status: 'shipped',
+                                });
+                                setUpdatingOrderId(null);
+                              }}
+                            >
+                              {updatingOrderId === order._id ? 'Shipping...' : 'Mark as Shipped'}
+                            </button>
+                          )}
+                          {order.status === 'shipped' && (
+                            <button
+                              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs disabled:opacity-50"
+                              disabled={updatingOrderId === order._id}
+                              onClick={async () => {
+                                setUpdatingOrderId(order._id as Id<'orders'>);
+                                await updateOrderStatus({
+                                  orderId: order._id as Id<'orders'>,
+                                  status: 'delivered',
+                                });
+                                setUpdatingOrderId(null);
+                              }}
+                            >
+                              {updatingOrderId === order._id ? 'Delivering...' : 'Mark as Delivered'}
+                            </button>
+                          )}
+                          <button
+                            className="px-3 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 text-xs"
+                            onClick={() => setSelectedOrderId(order._id as Id<'orders'>)}
+                          >
+                            Details
+                          </button>
+                          {(order.status === 'confirmed' ||
+                            order.status === 'processing' ||
+                            order.status === 'shipped') && (
+                            <button
+                              className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 text-xs"
+                              onClick={() => setShowOrderTracking(order._id as Id<'orders'>)}
+                            >
+                              Manage Tracking
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Open Time *</label>
-                      <input
-                        type="time"
-                        required
-                        value={editProfileForm.businessHoursOpen}
-                        onChange={(e) =>
-                          setEditProfileForm((prev) => ({ ...prev, businessHoursOpen: e.target.value }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Close Time *</label>
-                      <input
-                        type="time"
-                        required
-                        value={editProfileForm.businessHoursClose}
-                        onChange={(e) =>
-                          setEditProfileForm((prev) => ({ ...prev, businessHoursClose: e.target.value }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Business Days *</label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {BUSINESS_DAYS.map((day) => (
-                        <label key={day} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editProfileForm.businessDays.includes(day)}
-                            onChange={() => handleBusinessDayToggle(day, 'edit')}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">{day}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-4">
+                ) : (
+                  <div className="text-center py-16">
+                    <div className="text-6xl mb-4">📋</div>
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">No Orders Received</h3>
+                    <p className="text-gray-500 mb-6">
+                      Vendor orders will appear here once you have products in your catalog
+                    </p>
                     <button
-                      type="button"
-                      onClick={() => setEditingProfile(false)}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                      onClick={() => setActiveTab('products')}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                     >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
-                    >
-                      Save Changes
+                      Manage Products
                     </button>
                   </div>
-                </form>
-              ) : (
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
-                    <div className="text-lg font-semibold text-gray-900">{supplierProfile.businessName}</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Analytics Tab */}
+          {activeTab === 'analytics' && supplierProfile && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-6">
+                <h2 className="text-2xl font-bold mb-2">Business Analytics</h2>
+                <p className="opacity-90">Track your performance and grow your business</p>
+              </div>
+
+              {hasBackendSupplier ? (
+                <>
+                  <div className="bg-white rounded-lg shadow-lg p-6">
+                    <SupplierAnalytics supplierId={supplierProfile._id as Id<'suppliers'>} />
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
-                    <div className="flex items-center">
-                      <span className="text-yellow-500 mr-2 text-xl">★</span>
-                      <span className="text-lg font-semibold text-gray-900">
-                        {supplierProfile.trustScore.toFixed(1)}/5.0
+
+                  {/* AI Forecast Section */}
+                  <div className="bg-white rounded-lg shadow-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-semibold text-gray-800">AI Demand Forecast</h3>
+                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        AI-Powered
                       </span>
                     </div>
+                    <InventoryForecast supplierId={supplierProfile._id as Id<'suppliers'>} />
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Business Categories
-                    </label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {supplierProfile.categories.map((category: string) => (
-                        <span
-                          key={category}
-                          className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
-                        >
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Verification Status
-                    </label>
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        supplierProfile.isVerified
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
-                    </span>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius</label>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {supplierProfile.deliveryRadius} km
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
-                    <div className="text-lg font-semibold text-gray-900">₹{supplierProfile.minimumOrder}</div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {supplierProfile.businessHours?.open || '09:00'} -{' '}
-                      {supplierProfile.businessHours?.close || '18:00'}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {(supplierProfile.businessHours?.days || []).join(', ') ||
-                        'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday'}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Coordinates</label>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {supplierProfile.location?.coordinates?.lat?.toFixed?.(6) ?? 'N/A'},{' '}
-                      {supplierProfile.location?.coordinates?.lng?.toFixed?.(6) ?? 'N/A'}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* FSSAI Verification Component */}
-            <SupplierProfileMedia
-              supplierId={String(supplierProfile._id)}
-              businessName={supplierProfile.businessName}
-            />
-
-            {/* FSSAI Verification Component */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4">
-                <h3 className="text-lg font-semibold">FSSAI Verification</h3>
-                <p className="text-sm opacity-90">Verify your food license to increase customer trust</p>
-              </div>
-              {hasBackendSupplier ? (
-                <div className="p-6">
-                  <FSSAIVerification
-                    supplierId={supplierProfile._id as any}
-                    onVerificationComplete={() => {
-                      // Refresh the page to update verification status
-                      window.location.reload();
-                    }}
-                  />
-                </div>
+                </>
               ) : (
-                <div className="p-6 text-sm text-gray-600">
-                  Verification workflows need backend connectivity. You can continue updating your store
-                  profile in local mode.
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-3">Supplier Analytics</h2>
+                  <p className="text-gray-600">
+                    Live analytics will appear when backend connectivity is restored. Your dashboard remains
+                    available in local mode.
+                  </p>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Smart Pricing Tab */}
+          {activeTab === 'pricing' && supplierProfile && (
+            <div className="space-y-6">
+              {hasBackendSupplier ? (
+                <SmartPricingEngine supplierId={supplierProfile._id as Id<'suppliers'>} />
+              ) : (
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Smart Pricing Engine</h2>
+                  <p className="text-gray-600 mt-2">
+                    Pricing insights are temporarily unavailable without live inventory data.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Automation Tab */}
+          {activeTab === 'automation' && supplierProfile && (
+            <div className="space-y-6">
+              {hasBackendSupplier ? (
+                <InventoryAutomation supplierId={supplierProfile._id as Id<'suppliers'>} />
+              ) : (
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Inventory Automation</h2>
+                  <p className="text-gray-600 mt-2">
+                    Automation rules will activate once backend data sync is available.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Quality Control Tab */}
+          {activeTab === 'quality' && supplierProfile && (
+            <div className="space-y-6">
+              {hasBackendSupplier ? (
+                <QualityAssurance supplierId={supplierProfile._id as Id<'suppliers'>} />
+              ) : (
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Quality Assurance</h2>
+                  <p className="text-gray-600 mt-2">
+                    Quality metrics need live order and inventory feeds to compute accurately.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Loyalty Program Tab */}
+          {activeTab === 'loyalty' && supplierProfile && (
+            <div className="space-y-6">
+              {hasBackendSupplier ? (
+                <SupplierLoyalty supplierId={supplierProfile._id as Id<'suppliers'>} />
+              ) : (
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Vendor Loyalty Program</h2>
+                  <p className="text-gray-600 mt-2">
+                    Loyalty insights will load after reconnecting to backend order history.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Profile Tab */}
+          {activeTab === 'profile' && supplierProfile && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6">
+                <h2 className="text-2xl font-bold mb-2">Store Profile</h2>
+                <p className="opacity-90">Manage your store information and verification status</p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold text-gray-800">Business Information</h3>
+                  <button
+                    onClick={() => setEditingProfile(!editingProfile)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      editingProfile
+                        ? 'bg-gray-500 hover:bg-gray-600 text-white'
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    }`}
+                  >
+                    {editingProfile ? 'Cancel' : 'Edit Profile'}
+                  </button>
+                </div>
+
+                {editingProfile ? (
+                  <form onSubmit={handleUpdateProfile} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label
+                          htmlFor="supplierdashboard-business-name-2"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Business Name *
+                        </label>
+                        <input
+                          id="supplierdashboard-business-name-2"
+                          type="text"
+                          required
+                          value={editProfileForm.businessName}
+                          onChange={(e) =>
+                            setEditProfileForm((prev) => ({ ...prev, businessName: e.target.value }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="supplierdashboard-delivery-radius-km-2"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Delivery Radius (km) *
+                        </label>
+                        <input
+                          id="supplierdashboard-delivery-radius-km-2"
+                          type="number"
+                          required
+                          min="1"
+                          max="100"
+                          value={editProfileForm.deliveryRadius}
+                          onChange={(e) =>
+                            setEditProfileForm((prev) => ({
+                              ...prev,
+                              deliveryRadius: Number(e.target.value),
+                            }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label
+                          htmlFor="supplierdashboard-minimum-order-amount"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Minimum Order Amount (₹) *
+                        </label>
+                        <input
+                          id="supplierdashboard-minimum-order-amount"
+                          type="number"
+                          required
+                          min="0"
+                          value={editProfileForm.minimumOrder}
+                          onChange={(e) =>
+                            setEditProfileForm((prev) => ({ ...prev, minimumOrder: Number(e.target.value) }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Business Categories
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {MARKETPLACE_CATEGORIES.map((category) => (
+                          <label key={category} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={editProfileForm.categories.includes(category)}
+                              onChange={() => handleCategoryToggle(category)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{category}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label
+                          htmlFor="supplierdashboard-open-time-2"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Open Time *
+                        </label>
+                        <input
+                          id="supplierdashboard-open-time-2"
+                          type="time"
+                          required
+                          value={editProfileForm.businessHoursOpen}
+                          onChange={(e) =>
+                            setEditProfileForm((prev) => ({ ...prev, businessHoursOpen: e.target.value }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="supplierdashboard-close-time-2"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Close Time *
+                        </label>
+                        <input
+                          id="supplierdashboard-close-time-2"
+                          type="time"
+                          required
+                          value={editProfileForm.businessHoursClose}
+                          onChange={(e) =>
+                            setEditProfileForm((prev) => ({ ...prev, businessHoursClose: e.target.value }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Business Days *</label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {BUSINESS_DAYS.map((day) => (
+                          <label key={day} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={editProfileForm.businessDays.includes(day)}
+                              onChange={() => handleBusinessDayToggle(day, 'edit')}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{day}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end space-x-4">
+                      <button
+                        type="button"
+                        onClick={() => setEditingProfile(false)}
+                        className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {supplierProfile.businessName}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Trust Score</label>
+                      <div className="flex items-center">
+                        <span className="text-yellow-500 mr-2 text-xl">★</span>
+                        <span className="text-lg font-semibold text-gray-900">
+                          {supplierProfile.trustScore.toFixed(1)}/5.0
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Business Categories
+                      </label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {supplierProfile.categories.map((category: string) => (
+                          <span
+                            key={category}
+                            className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
+                          >
+                            {category}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Verification Status
+                      </label>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          supplierProfile.isVerified
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
+                        {supplierProfile.isVerified ? '✅ Verified Store' : '⏳ Pending Verification'}
+                      </span>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Radius</label>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {supplierProfile.deliveryRadius} km
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order</label>
+                      <div className="text-lg font-semibold text-gray-900">
+                        ₹{supplierProfile.minimumOrder}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {supplierProfile.businessHours?.open || '09:00'} -{' '}
+                        {supplierProfile.businessHours?.close || '18:00'}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {(supplierProfile.businessHours?.days || []).join(', ') ||
+                          'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday'}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Coordinates</label>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {supplierProfile.location?.coordinates?.lat?.toFixed?.(6) ?? 'N/A'},{' '}
+                        {supplierProfile.location?.coordinates?.lng?.toFixed?.(6) ?? 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* FSSAI Verification Component */}
+              <SupplierProfileMedia
+                supplierId={String(supplierProfile._id)}
+                businessName={supplierProfile.businessName}
+              />
+
+              {/* FSSAI Verification Component */}
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4">
+                  <h3 className="text-lg font-semibold">FSSAI Verification</h3>
+                  <p className="text-sm opacity-90">Verify your food license to increase customer trust</p>
+                </div>
+                {hasBackendSupplier ? (
+                  <div className="p-6">
+                    <FSSAIVerification
+                      supplierId={supplierProfile._id as any}
+                      onVerificationComplete={() => {
+                        // Refresh the page to update verification status
+                        window.location.reload();
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="p-6 text-sm text-gray-600">
+                    Verification workflows need backend connectivity. You can continue updating your store
+                    profile in local mode.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </SectionErrorBoundary>
 
         {/* Add Product Modal */}
         {editingProduct && (
