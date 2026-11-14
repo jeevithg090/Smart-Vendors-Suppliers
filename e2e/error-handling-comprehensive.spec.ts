@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 function uniqueEmail(prefix: string) {
   return `${prefix}.${Date.now()}.${Math.floor(Math.random() * 1000)}@example.com`;
@@ -38,7 +38,7 @@ test.describe('Comprehensive Error Handling E2E', () => {
 
     await signUp(page, 'vendor', email, password);
     await expect(page).toHaveURL(/\/auth/);
-    await expect(page.getByText(/please choose your role to continue/i)).toBeVisible();
+    await expect(page.getByRole('alert')).toContainText(/already exists/i);
   });
 
   test('redirects role-mismatched dashboard access to the correct dashboard', async ({ page }) => {
@@ -76,6 +76,9 @@ test.describe('Comprehensive Error Handling E2E', () => {
     await page.waitForURL(/\/vendor\/dashboard/, { timeout: 30000 });
 
     await page.goto('/this-route-does-not-exist');
+    await expect(page.getByRole('heading', { name: /couldn't find that page/i })).toBeVisible();
+    await page.getByRole('link', { name: /go to home/i }).click();
+    // Signed-in users are sent from the landing page to their dashboard
     await expect(page).toHaveURL(/\/vendor\/dashboard/);
   });
 

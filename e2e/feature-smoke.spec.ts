@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 
 async function signUpAsRole(page: Page, role: 'vendor' | 'supplier') {
   const ts = Date.now();
@@ -46,7 +46,7 @@ test.describe('Feature Smoke', () => {
     await page.goto('/');
     await expect(page.getByText(/Smart Street/i).first()).toBeVisible();
     await page
-      .getByRole('link', { name: /get started/i })
+      .getByRole('link', { name: /start free/i })
       .first()
       .click();
     await expect(page).toHaveURL(/\/auth/);
