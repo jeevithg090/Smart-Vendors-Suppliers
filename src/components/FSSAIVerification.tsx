@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useMutation } from 'convex/react';
+import { useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import type { FSSAICertificateData } from '../../convex/lib/fssai';
 
 interface FSSAIVerificationProps {
   supplierId: Id<"suppliers">;
@@ -12,10 +13,10 @@ export default function FSSAIVerification({ supplierId, onVerificationComplete }
   const [licenseNumber, setLicenseNumber] = useState('');
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [verificationResult, setVerificationResult] = useState<FSSAICertificateData | null>(null);
   const [error, setError] = useState('');
 
-  const verifyFSSAI = useMutation(api.fssaiVerification.verifyFSSAICertificate);
+  const verifyFSSAI = useAction(api.fssaiVerification.verifyFSSAICertificate);
 
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,12 +48,12 @@ export default function FSSAIVerification({ supplierId, onVerificationComplete }
         imageData: base64,
       });
 
-      if (result?.success) {
+      if ('certificateData' in result) {
         setVerificationResult(result.certificateData);
-        onVerificationComplete?.(result.status || 'verified');
+        onVerificationComplete?.(result.status);
       } else {
-        setError(result?.error || 'Verification failed. Please try again later.');
-        onVerificationComplete?.(result?.status || 'error');
+        setError(('error' in result && result.error) || 'Verification failed. Please try again later.');
+        onVerificationComplete?.(result.status);
       }
     } catch (err) {
       console.error('FSSAI verification error:', err);

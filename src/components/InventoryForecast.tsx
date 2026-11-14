@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 
@@ -9,16 +9,24 @@ interface InventoryForecastProps {
 
 export default function InventoryForecast({ supplierId }: InventoryForecastProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   
   const forecasts = useQuery(api.suppliers.getSupplierForecasts, { supplierId });
-  const generateForecast = useMutation(api.suppliers.generateForecastForSupplier);
+  const generateForecast = useAction(api.suppliers.generateForecastForSupplier);
 
   const handleGenerateForecast = async () => {
     setIsGenerating(true);
+    setGenerateError(null);
     try {
       await generateForecast({ supplierId });
     } catch (error) {
       console.error('Error generating forecast:', error);
+      const message = error instanceof Error ? error.message : '';
+      setGenerateError(
+        message.includes('Insufficient data')
+          ? 'Not enough recent orders or inventory to build a forecast yet.'
+          : 'Could not generate a forecast right now. Please try again later.'
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -50,7 +58,7 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
     <div className="bg-white rounded-lg shadow-sm border">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">AI Inventory Forecast</h2>
             <p className="text-gray-600">
@@ -77,6 +85,11 @@ export default function InventoryForecast({ supplierId }: InventoryForecastProps
             )}
           </button>
         </div>
+        {generateError && (
+          <p role="alert" className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {generateError}
+          </p>
+        )}
       </div>
 
       {/* Content */}
