@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'Smart Street - Vendor Sourcing Platform',
         short_name: 'Smart Street',
@@ -81,118 +81,32 @@ export default defineConfig({
     }),
   ],
 
-  // Build optimizations
   build: {
-    // Enable source maps for production debugging
-    sourcemap: process.env.NODE_ENV === 'production' ? 'hidden' : true,
-
-    // Target modern browsers for better optimization
     target: 'es2020',
-
-    // Optimize chunk splitting
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          // Vendor chunks
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('react-router')) {
-              return 'router-vendor';
-            }
-
-            if (id.includes('convex')) {
-              return 'convex-vendor';
-            }
-            if (id.includes('recharts')) {
-              return 'charts-vendor';
-            }
-            return 'vendor';
-          }
-
-          // Feature-based chunks
-          if (id.includes('/components/Supplier')) {
-            return 'supplier-features';
-          }
-          if (id.includes('/components/Order')) {
-            return 'order-features';
-          }
-          if (id.includes('/components/Group')) {
-            return 'group-order-features';
-          }
-          if (id.includes('/components/Financial') || id.includes('/components/Analytics')) {
-            return 'financial-features';
-          }
-          if (id.includes('/components/Message') || id.includes('/components/Communication')) {
-            return 'communication-features';
-          }
-
-          // Core UI chunks
-          if (
-            id.includes('/components/Layout') ||
-            id.includes('/components/ErrorBoundary') ||
-            id.includes('/components/OfflineManager')
-          ) {
-            return 'ui-core';
-          }
-        },
-
-        // Optimize asset naming
-        assetFileNames: (assetInfo) => {
-          const info = (assetInfo.name || '').split('.');
-          const ext = info[info.length - 1];
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-            return `assets/images/[name]-[hash][extname]`;
-          }
-          if (/woff2?|eot|ttf|otf/i.test(ext)) {
-            return `assets/fonts/[name]-[hash][extname]`;
-          }
-          return `assets/[name]-[hash][extname]`;
-        },
-
-        chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-      },
-    },
-
-    // Minification options
+    // Emit source maps for error tracking without referencing them from the bundle
+    sourcemap: 'hidden',
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: process.env.NODE_ENV === 'production',
-        drop_debugger: process.env.NODE_ENV === 'production',
-        pure_funcs: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info'] : [],
-      },
-      mangle: {
-        safari10: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
       },
     },
-
-    // Asset optimization
-    assetsInlineLimit: 4096, // 4kb
-    chunkSizeWarningLimit: 500, // 500kb warning
-
-    // CSS code splitting
-    cssCodeSplit: true,
-
-    // Enable CSS minification
-    cssMinify: true,
-
-    // Report compressed size
-    reportCompressedSize: true,
-
-    // Optimize for production
-    ...(process.env.NODE_ENV === 'production' && {
-      rollupOptions: {
-        // ...(this.build?.rollupOptions || {}),
-        treeshake: {
-          moduleSideEffects: false,
-          propertyReadSideEffects: false,
-          tryCatchDeoptimization: false,
+    rollupOptions: {
+      output: {
+        // Split large, rarely-changing libraries into their own cacheable chunks
+        manualChunks: (id) => {
+          if (!id.includes('node_modules')) return undefined;
+          if (/node_modules\/(react|react-dom|scheduler|react-router|react-router-dom)\//.test(id)) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/convex/')) return 'convex-vendor';
+          if (/node_modules\/(recharts|d3-|victory-vendor)/.test(id)) return 'charts-vendor';
+          return undefined;
         },
       },
-    }),
+    },
+    chunkSizeWarningLimit: 600,
   },
 
   // Development server optimizations
