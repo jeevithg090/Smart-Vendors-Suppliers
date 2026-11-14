@@ -11,6 +11,14 @@ export default defineConfig({
     include: ['src/test/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['e2e/**', 'dist/**'],
     css: true,
+    // Dummy credentials so services initialise in tests; all network calls are mocked.
+    env: {
+      VITE_SARVAM_API_KEY: 'test-sarvam-key',
+      VITE_OPENROUTER_API_KEY: 'test-openrouter-key',
+      VITE_GOOGLE_TRANSLATE_API_KEY: 'test-translate-key',
+      VITE_VISION_API_KEY: 'test-vision-key',
+      VITE_CLARIFAI_API_KEY: 'test-clarifai-key',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
