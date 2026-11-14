@@ -1,27 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+stats.html
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+vitest-results.json
+.lighthouseci/
+
+# Environment variables (never commit secrets)
+.env
+.env.*
+!.env.example
+*.local
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# Editor / OS
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
 
-# Environment variables
-.env.local
+# Convex local state
+.convex/
