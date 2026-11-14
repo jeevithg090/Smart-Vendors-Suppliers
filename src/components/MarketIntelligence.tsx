@@ -83,7 +83,6 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
   const reportHistory = useQuery(api.marketIntelligence.getMarketReports, { vendorId }) as ReportHistoryItem[] | undefined;
 
   const createCompetitorInsight = useMutation(api.marketIntelligence.createCompetitorInsight);
-  const deleteCompetitorInsight = useMutation(api.marketIntelligence.deleteCompetitorInsight);
   const createMarketReport = useMutation(api.marketIntelligence.createMarketReport);
 
   const itemNames = useMemo(() => {

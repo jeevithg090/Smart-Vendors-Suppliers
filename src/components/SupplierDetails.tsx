@@ -370,7 +370,7 @@ export default function SupplierDetails({ supplierId, onBack, vendorLocation }: 
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">FSSAI Certificate Verification</h3>
                 <FSSAIVerification 
                   supplierId={supplierId as any}
-                  onVerificationComplete={(status) => {
+                  onVerificationComplete={() => {
                     // Refresh the page or update the supplier details
                     window.location.reload();
                   }}

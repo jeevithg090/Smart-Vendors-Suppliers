@@ -194,6 +194,7 @@ export const sanitizeUserInput = (input: string): string => {
     .replace(/on\w+\s*=\s*[^\s>]+/gi, '') // Remove unquoted inline handlers
     .replace(/data:text\/html/gi, '') // Remove dangerous data URLs
     .replace(/alert\s*\([^)]*\)/gi, '') // Remove common inline payload patterns
+    // eslint-disable-next-line no-control-regex -- intentionally strips control characters
     .replace(/[\u0000-\u001F\u007F]/g, '') // Strip control characters
     .trim()
     .substring(0, SECURITY_CONFIG.validation.maxInputLength)

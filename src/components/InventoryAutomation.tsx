@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
@@ -141,14 +141,15 @@ export default function InventoryAutomation({ supplierId }: Props) {
 
     try {
       switch (alert.type) {
-        case 'expiringSoon':
-          // Apply discount
+        case 'expiringSoon': {
+          // Apply a 20% discount to move stock before it expires
           const discountedPrice = item.pricePerUnit * 0.8;
           await updateInventoryItem({
             id: item._id as Id<'inventory'>,
             pricePerUnit: discountedPrice
           });
           break;
+        }
         case 'lowStock':
           // In a real app, this would trigger reorder process
           console.log(`Reordering ${item.itemName}`);

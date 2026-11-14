@@ -36,16 +36,6 @@ interface SavedRecipe extends Recipe {
   updatedAt: number;
 }
 
-interface CostAnalysis {
-  totalIngredientCost: number;
-  laborCost: number;
-  overheadCost: number;
-  totalCost: number;
-  suggestedMarkup: number;
-  breakEvenPrice: number;
-  targetProfitPrice: number;
-}
-
 interface Props {
   vendorId: Id<'vendors'>;
 }

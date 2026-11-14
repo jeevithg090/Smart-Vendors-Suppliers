@@ -59,8 +59,8 @@ export default function SmartProcurementPlanner({
 
   const inventory = useQuery(api.inventory.getAvailableInventory, {});
   const suppliers = useQuery(api.suppliers.listAllSuppliers, {});
-  const resolvedInventory = inventory ?? [];
-  const resolvedSuppliers = suppliers ?? [];
+  const resolvedInventory = useMemo(() => inventory ?? [], [inventory]);
+  const resolvedSuppliers = useMemo(() => suppliers ?? [], [suppliers]);
   const isLoadingLiveData = inventory === undefined || suppliers === undefined;
 
   const availableCategories = useMemo(() => {

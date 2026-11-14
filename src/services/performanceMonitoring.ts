@@ -48,7 +48,7 @@ class PerformanceMonitoringService {
       try {
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
         this.observers.push(lcpObserver);
-      } catch (e) {
+      } catch {
         console.warn('LCP observer not supported');
       }
 
@@ -65,7 +65,7 @@ class PerformanceMonitoringService {
       try {
         fidObserver.observe({ entryTypes: ['first-input'] });
         this.observers.push(fidObserver);
-      } catch (e) {
+      } catch {
         console.warn('FID observer not supported');
       }
 
@@ -84,7 +84,7 @@ class PerformanceMonitoringService {
       try {
         clsObserver.observe({ entryTypes: ['layout-shift'] });
         this.observers.push(clsObserver);
-      } catch (e) {
+      } catch {
         console.warn('CLS observer not supported');
       }
 
@@ -102,7 +102,7 @@ class PerformanceMonitoringService {
       try {
         longTaskObserver.observe({ entryTypes: ['longtask'] });
         this.observers.push(longTaskObserver);
-      } catch (e) {
+      } catch {
         console.warn('Long task observer not supported');
       }
 
@@ -123,7 +123,7 @@ class PerformanceMonitoringService {
       try {
         resourceObserver.observe({ entryTypes: ['resource'] });
         this.observers.push(resourceObserver);
-      } catch (e) {
+      } catch {
         console.warn('Resource observer not supported');
       }
     }
@@ -361,7 +361,7 @@ class PerformanceMonitoringService {
     try {
       const user = (window as any).Clerk?.user;
       return user?.id;
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }
