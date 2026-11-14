@@ -6,10 +6,10 @@ interface APIKeys {
   googleTranslate?: string;
 }
 
-// Get API keys from environment variables or use defaults
+// Read API keys from Vite environment variables (never hardcode them)
 export const getAPIKeys = (): APIKeys => {
   return {
-    sarvam: import.meta.env.VITE_SARVAM_API_KEY || "sk_30vh1t24_YxCQZZKGkCTWa9zSszUBEyeg",
+    sarvam: import.meta.env.VITE_SARVAM_API_KEY || "",
     openRouter: import.meta.env.VITE_OPENROUTER_API_KEY || "",
     googleTranslate: import.meta.env.VITE_GOOGLE_TRANSLATE_API_KEY || undefined,
   };
