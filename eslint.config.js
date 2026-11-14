@@ -37,9 +37,16 @@ export default tseslint.config([
     },
   },
   {
-    files: ['convex/**/*.ts', '*.config.{ts,js}', 'scripts/**/*.{js,mjs}', 'e2e/**/*.ts'],
+    files: ['convex/**/*.ts', '*.config.{ts,js}', 'scripts/**/*.{js,mjs,ts}', 'e2e/**/*.ts'],
     languageOptions: {
       globals: { ...globals.node },
+    },
+  },
+  {
+    // Playwright fixtures use a `use` callback that is not a React hook
+    files: ['e2e/**/*.ts', 'scripts/**/*.ts'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
     },
   },
   {

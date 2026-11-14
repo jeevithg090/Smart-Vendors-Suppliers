@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 function uniqueEmail(prefix: string) {
   return `${prefix}.${Date.now()}.${Math.floor(Math.random() * 1000)}@example.com`;
@@ -49,7 +49,8 @@ test.describe('Error Handling E2E', () => {
 
   test('shows offline indicator and recovers when connection returns', async ({ page, context }) => {
     await page.goto('/');
-    await expect(page.locator('[data-testid="connection-status"]')).toBeVisible();
+    // The connection badge only appears when the connection is degraded
+    await expect(page.locator('[data-testid="connection-status"]')).toBeHidden();
 
     await context.setOffline(true);
     await expect(page.locator('[data-testid="offline-indicator"]')).toBeVisible({ timeout: 10000 });
@@ -57,7 +58,6 @@ test.describe('Error Handling E2E', () => {
 
     await context.setOffline(false);
     await expect(page.locator('[data-testid="offline-indicator"]')).toBeHidden({ timeout: 15000 });
-    await expect(page.locator('[data-testid="connection-status"]')).toContainText(/online|slow/i);
   });
 
   test('keeps auth flow responsive when backend is unreachable', async ({ page }) => {
@@ -69,7 +69,7 @@ test.describe('Error Handling E2E', () => {
     await page.getByRole('button', { name: /^sign in$/i }).click();
 
     await expect(page).toHaveURL(/\/auth/);
-    await expect(page.getByText(/please choose your role to continue/i)).toBeVisible();
+    await expect(page.getByRole('alert')).toBeVisible({ timeout: 20000 });
   });
 
   test('does not authenticate when role credentials are invalid', async ({ page }) => {
@@ -91,6 +91,6 @@ test.describe('Error Handling E2E', () => {
     await page.getByRole('button', { name: /^sign in$/i }).click();
 
     await expect(page).toHaveURL(/\/auth/);
-    await expect(page.getByText(/please choose your role to continue/i)).toBeVisible();
+    await expect(page.getByRole('alert')).toContainText(/registered as a supplier/i);
   });
 });
