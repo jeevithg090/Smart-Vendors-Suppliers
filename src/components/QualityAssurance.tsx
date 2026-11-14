@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { useState } from 'react';
 import type { Id } from '../../convex/_generated/dataModel';
 
 interface QualityMetric {
@@ -37,10 +35,10 @@ interface Props {
   supplierId: Id<'suppliers'>;
 }
 
-export default function QualityAssurance({ supplierId }: Props) {
+// Quality data is illustrative until quality checks are persisted in Convex.
+export default function QualityAssurance(_props: Props) {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'checks' | 'reports' | 'standards'>('dashboard');
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'quarter'>('week');
-  const [showNewCheckModal, setShowNewCheckModal] = useState(false);
 
   // Mock data - in real app, this would come from Convex
   const qualityMetrics: QualityMetric[] = [
@@ -125,7 +123,6 @@ export default function QualityAssurance({ supplierId }: Props) {
     ]
   };
 
-  const inventory = useQuery(api.inventory.getInventoryBySupplier, { supplierId });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -260,8 +257,10 @@ export default function QualityAssurance({ supplierId }: Props) {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-800">Recent Quality Checks</h3>
                   <button
-                    onClick={() => setShowNewCheckModal(true)}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                    type="button"
+                    disabled
+                    title="Recording new quality checks is coming soon"
+                    className="bg-green-500 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     + New Check
                   </button>
