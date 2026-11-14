@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
+import { getIdentityByEmail } from "./lib/identity";
 
 // Create a new demand request
 export const createDemandRequest = mutation({
@@ -24,9 +24,7 @@ export const createDemandRequest = mutation({
 
     // Try authenticated lookup when email is provided.
     if (!vendor && args.userEmail) {
-      const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, {
-        email: args.userEmail,
-      });
+      const identity = await getIdentityByEmail(ctx, args.userEmail);
       if (identity) {
         vendor = await ctx.db
           .query("vendors")
@@ -116,7 +114,7 @@ export const getVendorRequests = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -145,7 +143,7 @@ export const getOpenRequests = query({
   args: { userEmail: v.string() }, // User's email for authentication
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -170,7 +168,7 @@ export const respondToRequest = mutation({
   },
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -217,7 +215,7 @@ export const closeRequest = mutation({
   },
   handler: async (ctx, args) => {
     // Get user identity using manual auth
-    const identity = await ctx.runQuery(api.authHelpers.getUserIdentity, { email: args.userEmail });
+    const identity = await getIdentityByEmail(ctx, args.userEmail);
     if (!identity) {
       throw new Error("Not authenticated");
     }
