@@ -305,6 +305,12 @@ html {
   backdrop-filter: blur(8px);
 }
 
+@media (max-width: 639px) {
+  .translate-toolbar__label {
+    display: none;
+  }
+}
+
 .translate-toolbar__label {
   font-size: 0.75rem;
   font-weight: 600;
