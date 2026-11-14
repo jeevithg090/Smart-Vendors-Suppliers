@@ -83,7 +83,21 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
     tags: []
   });
 
-  const savedRecipes = useQuery(api.recipes.getRecipesByVendor, { vendorId }) as SavedRecipe[] | undefined;
+  const savedRecipeDocs = useQuery(api.recipes.getRecipesByVendor, { vendorId });
+  // Stored ingredients have no client-side id; assign stable ones for editing.
+  const savedRecipes = useMemo<SavedRecipe[] | undefined>(
+    () =>
+      savedRecipeDocs?.map((doc) => ({
+        ...doc,
+        description: doc.description ?? '',
+        difficulty: doc.difficulty as Recipe['difficulty'],
+        ingredients: doc.ingredients.map((ingredient, index) => ({
+          ...ingredient,
+          id: `${doc._id}-${index}`,
+        })),
+      })),
+    [savedRecipeDocs]
+  );
   const createRecipe = useMutation(api.recipes.createRecipe);
   const updateRecipe = useMutation(api.recipes.updateRecipe);
 

@@ -1731,7 +1731,7 @@ function OrderDetailsModal({ orderId, onClose }: { orderId: Id<'orders'>, onClos
         <div className="mb-4">
           <div className="font-semibold mb-1">Vendor:</div>
           <div className="text-sm text-gray-700">{order.vendor?.businessName || 'N/A'}</div>
-          <div className="text-sm text-gray-500">{order.vendor && 'email' in order.vendor ? order.vendor.email : ''}</div>
+          <div className="text-sm text-gray-500">{order.vendor?.phone ?? ''}</div>
         </div>
         <div className="flex justify-end">
           <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Close</button>
