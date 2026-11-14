@@ -1,3 +1,4 @@
+import { webcrypto } from 'node:crypto';
 import '@testing-library/jest-dom';
 import { beforeAll, afterEach, afterAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
@@ -65,19 +66,10 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }));
 
-// Mock crypto.randomUUID
-Object.defineProperty(global, 'crypto', {
+// Use Node's WebCrypto (jsdom lacks crypto.subtle); it matches the browser and Convex runtimes.
+Object.defineProperty(globalThis, 'crypto', {
   configurable: true,
-  value: {
-    randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
-    getRandomValues: <T extends ArrayBufferView>(buffer: T): T => {
-      const view = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-      for (let i = 0; i < view.length; i++) {
-        view[i] = Math.floor(Math.random() * 256);
-      }
-      return buffer;
-    },
-  },
+  value: webcrypto,
 });
 
 // Mock navigator.onLine
