@@ -170,7 +170,10 @@ export default function QualityAssurance(_props: Props) {
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6">
+          <nav
+            className="-mb-px flex gap-6 overflow-x-auto whitespace-nowrap px-4 sm:gap-8 sm:px-6"
+            aria-label="Sections"
+          >
             {[
               { id: 'dashboard', label: 'Quality Dashboard', icon: '📊' },
               { id: 'checks', label: 'Quality Checks', icon: '✅' },

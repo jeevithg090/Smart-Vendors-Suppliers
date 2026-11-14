@@ -4,7 +4,10 @@ interface RoleSelectionProps {
 
 export default function RoleSelection({ onRoleSelected }: RoleSelectionProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
+    >
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-orange-100">
@@ -50,6 +53,6 @@ export default function RoleSelection({ onRoleSelected }: RoleSelectionProps) {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

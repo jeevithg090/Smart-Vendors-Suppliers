@@ -39,7 +39,10 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
+    >
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-orange-100">
@@ -116,10 +119,14 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
                 autoComplete="new-password"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-                placeholder="Password (4+ characters)"
+                placeholder="At least 8 characters"
+                aria-describedby="password-hint"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <p id="password-hint" className="mt-1 text-xs text-gray-600">
+                Use at least 8 characters.
+              </p>
             </div>
           </div>
 
@@ -176,14 +183,7 @@ export default function Signup({ onSwitchToLogin, preSelectedRole, onBackToRoleS
         </form>
 
         {/* Demo note */}
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Mode</h3>
-          <p className="text-xs text-blue-700">
-            This is a demo. Your account will be created locally and will persist until you clear browser
-            storage.
-          </p>
-        </div>
       </div>
-    </div>
+    </main>
   );
 }

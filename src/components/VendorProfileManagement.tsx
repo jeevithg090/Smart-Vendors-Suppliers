@@ -245,8 +245,14 @@ export default function VendorProfileManagement() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                <label
+                  htmlFor="vendorprofilemanagement-business-name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Business Name *
+                </label>
                 <input
+                  id="vendorprofilemanagement-business-name"
                   type="text"
                   value={formData.businessName}
                   onChange={(e) => handleInputChange('businessName', e.target.value)}
@@ -256,8 +262,14 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Owner Name *</label>
+                <label
+                  htmlFor="vendorprofilemanagement-owner-name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Owner Name *
+                </label>
                 <input
+                  id="vendorprofilemanagement-owner-name"
                   type="text"
                   value={formData.ownerName}
                   onChange={(e) => handleInputChange('ownerName', e.target.value)}
@@ -267,8 +279,14 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                <label
+                  htmlFor="vendorprofilemanagement-phone-number"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Phone Number *
+                </label>
                 <input
+                  id="vendorprofilemanagement-phone-number"
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -278,8 +296,14 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Business Type *</label>
+                <label
+                  htmlFor="vendorprofilemanagement-business-type"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Business Type *
+                </label>
                 <select
+                  id="vendorprofilemanagement-business-type"
                   value={formData.businessType}
                   onChange={(e) => handleInputChange('businessType', e.target.value)}
                   disabled={!isEditing}
@@ -302,8 +326,14 @@ export default function VendorProfileManagement() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Location</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                <label
+                  htmlFor="vendorprofilemanagement-address"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Address *
+                </label>
                 <textarea
+                  id="vendorprofilemanagement-address"
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   disabled={!isEditing}
@@ -314,8 +344,14 @@ export default function VendorProfileManagement() {
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                  <label
+                    htmlFor="vendorprofilemanagement-city"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    City *
+                  </label>
                   <input
+                    id="vendorprofilemanagement-city"
                     type="text"
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
@@ -325,8 +361,14 @@ export default function VendorProfileManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                  <label
+                    htmlFor="vendorprofilemanagement-state"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    State *
+                  </label>
                   <input
+                    id="vendorprofilemanagement-state"
                     type="text"
                     value={formData.state}
                     onChange={(e) => handleInputChange('state', e.target.value)}
@@ -336,8 +378,14 @@ export default function VendorProfileManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
+                  <label
+                    htmlFor="vendorprofilemanagement-pincode"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Pincode *
+                  </label>
                   <input
+                    id="vendorprofilemanagement-pincode"
                     type="text"
                     value={formData.pincode}
                     onChange={(e) => handleInputChange('pincode', e.target.value)}
@@ -393,8 +441,14 @@ export default function VendorProfileManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quality Preference</label>
+                <label
+                  htmlFor="vendorprofilemanagement-quality-preference"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Quality Preference
+                </label>
                 <select
+                  id="vendorprofilemanagement-quality-preference"
                   value={formData.qualityPreference}
                   onChange={(e) => handleInputChange('qualityPreference', e.target.value)}
                   disabled={!isEditing}
@@ -433,10 +487,14 @@ export default function VendorProfileManagement() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="vendorprofilemanagement-delivery-time-preference"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Delivery Time Preference
                 </label>
                 <select
+                  id="vendorprofilemanagement-delivery-time-preference"
                   value={formData.deliveryTimePreference}
                   onChange={(e) => handleInputChange('deliveryTimePreference', e.target.value)}
                   disabled={!isEditing}
@@ -456,10 +514,14 @@ export default function VendorProfileManagement() {
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Certification</h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="vendorprofilemanagement-fssai-license-number-optional"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 FSSAI License Number (Optional)
               </label>
               <input
+                id="vendorprofilemanagement-fssai-license-number-optional"
                 type="text"
                 value={formData.fssaiLicense}
                 onChange={(e) => handleInputChange('fssaiLicense', e.target.value)}

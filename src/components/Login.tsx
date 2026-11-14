@@ -37,7 +37,10 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
+    >
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-orange-100">
@@ -139,16 +142,7 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
             </button>
           </div>
         </form>
-
-        {/* Demo credentials */}
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Mode</h3>
-          <p className="text-xs text-blue-700">
-            Use any email and password (4+ characters) to log in. Choose your role as Vendor or Supplier to
-            see different dashboards.
-          </p>
-        </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -48,17 +48,19 @@ export default function LanguageTranslator() {
   }, []);
 
   return (
-    <div className="fixed top-3 right-4 z-[9999] translate-toolbar no-print">
-      <div className="translate-toolbar__label">Translate</div>
-      <div className="translate-toolbar__control">
-        <span aria-hidden="true" className="translate-toolbar__icon">
-          🌐
-        </span>
-        <div className="translate-select-wrap">
-          <div id={GOOGLE_TRANSLATE_ELEMENT_ID} />
-          <span aria-hidden="true" className="translate-select-arrow">
-            ▾
+    <div className="translate-bar no-print">
+      <div className="translate-toolbar" role="group" aria-label="Translate this page">
+        <span className="translate-toolbar__label">Language</span>
+        <div className="translate-toolbar__control">
+          <span aria-hidden="true" className="translate-toolbar__icon">
+            🌐
           </span>
+          <div className="translate-select-wrap">
+            <div id={GOOGLE_TRANSLATE_ELEMENT_ID} />
+            <span aria-hidden="true" className="translate-select-arrow">
+              ▾
+            </span>
+          </div>
         </div>
       </div>
     </div>

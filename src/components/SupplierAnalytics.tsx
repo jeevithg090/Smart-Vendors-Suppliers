@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from 'convex/react';
+import { CHART_COLORS } from '../config/chartColors';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import {
@@ -15,6 +16,7 @@ import {
   LineChart,
   Line,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 
 interface SupplierAnalyticsProps {
@@ -70,7 +72,7 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
     { supplierId },
   );
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+  const COLORS = CHART_COLORS;
 
   const totalRevenue = revenueByCategory?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0;
 
@@ -95,11 +97,14 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-2xl font-bold text-gray-800">Supplier Analytics</h2>
-          <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">Time Range:</label>
+          <div className="flex items-center gap-3">
+            <label htmlFor="analytics-time-range" className="text-sm font-medium text-gray-700">
+              Time range
+            </label>
             <select
+              id="analytics-time-range"
               value={timeRange}
               onChange={(e) => setTimeRange(Number(e.target.value))}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -137,6 +142,7 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
             <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
             <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
             <Line
+              isAnimationActive={false}
               type="monotone"
               dataKey="amount"
               stroke="#2563eb"
@@ -154,15 +160,14 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
+                isAnimationActive={false}
                 data={revenueByCategory}
                 cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ category, percent }: any) =>
-                  `${category} ${(percent ? percent * 100 : 0).toFixed(0)}%`
-                }
-                outerRadius={80}
-                fill="#8884d8"
+                cy="45%"
+                innerRadius={55}
+                outerRadius={95}
+                paddingAngle={2}
+                nameKey="category"
                 dataKey="amount"
               >
                 {revenueByCategory?.map((_entry: any, index: number) => (
@@ -170,6 +175,12 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
                 ))}
               </Pie>
               <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
+              <Legend
+                verticalAlign="bottom"
+                iconType="circle"
+                wrapperStyle={{ fontSize: 13 }}
+                formatter={(value) => <span className="text-slate-700">{value}</span>}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -178,12 +189,12 @@ const SupplierAnalytics: React.FC<SupplierAnalyticsProps> = ({ supplierId }) => 
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Products</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData.topProducts}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-              <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
+            <BarChart data={chartData.topProducts} layout="vertical" margin={{ left: 8, right: 16 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" tickFormatter={(value) => `₹${value / 1000}k`} />
+              <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 12 }} />
               <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
-              <Bar dataKey="amount" fill="#10b981" />
+              <Bar isAnimationActive={false} dataKey="amount" fill="#047857" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

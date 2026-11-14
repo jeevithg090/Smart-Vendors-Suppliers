@@ -101,21 +101,25 @@ const USE_CASES = [
   },
 ];
 
-const TESTIMONIALS = [
+// Illustrative usage scenarios (not customer testimonials).
+const SCENARIOS = [
   {
-    quote: 'Our weekly ingredient spend became predictable. Group orders alone improved our margins.',
-    name: 'A. Mehta',
-    role: 'Pav Bhaji Vendor, Mumbai',
+    persona: 'Street food vendor',
+    title: 'Plan the morning purchase',
+    description:
+      'Compare nearby suppliers by price, trust score and FSSAI status, then join a group order to buy staples in bulk.',
   },
   {
-    quote: 'I receive better quality buyers and fewer last-minute cancellations after joining the platform.',
-    name: 'R. Sharma',
-    role: 'Produce Supplier, Pune',
+    persona: 'Raw-material supplier',
+    title: 'Keep stock ahead of demand',
+    description:
+      'Track orders and inventory in one place and use 7-day demand forecasts that account for festivals and seasons.',
   },
   {
-    quote: 'Voice search is surprisingly practical during rush hours. I can source while serving customers.',
-    name: 'K. Selvan',
-    role: 'Tiffin Owner, Chennai',
+    persona: 'Busy service hours',
+    title: 'Search hands-free',
+    description:
+      'Ask for ingredients by voice in English or Indian languages and get matching suppliers without typing.',
   },
 ];
 
@@ -159,8 +163,7 @@ export default function HomePage() {
         <div className="pointer-events-none absolute bottom-[-8rem] left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-300/30 blur-3xl"></div>
 
         <nav className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-xl">
-          {/* Right padding reserves space for the floating translate control */}
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between pl-4 pr-20 sm:pl-6 sm:pr-48 lg:pl-8">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <span className="rounded-xl bg-orange-100 px-2 py-1 text-lg">🏪</span>
               <div>
@@ -187,7 +190,10 @@ export default function HomePage() {
           </div>
         </nav>
 
-        <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-2 lg:items-center lg:pb-24 lg:pt-20 lg:px-8">
+        <section
+          id="main-content"
+          className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-2 lg:items-center lg:pb-24 lg:pt-20 lg:px-8"
+        >
           <div className="animate-fadeIn">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-orange-700">
               Built for India&apos;s street food economy
@@ -410,24 +416,21 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Customer Voice</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-600">Who it&apos;s for</p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-            Teams Seeing Real Operational Impact
+            Built Around Daily Street Food Operations
           </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
-          {TESTIMONIALS.map((item, index) => (
-            <blockquote
-              key={item.name}
-              className="rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
-              style={{ animationDelay: `${index * 100}ms` }}
+          {SCENARIOS.map((item) => (
+            <article
+              key={item.title}
+              className="rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
             >
-              <p className="text-sm leading-relaxed text-slate-700">&ldquo;{item.quote}&rdquo;</p>
-              <footer className="mt-5 border-t border-slate-200 pt-4">
-                <div className="text-sm font-bold text-slate-900">{item.name}</div>
-                <div className="text-xs uppercase tracking-wide text-slate-500">{item.role}</div>
-              </footer>
-            </blockquote>
+              <p className="text-xs font-semibold uppercase tracking-wide text-orange-700">{item.persona}</p>
+              <h3 className="mt-2 text-lg font-bold text-slate-900">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-700">{item.description}</p>
+            </article>
           ))}
         </div>
       </section>
@@ -435,7 +438,7 @@ export default function HomePage() {
       <section className="border-y border-slate-200 bg-white py-16">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">FAQ</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-600">FAQ</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
               Questions Before You Start
             </h2>
@@ -521,7 +524,7 @@ export default function HomePage() {
             </ul>
           </div>
         </div>
-        <div className="mx-auto mt-10 max-w-7xl border-t border-slate-800 px-4 pt-6 text-center text-xs text-slate-500 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-10 max-w-7xl border-t border-slate-800 px-4 pt-6 text-center text-xs text-slate-400 sm:px-6 lg:px-8">
           &copy; 2026 Smart Street. Purpose-built for reliable food supply coordination.
         </div>
       </footer>

@@ -100,8 +100,10 @@ export default function SupplierProfileMedia({ supplierId, businessName }: Suppl
           onChange={(event) => setTitle(event.target.value)}
           className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
           placeholder="Media title"
+          aria-label="Media title"
         />
         <select
+          aria-label="Media type"
           value={type}
           onChange={(event) => setType(event.target.value as MediaItem['type'])}
           className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
@@ -116,6 +118,7 @@ export default function SupplierProfileMedia({ supplierId, businessName }: Suppl
           onChange={(event) => setUrl(event.target.value)}
           className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none md:col-span-2"
           placeholder="https://image-url"
+          aria-label="Media URL"
         />
       </div>
       <div className="mt-3">

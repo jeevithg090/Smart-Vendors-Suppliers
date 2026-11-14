@@ -401,7 +401,10 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6">
+          <nav
+            className="-mb-px flex gap-6 overflow-x-auto whitespace-nowrap px-4 sm:gap-8 sm:px-6"
+            aria-label="Sections"
+          >
             {[
               { id: 'alerts', label: 'Price Alerts', icon: '🚨' },
               { id: 'trends', label: 'Market Trends', icon: '📈' },
@@ -428,10 +431,11 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
         {/* Price Alerts Tab */}
         {activeTab === 'alerts' && (
           <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-lg font-semibold text-gray-800">Price Alerts - {location.city}</h3>
               <div className="flex space-x-3">
                 <select
+                  aria-label="Timeframe"
                   value={timeframe}
                   onChange={(e) => setTimeframe(e.target.value as any)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -1046,8 +1050,14 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Competitor Name</label>
+                  <label
+                    htmlFor="marketintelligence-competitor-name"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Competitor Name
+                  </label>
                   <input
+                    id="marketintelligence-competitor-name"
                     type="text"
                     value={newCompetitor.competitorName}
                     onChange={(e) =>
@@ -1057,8 +1067,14 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                  <label
+                    htmlFor="marketintelligence-business-type"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Business Type
+                  </label>
                   <input
+                    id="marketintelligence-business-type"
                     type="text"
                     value={newCompetitor.businessType}
                     onChange={(e) => setNewCompetitor((prev) => ({ ...prev, businessType: e.target.value }))}
@@ -1066,8 +1082,14 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <label
+                    htmlFor="marketintelligence-location"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Location
+                  </label>
                   <input
+                    id="marketintelligence-location"
                     type="text"
                     value={newCompetitor.location}
                     onChange={(e) => setNewCompetitor((prev) => ({ ...prev, location: e.target.value }))}
@@ -1076,8 +1098,14 @@ export default function MarketIntelligence({ vendorId, location }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price Strategy</label>
+                  <label
+                    htmlFor="marketintelligence-price-strategy"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Price Strategy
+                  </label>
                   <select
+                    id="marketintelligence-price-strategy"
                     value={newCompetitor.priceStrategy}
                     onChange={(e) =>
                       setNewCompetitor((prev) => ({

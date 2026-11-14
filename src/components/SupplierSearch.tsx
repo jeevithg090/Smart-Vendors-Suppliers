@@ -375,14 +375,23 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
 
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => setShowFilters(!showFilters)}
+              aria-label={activeFiltersCount > 0 ? `Filters (${activeFiltersCount} active)` : 'Filters'}
+              aria-expanded={showFilters}
               className={`flex-1 md:flex-none px-4 py-3 rounded-lg border font-medium transition-colors flex items-center justify-center ${
                 showFilters
                   ? 'bg-orange-500 text-white border-orange-500'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               }`}
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                aria-hidden="true"
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -415,8 +424,11 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* City Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                <label htmlFor="suppliersearch-city" className="block text-sm font-medium text-gray-700 mb-2">
+                  City
+                </label>
                 <select
+                  id="suppliersearch-city"
                   value={filters.city}
                   onChange={(e) => handleFilterChange('city', e.target.value)}
                   className="form-input"
@@ -432,8 +444,14 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
 
               {/* Trust Score Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Min Trust Score</label>
+                <label
+                  htmlFor="suppliersearch-min-trust-score"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Min Trust Score
+                </label>
                 <select
+                  id="suppliersearch-min-trust-score"
                   value={filters.minTrustScore}
                   onChange={(e) => handleFilterChange('minTrustScore', Number(e.target.value))}
                   className="form-input"
@@ -466,8 +484,14 @@ export default function SupplierSearch({ vendorLocation, onSupplierSelect }: Sup
 
               {/* Sort By */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                <label
+                  htmlFor="suppliersearch-sort-by"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Sort By
+                </label>
                 <select
+                  id="suppliersearch-sort-by"
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                   className="form-input"

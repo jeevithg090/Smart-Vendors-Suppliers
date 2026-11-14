@@ -347,8 +347,14 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
         <p className="text-sm text-slate-500">Create reusable supplier sets for daily purchasing.</p>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-lg border border-slate-200 p-3">
-            <label className="mb-2 block text-xs font-medium text-slate-600">List name</label>
+            <label
+              htmlFor="vendorgrowthsuite-list-name"
+              className="mb-2 block text-xs font-medium text-slate-600"
+            >
+              List name
+            </label>
             <input
+              id="vendorgrowthsuite-list-name"
               value={newListName}
               onChange={(event) => setNewListName(event.target.value)}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
@@ -493,7 +499,12 @@ export default function VendorGrowthSuite({ vendorId, vendorCity, userId }: Vend
         <p className="text-sm text-slate-500">
           Compare reliability using fulfillment, delay, and cancellation rates.
         </p>
-        <div className="mt-3 overflow-x-auto">
+        <div
+          className="mt-3 overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Supplier SLA scorecard table"
+        >
           <table className="min-w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">

@@ -157,8 +157,14 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
+            <label
+              htmlFor="orderhistory-search-orders"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Search Orders
+            </label>
             <input
+              id="orderhistory-search-orders"
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -169,8 +175,14 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
 
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
+            <label
+              htmlFor="orderhistory-filter-by-status"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Filter by Status
+            </label>
             <select
+              id="orderhistory-filter-by-status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -187,8 +199,11 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ vendorId, onViewOrde
 
           {/* Sort Options */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <label htmlFor="orderhistory-sort-by" className="block text-sm font-medium text-gray-700 mb-1">
+              Sort By
+            </label>
             <select
+              id="orderhistory-sort-by"
               value={`${sortBy}-${sortOrder}`}
               onChange={(e) => {
                 const [field, order] = e.target.value.split('-');

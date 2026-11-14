@@ -233,8 +233,14 @@ const CreateDisputeForm: React.FC<{
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex-1 p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Order ID</label>
+          <label
+            htmlFor="disputeresolution-order-id"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Order ID
+          </label>
           <input
+            id="disputeresolution-order-id"
             type="text"
             value={formData.orderId}
             onChange={(e) => setFormData({ ...formData, orderId: e.target.value })}
@@ -246,8 +252,14 @@ const CreateDisputeForm: React.FC<{
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Dispute Category</label>
+          <label
+            htmlFor="disputeresolution-dispute-category"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Dispute Category
+          </label>
           <select
+            id="disputeresolution-dispute-category"
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -261,8 +273,14 @@ const CreateDisputeForm: React.FC<{
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <label
+            htmlFor="disputeresolution-description"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Description
+          </label>
           <textarea
+            id="disputeresolution-description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="w-full h-40 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"

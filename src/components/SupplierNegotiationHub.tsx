@@ -323,7 +323,10 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6">
+          <nav
+            className="-mb-px flex gap-6 overflow-x-auto whitespace-nowrap px-4 sm:gap-8 sm:px-6"
+            aria-label="Sections"
+          >
             {[
               { id: 'negotiations', label: 'My Negotiations', icon: '💬' },
               { id: 'bulk', label: 'Bulk Orders', icon: '📦' },
@@ -813,8 +816,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-supplier"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Supplier
+                  </label>
                   <select
+                    id="suppliernegotiationhub-supplier"
                     value={newNegotiation.supplierId}
                     onChange={(e) => setNewNegotiation((prev) => ({ ...prev, supplierId: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -830,8 +839,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                    <label
+                      htmlFor="suppliernegotiationhub-item-name"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Item Name
+                    </label>
                     <input
+                      id="suppliernegotiationhub-item-name"
                       type="text"
                       value={newNegotiation.itemName}
                       onChange={(e) => setNewNegotiation((prev) => ({ ...prev, itemName: e.target.value }))}
@@ -840,8 +855,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                    <label
+                      htmlFor="suppliernegotiationhub-unit"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Unit
+                    </label>
                     <select
+                      id="suppliernegotiationhub-unit"
                       value={newNegotiation.unit}
                       onChange={(e) => setNewNegotiation((prev) => ({ ...prev, unit: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -856,8 +877,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Current Price (₹)</label>
+                    <label
+                      htmlFor="suppliernegotiationhub-current-price"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Current Price (₹)
+                    </label>
                     <input
+                      id="suppliernegotiationhub-current-price"
                       type="number"
                       min="0"
                       step="0.01"
@@ -869,10 +896,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="suppliernegotiationhub-requested-price"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Requested Price (₹)
                     </label>
                     <input
+                      id="suppliernegotiationhub-requested-price"
                       type="number"
                       min="0"
                       step="0.01"
@@ -884,8 +915,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                    <label
+                      htmlFor="suppliernegotiationhub-quantity"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Quantity
+                    </label>
                     <input
+                      id="suppliernegotiationhub-quantity"
                       type="number"
                       min="1"
                       value={newNegotiation.quantity}
@@ -898,8 +935,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Justification</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-justification"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Justification
+                  </label>
                   <textarea
+                    id="suppliernegotiationhub-justification"
                     value={newNegotiation.justification}
                     onChange={(e) =>
                       setNewNegotiation((prev) => ({ ...prev, justification: e.target.value }))
@@ -946,8 +989,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-supplier-2"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Supplier
+                  </label>
                   <select
+                    id="suppliernegotiationhub-supplier-2"
                     value={bulkOrderDraft.supplierId}
                     onChange={(e) => setBulkOrderDraft((prev) => ({ ...prev, supplierId: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -962,8 +1011,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-item-name-2"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Item Name
+                  </label>
                   <input
+                    id="suppliernegotiationhub-item-name-2"
                     type="text"
                     value={bulkOrderDraft.itemName}
                     onChange={(e) => setBulkOrderDraft((prev) => ({ ...prev, itemName: e.target.value }))}
@@ -973,8 +1028,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Target Quantity</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-target-quantity"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Target Quantity
+                  </label>
                   <input
+                    id="suppliernegotiationhub-target-quantity"
                     type="number"
                     min="1"
                     value={bulkOrderDraft.targetQuantity}
@@ -986,8 +1047,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Unit (₹)</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-price-per-unit"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Price Per Unit (₹)
+                  </label>
                   <input
+                    id="suppliernegotiationhub-price-per-unit"
                     type="number"
                     min="0"
                     value={bulkOrderDraft.pricePerUnit}
@@ -999,8 +1066,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-category"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Category
+                  </label>
                   <select
+                    id="suppliernegotiationhub-category"
                     value={bulkOrderDraft.category}
                     onChange={(e) => setBulkOrderDraft((prev) => ({ ...prev, category: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1014,8 +1087,14 @@ export default function SupplierNegotiationHub({ vendorId, vendorCity }: Props) 
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Deadline (days)</label>
+                  <label
+                    htmlFor="suppliernegotiationhub-deadline-days"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Deadline (days)
+                  </label>
                   <input
+                    id="suppliernegotiationhub-deadline-days"
                     type="number"
                     min="1"
                     max="30"

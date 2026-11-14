@@ -352,8 +352,14 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
 
                 <form onSubmit={handleAddTracking} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tracking Number *</label>
+                    <label
+                      htmlFor="simpleordertracking-tracking-number"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Tracking Number *
+                    </label>
                     <input
+                      id="simpleordertracking-tracking-number"
                       type="text"
                       required
                       value={trackingForm.trackingNumber}
@@ -364,8 +370,14 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Carrier *</label>
+                    <label
+                      htmlFor="simpleordertracking-carrier"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Carrier *
+                    </label>
                     <select
+                      id="simpleordertracking-carrier"
                       required
                       value={trackingForm.carrier}
                       onChange={(e) => setTrackingForm({ ...trackingForm, carrier: e.target.value })}
@@ -398,10 +410,14 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
 
                   {trackingForm.isThirdParty && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="simpleordertracking-third-party-provider"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Third-party Provider *
                       </label>
                       <input
+                        id="simpleordertracking-third-party-provider"
                         type="text"
                         required={trackingForm.isThirdParty}
                         value={trackingForm.thirdPartyProvider}
@@ -415,8 +431,14 @@ export default function SimpleOrderTracking({ orderId, userRole, onClose }: Simp
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label
+                      htmlFor="simpleordertracking-notes"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Notes
+                    </label>
                     <textarea
+                      id="simpleordertracking-notes"
                       value={trackingForm.notes}
                       onChange={(e) => setTrackingForm({ ...trackingForm, notes: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

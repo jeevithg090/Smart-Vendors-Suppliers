@@ -416,7 +416,10 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6">
+          <nav
+            className="-mb-px flex gap-6 overflow-x-auto whitespace-nowrap px-4 sm:gap-8 sm:px-6"
+            aria-label="Sections"
+          >
             {[
               { id: 'calculator', label: 'Cost Calculator', icon: '🧮' },
               { id: 'recipes', label: 'Saved Recipes', icon: '📝' },
@@ -450,8 +453,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Recipe Name</label>
+                      <label
+                        htmlFor="recipecostingcalculator-recipe-name"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Recipe Name
+                      </label>
                       <input
+                        id="recipecostingcalculator-recipe-name"
                         type="text"
                         value={currentRecipe.name}
                         onChange={(e) => setCurrentRecipe((prev) => ({ ...prev, name: e.target.value }))}
@@ -461,8 +470,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                      <label
+                        htmlFor="recipecostingcalculator-description"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Description
+                      </label>
                       <textarea
+                        id="recipecostingcalculator-description"
                         value={currentRecipe.description}
                         onChange={(e) =>
                           setCurrentRecipe((prev) => ({ ...prev, description: e.target.value }))
@@ -475,8 +490,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Servings</label>
+                        <label
+                          htmlFor="recipecostingcalculator-servings"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Servings
+                        </label>
                         <input
+                          id="recipecostingcalculator-servings"
                           type="number"
                           min="1"
                           value={currentRecipe.servings}
@@ -487,10 +508,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="recipecostingcalculator-prep-time-min"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Prep Time (min)
                         </label>
                         <input
+                          id="recipecostingcalculator-prep-time-min"
                           type="number"
                           min="1"
                           value={currentRecipe.preparationTime}
@@ -504,8 +529,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <label
+                          htmlFor="recipecostingcalculator-category"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Category
+                        </label>
                         <select
+                          id="recipecostingcalculator-category"
                           value={currentRecipe.category}
                           onChange={(e) =>
                             setCurrentRecipe((prev) => ({ ...prev, category: e.target.value }))
@@ -520,10 +551,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="recipecostingcalculator-target-profit"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Target Profit (%)
                         </label>
                         <input
+                          id="recipecostingcalculator-target-profit"
                           type="number"
                           min="0"
                           max="100"
@@ -544,10 +579,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label
+                        htmlFor="recipecostingcalculator-use-marketplace-item-optional"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
                         Use Marketplace Item (Optional)
                       </label>
                       <select
+                        id="recipecostingcalculator-use-marketplace-item-optional"
                         value={selectedInventoryId}
                         onChange={(e) => selectInventorySuggestion(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -566,10 +605,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="recipecostingcalculator-ingredient-name"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
                           Ingredient Name
                         </label>
                         <input
+                          id="recipecostingcalculator-ingredient-name"
                           type="text"
                           value={newIngredient.name}
                           onChange={(e) => setNewIngredient((prev) => ({ ...prev, name: e.target.value }))}
@@ -578,8 +621,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <label
+                          htmlFor="recipecostingcalculator-category-2"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Category
+                        </label>
                         <select
+                          id="recipecostingcalculator-category-2"
                           value={newIngredient.category}
                           onChange={(e) =>
                             setNewIngredient((prev) => ({ ...prev, category: e.target.value }))
@@ -599,8 +648,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
 
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                        <label
+                          htmlFor="recipecostingcalculator-quantity"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Quantity
+                        </label>
                         <input
+                          id="recipecostingcalculator-quantity"
                           type="number"
                           min="0"
                           step="0.1"
@@ -612,8 +667,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                        <label
+                          htmlFor="recipecostingcalculator-unit"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Unit
+                        </label>
                         <select
+                          id="recipecostingcalculator-unit"
                           value={newIngredient.unit}
                           onChange={(e) => setNewIngredient((prev) => ({ ...prev, unit: e.target.value }))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -627,8 +688,14 @@ export default function RecipeCostingCalculator({ vendorId }: Props) {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Price per Unit</label>
+                        <label
+                          htmlFor="recipecostingcalculator-price-per-unit"
+                          className="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                          Price per Unit
+                        </label>
                         <input
+                          id="recipecostingcalculator-price-per-unit"
                           type="number"
                           min="0"
                           step="0.01"

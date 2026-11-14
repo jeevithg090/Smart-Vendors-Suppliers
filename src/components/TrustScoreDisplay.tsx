@@ -104,7 +104,7 @@ const TrustScoreDisplay: React.FC<TrustScoreDisplayProps> = ({
             />
           </svg>
           <span>{trustBreakdown.currentScore.toFixed(1)}</span>
-          <span className="text-xs opacity-75">{getScoreLabel(trustBreakdown.currentScore)}</span>
+          <span className="text-xs">{getScoreLabel(trustBreakdown.currentScore)}</span>
         </div>
 
         {showBreakdown && (
