@@ -8,11 +8,16 @@ import LanguageTranslator from './components/LanguageTranslator';
 const HomePage = lazy(() => import('./pages/HomePage'));
 const VendorDashboard = lazy(() => import('./pages/VendorDashboard'));
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Loading component
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-[50vh]">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+  <div className="flex min-h-[50vh] items-center justify-center" role="status">
+    <div
+      className="h-12 w-12 animate-spin rounded-full border-b-2 border-orange-500"
+      aria-hidden="true"
+    ></div>
+    <span className="sr-only">Loading…</span>
   </div>
 );
 
@@ -63,6 +68,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10000] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:font-semibold focus:text-slate-900 focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       <LanguageTranslator />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
@@ -108,8 +119,8 @@ function App() {
           <Route path="/vendor/auth" element={<Navigate to="/auth" replace />} />
           <Route path="/supplier/auth" element={<Navigate to="/auth" replace />} />
 
-          {/* Catch all route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Unknown routes */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </div>
