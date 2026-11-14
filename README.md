@@ -1,469 +1,246 @@
-# 🏪 Smart Street - Street Food Sourcing Platform
+# Smart Street
 
-🌐 **Live Demo: [https://smart-street.netlify.app/](https://smart-street.netlify.app/)**
+**A sourcing platform for India's street food economy.** Smart Street connects street food vendors with
+verified raw-material suppliers: vendors discover and compare suppliers, place individual or group orders and
+track costs, while suppliers manage inventory, fulfil orders, verify their FSSAI licence and get demand
+forecasts.
 
-A comprehensive web application designed to solve the raw material sourcing challenges faced by street food vendors in India. Built with modern technologies and AI-powered features to revolutionize the street food supply chain.
+Built with React 19, TypeScript and Vite on the frontend and [Convex](https://convex.dev) as the real-time
+backend and database.
 
-## 🌟 Overview
-
-Smart Street is a B2B marketplace that connects street food vendors with verified suppliers, providing AI-powered recommendations, group ordering capabilities, and comprehensive business management tools. The platform addresses the core pain points of sourcing reliable raw materials at competitive prices.
-
-## ✨ Key Features
-
-### 🏪 For Vendors
-
-- **Smart Supplier Discovery**: Find verified suppliers by location, ingredients, and quality ratings
-- **AI-Powered Recommendations**: Intelligent supplier matching based on preferences and trust scores
-- **Group Orders**: Collaborate with other vendors for bulk buying and cost reduction
-- **Voice Queries**: Ask questions in Hindi, Tamil, Telugu, and other Indian languages
-- **Order Management**: Track orders from placement to delivery with real-time updates
-- **Financial Analytics**: Comprehensive spending analysis and cost optimization
-- **Recipe Costing Calculator**: Calculate exact costs for menu items
-- **FSSAI Verification**: View supplier certification status
-
-### 🏭 For Suppliers
-
-- **AI Inventory Forecasting**: Predict demand based on historical data and seasonal patterns
-- **Automated Stock Management**: Smart reordering and inventory optimization
-- **Quality Assurance**: Manage product quality and certifications
-- **Price Optimization**: Dynamic pricing based on market conditions
-- **Analytics Dashboard**: Track sales, revenue, and customer insights
-- **FSSAI Certificate Verification**: Automated verification using OCR and AI
-- **Customer Loyalty Programs**: Reward repeat customers and build relationships
-
-### 🤖 AI-Powered Features
-
-- **Inventory Forecasting**: Real-time predictions considering Indian festivals and seasonal patterns
-- **Voice Query Processing**: Multilingual voice commands with contextual responses
-- **Trust Score Calculation**: AI-calculated reliability scores for vendors and suppliers
-- **Smart Recommendations**: Personalized supplier and product suggestions
-- **Demand Prediction**: Festival-aware demand forecasting (Diwali, Holi, etc.)
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **React 19** with TypeScript
-- **Vite** for fast development and building
-- **Tailwind CSS** for styling
-- **React Router DOM** for navigation
-- **Recharts** for data visualization
-
-### Backend & Database
-
-- **Convex** - Serverless database and real-time functions
-- **Real-time subscriptions** for live updates
-- **CRUD operations** with optimistic updates
-
-### Authentication
-
-- **Convex-backed email/password auth** with role selection
-- **Role-based access control** (Vendor/Supplier)
-- **Session management** and protected routes
-
-### AI & External Services
-
-- **OpenRouter AI** - Multiple AI models with fallback support
-- **Sarvam AI** - Multilingual speech-to-text
-- **OCR Space** - Certificate text extraction
-- **Google Translate** - Translation services
-
-### Testing & Quality
-
-- **Vitest** for unit testing
-- **Playwright** for end-to-end testing
-- **ESLint** for code quality
-- **TypeScript** for type safety
-
-### DevOps
-
-- **Docker** containerization
-- **Vercel** deployment ready
-- **CI/CD** with automated testing
-- **Performance monitoring**
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- Git
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/jeevithg090/Smart-Vendors-Suppliers.git
-   cd Smart-Vendors-Suppliers
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Set up frontend environment variables**
-
-   Create a `.env.local` file in the root directory (or copy from `.env.example`):
-
-   ```env
-   # Database
-   VITE_CONVEX_URL=your_convex_deployment_url
-
-   # AI Services
-   VITE_SARVAM_API_KEY=your_sarvam_api_key
-   VITE_OPENROUTER_API_KEY=your_openrouter_api_key
-
-   # Optional
-   VITE_GOOGLE_TRANSLATE_API_KEY=your_google_translate_key
-   VITE_VISION_API_KEY=your_vision_api_key
-   VITE_CLARIFAI_API_KEY=your_clarifai_api_key
-   VITE_AZURE_VISION_API_KEY=your_azure_vision_api_key
-   VITE_AZURE_VISION_ENDPOINT=your_azure_vision_endpoint
-   VITE_TTS_API_KEY=your_tts_api_key
-   ```
-
-4. **Set up Convex backend**
-
-   ```bash
-   # Install Convex CLI globally
-   npm install -g convex
-
-   # Login to Convex
-   npx convex login
-
-   # Deploy backend functions
-   npx convex deploy
-
-   # Backend secrets used by Convex functions
-   npx convex env set OCR_SPACE_API_KEY your_ocr_space_api_key
-   npx convex env set OPENROUTER_API_KEY your_openrouter_api_key
-   ```
-
-5. **Start development server**
-
-   ```bash
-   npm run dev
-   ```
-
-6. **Open your browser**
-   Navigate to `http://localhost:5173`
-
-## 📱 Usage Guide
-
-### For Vendors
-
-1. **Sign Up**: Create an account and select "Vendor" role
-2. **Complete Profile**: Add business details, location, and preferences
-3. **Discover Suppliers**: Browse verified suppliers in your area
-4. **Place Orders**: Order raw materials individually or join group orders
-5. **Track Orders**: Monitor delivery status in real-time
-6. **Use Voice Queries**: Ask questions like "मेरे पास कितने ऑर्डर हैं?" (How many orders do I have?)
-7. **Analyze Finances**: View spending patterns and cost optimization suggestions
-
-### For Suppliers
-
-1. **Sign Up**: Create an account and select "Supplier" role
-2. **Verify FSSAI**: Upload your FSSAI certificate for automatic verification
-3. **Add Inventory**: List your products with pricing and availability
-4. **Manage Orders**: Process incoming orders and update status
-5. **View Analytics**: Monitor sales performance and customer insights
-6. **Use AI Forecasting**: Get demand predictions for better inventory management
-
-## 🏗️ Project Structure
-
-```
-smart-street/
-├── src/
-│   ├── components/           # Reusable UI components
-│   │   ├── AuthFlow.tsx     # Authentication flow
-│   │   ├── VoiceQuery.tsx   # Voice query interface
-│   │   ├── FSSAIVerification.tsx # Certificate verification
-│   │   └── ...              # 50+ other components
-│   ├── pages/               # Main application pages
-│   │   ├── HomePage.tsx     # Landing page
-│   │   ├── VendorDashboard.tsx # Vendor dashboard
-│   │   └── SupplierDashboard.tsx # Supplier dashboard
-│   ├── contexts/            # React contexts
-│   ├── hooks/               # Custom React hooks
-│   ├── services/            # External service integrations
-│   ├── utils/               # Utility functions
-│   └── types/               # TypeScript type definitions
-├── convex/                  # Backend functions and schema
-│   ├── schema.ts           # Database schema
-│   ├── auth.ts             # Authentication functions
-│   ├── voiceQuery.ts       # Voice processing
-│   ├── fssaiVerification.ts # FSSAI verification
-│   └── ...                 # 20+ other backend functions
-├── e2e/                    # End-to-end tests
-├── public/                 # Static assets
-└── scripts/                # Deployment and utility scripts
-```
-
-## 🧪 Testing
-
-### Run all tests
-
-```bash
-npm test
-```
-
-### Unit tests with Vitest
-
-```bash
-npm run test:watch      # Watch mode
-npm run test:coverage   # With coverage report
-npm run test:ui         # Visual UI
-```
-
-### End-to-end tests with Playwright
-
-```bash
-npm run test:e2e        # Run E2E tests
-npm run test:e2e:ui     # Interactive mode
-npm run test:e2e:debug  # Debug mode
-```
-
-### API smoke tests
-
-```bash
-npm run test:api        # Convex API smoke checks
-```
-
-### Type checking
-
-```bash
-npm run typecheck
-```
-
-## 🚀 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. **Deploy backend**
-
-   ```bash
-   npx convex deploy --prod
-   ```
-
-2. **Connect to Vercel**
-
-   ```bash
-   # Install Vercel CLI
-   npm install -g vercel
-
-   # Deploy
-   vercel --prod
-   ```
-
-3. **Set environment variables in Vercel dashboard**
-
-### Deploy with Docker
-
-1. **Build Docker image**
-
-   ```bash
-   npm run docker:build
-   ```
-
-2. **Run container**
-   ```bash
-   npm run docker:run
-   ```
-
-## 🔧 Advanced Features
-
-### Voice Query System
-
-- **Languages**: Hindi, Tamil, Telugu, English
-- **Features**: Speech-to-text, context-aware responses
-- **Usage**: Click mic button and ask questions naturally
-- **Examples**:
-  - "मेरा कुल खर्च क्या है?" (What is my total spending?)
-  - "कौन से सप्लायर सबसे अच्छे हैं?" (Which suppliers are the best?)
-
-### AI Inventory Forecasting
-
-- **Festival Awareness**: Considers Diwali, Holi, Navratri, Eid
-- **Seasonal Patterns**: Monsoon, summer, winter demand
-- **Regional Preferences**: State-specific food preferences
-- **Confidence Scoring**: Reliability metrics for predictions
-
-### FSSAI Certificate Verification
-
-- **OCR Technology**: Automatic text extraction from certificates
-- **AI Analysis**: Smart validation of certificate data
-- **Status Tracking**: Real-time verification status
-- **Business Matching**: Compares certificate with profile data
-
-### Group Orders
-
-- **Cost Reduction**: Bulk buying for better prices
-- **Smart Matching**: AI suggests similar orders to join
-- **Coordination**: Built-in communication tools
-- **Split Payments**: Automatic cost distribution
-
-## 🔒 Security Features
-
-- **Authentication**: Convex-backed email/password auth with role checks
-- **Role-based Access**: Vendor and supplier permissions
-- **Data Encryption**: All data encrypted in transit and at rest
-- **API Security**: Rate limiting and input validation
-- **Error Handling**: Comprehensive error boundaries
-- **Privacy**: No audio data stored, only transcriptions
-
-## 📊 Performance Optimizations
-
-- **Lazy Loading**: Components loaded on demand
-- **Image Optimization**: Automatic image compression
-- **Caching**: Smart caching strategies
-- **Bundle Analysis**: Optimize bundle size
-- **PWA Support**: Progressive Web App features
-- **Offline Support**: Basic offline functionality
-
-## 🌐 Browser Support
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-
-## 📱 Mobile Support
-
-- Responsive design for all screen sizes
-- Touch-friendly interfaces
-- Mobile-optimized voice recording
-- PWA installation support
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow TypeScript best practices
-- Write tests for new features
-- Use Tailwind for styling
-- Follow existing code conventions
-- Update documentation
-
-## 📄 API Documentation
-
-### Voice Query API
-
-```typescript
-// Process voice query
-await api.voiceQuery.processVoiceQuery({
-  audioBlob: File,
-  userRole: 'vendor' | 'supplier',
-});
-```
-
-### FSSAI Verification API
-
-```typescript
-// Verify FSSAI certificate
-await api.fssaiVerification.verifyFSSAICertificate({
-  supplierId: Id<'suppliers'>,
-  imageBase64: string,
-});
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Microphone not working**
-   - Ensure HTTPS connection
-   - Check browser permissions
-   - Verify microphone hardware
-
-2. **Build failures**
-   - Clear node_modules: `rm -rf node_modules && npm install`
-   - Check Node.js version (18+)
-   - Verify environment variables
-
-3. **Authentication issues**
-   - Verify `VITE_CONVEX_URL` and Convex deployment status
-   - Check `npx convex deploy` output for auth function errors
-   - Clear browser cache
-
-4. **Voice queries not working**
-   - Check Sarvam API key
-   - Verify OpenRouter configuration
-   - Test with different languages
-
-## 🤖 Collaborative Filtering Model for Supplier Recommendations
-
-The platform implements an advanced collaborative filtering (CF) model to provide personalized supplier recommendations to street food vendors. This AI-powered system analyzes vendor rating patterns to predict preferences for unrated suppliers, creating a more intelligent and personalized sourcing experience.
-
-### Overview of Collaborative Filtering
-
-Collaborative Filtering is a recommendation technique that predicts a user's preferences based on the preferences of similar users. In our platform:
-
-- **Users**: Street food vendors (e.g., V1, V2)
-- **Items**: Suppliers (e.g., S1, S2)
-- **Ratings**: Average scores derived from parameters like freshness_rating, on_time_delivery, etc. (1-5 scale)
-
-The model uses **user-based collaborative filtering** with K-Nearest Neighbors (KNN) and cosine similarity to identify vendors with similar preferences and predict ratings for unrated suppliers.
-
-### How the Model Works
-
-1. **Build User-Item Matrix**: Creates a table where rows are vendors, columns are suppliers, and cells contain ratings
-2. **Compute Similarities**: Uses KNN with cosine similarity to find similar vendors (neighbors)
-3. **Predict Missing Ratings**: For unrated suppliers, averages ratings from similar neighbors weighted by similarity scores
-4. **Personalized Rankings**: Outputs ranked supplier recommendations tailored to each vendor's preferences
-
-### Key Benefits
-
-- **Handles Sparsity**: Works effectively even when vendors haven't rated most suppliers
-- **Personalization**: Tailors recommendations based on individual vendor preferences
-- **Scalable**: Efficient algorithm that scales with platform growth
-- **Contextual**: Considers multiple rating parameters (freshness, delivery, pricing)
-
-### Data Structure
-
-The system processes rating data with the following structure:
-
-- `vendor_id`: Unique vendor identifier
-- `supplier_id`: Unique supplier identifier
-- `rating`: Computed average rating (1-5 scale)
-- Individual parameters: `freshness_rating`, `delivery_time_rating`, `price_rating`, etc.
-
-### Implementation Features
-
-- **Similarity Metrics**: Cosine similarity for measuring vendor preference alignment
-- **Neighbor Selection**: Dynamic K-nearest neighbors based on data availability
-- **Fallback Mechanisms**: Global average ratings when insufficient neighbor data exists
-- **Real-time Updates**: Continuous learning from new vendor ratings and feedback
-
-### Use Cases in the Platform
-
-1. **Search Result Ranking**: Prioritizes suppliers based on predicted vendor preferences
-2. **Recommendation Engine**: Suggests new suppliers vendor might like
-3. **Group Order Matching**: Finds vendors with similar preferences for collaborative buying
-4. **Quality Assurance**: Identifies suppliers consistently rated highly by similar vendors
-
-## 📜 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built for Tutedude Web Development Hackathon 1.0
-- Special thanks to the Indian street food vendors who inspired this project
-- Powered by Convex and OpenRouter
-- Icons by React Icons and Heroicons
+> Originally built for the Tutedude Web Development Hackathon 1.0 ("Solving for Street Food").
 
 ---
 
-**Made with ❤️ for the Indian street food ecosystem**
+## Features
 
-Transform your street food business with Smart Street - where technology meets tradition!
+### For vendors
+
+- **Supplier discovery** — search and filter suppliers by location, category, price, rating and FSSAI status.
+- **Recommendations** — suppliers ranked by a weighted score of distance, trust, category match, price and
+  stock availability (`convex/recommendations.ts`).
+- **Voice queries** — speak a request in English or one of 10 Indian languages; speech is transcribed with
+  Sarvam AI and turned into search filters with an LLM via OpenRouter, with a rule-based fallback.
+- **Orders & tracking** — place orders, follow status updates and delivery tracking in real time.
+- **Group orders** — pool demand with nearby vendors for bulk pricing; expired/locked groups are handled by
+  scheduled jobs.
+- **Business tools** — financial analytics, recipe costing calculator, procurement planner, negotiation hub
+  and market intelligence notes.
+
+### For suppliers
+
+- **Inventory management** — add products, edit price/stock/minimum order, toggle availability.
+- **Order management** — accept and progress orders, add tracking updates.
+- **AI demand forecasting** — 7-day demand forecasts per product that factor in order history and Indian
+  seasonality/festivals. Runs daily via a Convex cron and on demand; falls back to a deterministic
+  seasonal model when no AI key is configured.
+- **FSSAI licence verification** — upload a certificate image; text is extracted with OCR.space, fields are
+  parsed by an LLM and checked against the supplier profile (licence format, name similarity, expiry).
+- **Trust score** — a 0–5 score built from ratings, completed orders, on-time delivery, certification and
+  verification.
+- **Analytics, smart pricing and automation** dashboards.
+
+### Platform
+
+- Email/password accounts with a vendor or supplier role; passwords are stored as salted PBKDF2-SHA256 hashes.
+- Installable PWA with offline detection.
+- Page-level Google Translate widget for regional languages.
+
+> Some supplier tabs (Quality Control, Loyalty Program) currently display illustrative sample data and are
+> not yet backed by Convex tables.
+
+## Tech stack
+
+| Layer        | Technology                                                           |
+| ------------ | -------------------------------------------------------------------- |
+| Frontend     | React 19, TypeScript, Vite 7, React Router 7, Tailwind CSS, Recharts |
+| Backend / DB | Convex (queries, mutations, actions, cron jobs)                      |
+| AI services  | OpenRouter (LLMs), Sarvam AI (speech-to-text), OCR.space             |
+| Testing      | Vitest + Testing Library + MSW (unit/integration), Playwright (e2e)  |
+| Tooling      | ESLint (typescript-eslint), Prettier, GitHub Actions                 |
+| Deployment   | Static hosting (Vercel/Netlify) or Docker + nginx; Convex Cloud      |
+
+## Architecture
+
+```
+┌──────────────────────────────┐          ┌────────────────────────────────────┐
+│ React SPA (Vite, PWA)        │  WebSocket│ Convex deployment                  │
+│  pages/  Vendor & Supplier   │◀────────▶│  queries / mutations  (database)   │
+│          dashboards          │  (sync)  │  actions  ──► OpenRouter, OCR.space│
+│  contexts/AuthContext        │          │  crons    ──► forecasts, group     │
+│  services/ voice + vision ───┼──► Sarvam AI, OpenRouter (browser calls)       │
+└──────────────────────────────┘          └────────────────────────────────────┘
+```
+
+- **Reactive data**: components subscribe with `useQuery`, so lists and dashboards update live.
+- **Network calls happen in actions**: Convex queries/mutations are deterministic and cannot call external
+  APIs, so AI forecasting and FSSAI verification run as actions that read data through internal queries and
+  write through internal mutations (`convex/suppliers.ts`, `convex/fssaiVerification.ts`).
+- **Pure domain logic** lives in `convex/lib/` (forecasting, FSSAI checks, trust score, password hashing,
+  OpenRouter client) and is unit-tested in isolation.
+- **Server secrets** (`OPENROUTER_API_KEY`, `OCR_SPACE_API_KEY`) are Convex environment variables and never
+  reach the browser.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+ (CI uses Node 22) and npm
+- A free [Convex](https://convex.dev) account for your own backend
+
+### 1. Install
+
+```bash
+git clone https://github.com/jeevithg090/Smart-Vendors-Suppliers.git
+cd Smart-Vendors-Suppliers
+npm ci
+```
+
+### 2. Start the Convex backend
+
+```bash
+npx convex dev
+```
+
+On first run this asks you to log in, creates a deployment, pushes the schema and functions, regenerates
+`convex/_generated/` and writes `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL` to `.env.local`. Keep it running
+while you develop.
+
+Optional — seed demo data (internal functions, run from the CLI):
+
+```bash
+npx convex run sampleData:addSampleSuppliers
+npx convex run sampleData:addSampleVendor
+```
+
+### 3. Configure environment variables
+
+```bash
+cp .env.example .env.local   # then fill in the values you need
+```
+
+Set server-side secrets on the Convex deployment (not in `.env.local`):
+
+```bash
+npx convex env set OPENROUTER_API_KEY <your-key>   # AI forecasts + FSSAI analysis
+npx convex env set OCR_SPACE_API_KEY <your-key>    # FSSAI certificate OCR
+```
+
+### 4. Run the app
+
+```bash
+npm run dev        # http://localhost:5173
+```
+
+If `VITE_CONVEX_URL` is not set, the client falls back to the public demo backend URL defined in
+`src/main.tsx`. In development builds only, if the backend is unreachable the app starts an offline demo
+session so the UI can still be explored.
+
+## Environment variables
+
+Frontend variables are read by Vite at build time. **Every `VITE_*` value is embedded in the JavaScript
+bundle and is public** — use keys restricted to your domain.
+
+| Variable                                                  | Where        | Required | Purpose                                  |
+| --------------------------------------------------------- | ------------ | -------- | ---------------------------------------- |
+| `VITE_CONVEX_URL`                                         | `.env.local` | Yes\*    | Convex deployment URL                    |
+| `CONVEX_DEPLOYMENT`                                       | `.env.local` | Dev      | Written by `npx convex dev`              |
+| `VITE_SARVAM_API_KEY`                                     | `.env.local` | Voice    | Speech-to-text for voice queries         |
+| `VITE_OPENROUTER_API_KEY`                                 | `.env.local` | Voice    | LLM parsing of voice queries/filters     |
+| `VITE_GOOGLE_TRANSLATE_API_KEY`                           | `.env.local` | No       | Translation fallback                     |
+| `VITE_VISION_API_KEY`, `VITE_CLARIFAI_API_KEY`            | `.env.local` | No       | Ingredient photo recognition             |
+| `VITE_AZURE_VISION_API_KEY`, `VITE_AZURE_VISION_ENDPOINT` | `.env.local` | No       | Alternative vision provider              |
+| `VITE_TTS_API_KEY`                                        | `.env.local` | No       | Text-to-speech (placeholder integration) |
+| `OPENROUTER_API_KEY`                                      | Convex env   | No\*\*   | AI demand forecasts, FSSAI field parsing |
+| `OCR_SPACE_API_KEY`                                       | Convex env   | FSSAI    | OCR for FSSAI certificate uploads        |
+| `CONVEX_DEPLOY_KEY`                                       | CI secret    | Deploy   | Non-interactive `npx convex deploy`      |
+
+\* Falls back to the demo backend if unset. \*\* Without it, forecasts use the deterministic seasonal model.
+
+## Scripts
+
+| Command                  | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
+| `npm run dev`            | Start the Vite dev server                               |
+| `npm run dev:backend`    | Start `convex dev` (push functions, watch for changes)  |
+| `npm run build`          | Type-check and build the production bundle to `dist/`   |
+| `npm run preview`        | Serve the production build locally                      |
+| `npm run lint`           | ESLint                                                  |
+| `npm run format`         | Format with Prettier (`format:check` to verify)         |
+| `npm run typecheck`      | Type-check the app and the Convex functions             |
+| `npm test`               | Run unit and integration tests (Vitest)                 |
+| `npm run test:coverage`  | Tests with V8 coverage                                  |
+| `npm run test:e2e`       | Playwright end-to-end tests (needs a reachable backend) |
+| `npm run test:api`       | Smoke-test a live Convex deployment's public API        |
+| `npm run deploy:backend` | Deploy Convex functions (`npx convex deploy`)           |
+
+## Testing
+
+- **Unit / integration** (`src/test/`): domain logic in `convex/lib` (forecasting, FSSAI verification,
+  trust score, password hashing, OpenRouter fallback), validation, retry and error-handling utilities, voice
+  processing and React components. All network calls are mocked; no API keys are needed.
+- **End-to-end** (`e2e/`): Playwright flows for sign-up, role routing, offline handling and core vendor and
+  supplier journeys. They start the dev server automatically and require a Convex backend running the
+  functions in this repo. To use an already-installed Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE`.
+
+CI (`.github/workflows/ci.yml`) runs lint, format check, type-check, unit tests, the production build and a
+production dependency audit on every push to `main` and every pull request.
+
+## Deployment
+
+1. **Backend** — deploy the Convex functions and set the server environment variables:
+
+   ```bash
+   npx convex deploy               # or CONVEX_DEPLOY_KEY=... npx convex deploy in CI
+   npx convex env set OPENROUTER_API_KEY <key> --prod
+   npx convex env set OCR_SPACE_API_KEY <key> --prod
+   ```
+
+2. **Frontend** — any static host works. Build with `VITE_CONVEX_URL` pointing at the production deployment.
+   - **Vercel**: `vercel.json` configures the build, SPA rewrites, caching and security headers (CSP allows
+     Convex and the AI APIs used by the client).
+   - **Docker**: builds the app and serves it with nginx as a non-root user on port 8080.
+
+     ```bash
+     docker build --build-arg VITE_CONVEX_URL=https://<deployment>.convex.cloud -t smart-street .
+     docker run -p 8080:8080 smart-street   # health check at /health
+     ```
+
+## Project structure
+
+```
+├── convex/                 # Backend: schema, queries, mutations, actions, crons
+│   ├── lib/                # Pure, unit-tested domain logic (forecasting, fssai, trustScore, password, …)
+│   ├── schema.ts           # Database schema
+│   ├── auth.ts             # Email/password sign-up and login
+│   ├── suppliers.ts        # Supplier profiles, search, AI forecasting actions
+│   ├── fssaiVerification.ts# FSSAI certificate verification action
+│   ├── crons.ts            # Scheduled jobs
+│   └── _generated/         # Generated by `npx convex dev` (do not edit)
+├── src/
+│   ├── pages/              # Home, VendorDashboard, SupplierDashboard
+│   ├── components/         # Feature components (orders, group orders, voice, analytics, …)
+│   ├── contexts/           # AuthContext (session + login/signup)
+│   ├── services/           # AI service clients, error reporting, performance monitoring
+│   ├── utils/ hooks/       # Validation, retry/timeout, voice processing, form hooks
+│   ├── config/             # Feature configuration
+│   └── test/               # Vitest suites
+├── e2e/                    # Playwright specs
+├── deploy/                 # nginx config and shared security headers for Docker
+├── docs/                   # Additional documentation
+├── Dockerfile
+└── vercel.json
+```
+
+## Security notes
+
+- Authentication is a lightweight email/password scheme implemented in Convex. Sessions are kept in the
+  browser and Convex functions receive the user's email or profile id as arguments; they do not yet verify a
+  server-issued token. Moving to [Convex Auth](https://labs.convex.dev/auth) (or another identity provider) is
+  the recommended next step before handling real user data.
+- Keys prefixed with `VITE_` are visible to anyone who loads the site. Proxy those calls through Convex
+  actions if a provider's key must stay private.
+
+## Further reading
+
+- [docs/error-handling.md](docs/error-handling.md) — error handling utilities and patterns used in the UI.
