@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+const MIN_PASSWORD_LENGTH = 8;
+
 interface LoginProps {
   onSwitchToSignup: () => void;
   preSelectedRole: 'vendor' | 'supplier';
@@ -17,28 +19,21 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
     e.preventDefault();
     setError('');
 
-    console.log('Login attempt:', { email, role: preSelectedRole, passwordLength: password.length });
-
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
 
-    if (password.length < 4) {
-      setError('Password must be at least 4 characters');
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
       return;
     }
 
-    try {
-      const success = await login(email, password, preSelectedRole);
-      console.log('Login result:', success);
-      if (!success) {
-        setError('Login failed. Please check your credentials.');
-      }
-    } catch (error) {
-      console.error('Login error in component:', error);
-      setError('Login failed. Please try again.');
+    const result = await login(email, password, preSelectedRole);
+    if (!result.success) {
+      setError(result.error || 'Login failed. Please try again.');
     }
+    // On success the auth state change redirects to the dashboard.
   };
 
   return (
@@ -112,7 +107,7 @@ export default function Login({ onSwitchToSignup, preSelectedRole, onBackToRoleS
           </div>
 
           {error && (
-            <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-md">
+            <div role="alert" className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-md">
               {error}
             </div>
           )}
